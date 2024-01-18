@@ -1,0 +1,9 @@
+version: '3'
+services:
+  api:
+    image: node:alpine
+    volumes:
+      - .:/app
+    ports:
+      - "23450:8080"
+    command: sh -c "cd /app && npm install && npm start"
