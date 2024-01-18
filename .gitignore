@@ -31,6 +31,31 @@
 # Ignore package manager files
 npm-debug.log
 yarn-error.log
-site/node_modules/*
 docs/site/*
 
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Astro
+dist
+/.astro
+.cache
+node_modules/.cache
+
+# Editor files
+.vscode
+.idea
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+site/package-lock.json
