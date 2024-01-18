@@ -1,0 +1,7 @@
+site_name: Dwellow
+site_url: https://docs.dwellow.ca
+nav: 
+  - Home: index.md
+  - API Reference: api-reference.md
+  - Database Reference: database-reference.md
+  - Frontend Reference: frontend-reference.md

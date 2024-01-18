@@ -1,0 +1,36 @@
+# Ignore compiled files
+*.o
+*.out
+*.class
+*.dll
+*.exe
+
+# Ignore logs and temporary files
+*.log
+*.swp
+*.swo
+*.tmp
+
+# Ignore build and dependency directories
+/node_modules
+/build
+/dist
+
+# Ignore environment-specific files
+.env
+.env.local
+.env.*.local
+
+# Ignore macOS system files
+.DS_Store
+
+# Ignore editor-specific files
+.vscode
+.idea
+
+# Ignore package manager files
+npm-debug.log
+yarn-error.log
+site/node_modules/*
+docs/site/*
+
