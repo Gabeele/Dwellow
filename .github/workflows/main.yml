@@ -8,6 +8,7 @@ jobs:
   run_pull:
     name: run pull
     runs-on: ubuntu-latest
+    working-directory: ~
     
     steps:
     - name: install ssh keys
@@ -18,7 +19,7 @@ jobs:
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
     - name: connect
-      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 
+      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "&& cd ~"
     - name: cd
       run: "cd ${{ secrets.WORK_DIR }}"
     - name: checkout branch
