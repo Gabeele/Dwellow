@@ -20,10 +20,6 @@ jobs:
     - name: connect
       run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ~"
     - name: cd
-      run: "cd ~/Capstone/dwellow"
-    - name: checkout branch
-      run: "git checkout ${{ secrets.MAIN_BRANCH }}"
-    - name: pull main
-      run: "git pull && exit"
+      run: "./deploy.sh"
     - name: cleanup
       run: rm -rf ~/.ssh
