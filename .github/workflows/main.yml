@@ -20,6 +20,6 @@ jobs:
     - name: connect
       run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ~"
     - name: cd
-      run: "./deploy.sh"
+      run: "./Capstone/dwellow/deploy.sh"
     - name: cleanup
       run: rm -rf ~/.ssh
