@@ -3,7 +3,7 @@ on:
     branches:
       - main
   workflow_dispatch:
-  
+
 jobs:
   run_pull:
     name: run pull
@@ -11,13 +11,28 @@ jobs:
     
     steps:
     - name: install ssh keys
-      # check this thread to understand why its needed:
-      # https://stackoverflow.com/a/70447517
       run: |
         install -m 600 -D /dev/null ~/.ssh/id_rsa
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
     - name: connect and pull
-      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull &&docker-compose restart api database nginx && exit"
+      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull && docker-compose restart api database nginx && exit"
     - name: cleanup
       run: rm -rf ~/.ssh
+
+    # Add a new step here for issue creation on failure
+    - name: create issue on failure
+      if: failure() # This step runs if any of the previous steps fail
+      uses: actions/github-script@v5
+      with:
+        script: |
+          const issueTitle = 'Automated issue for workflow failure';
+          const issueBody = `There was a failure in the workflow execution. Check the logs for more details.\nFailed Job: \`${{ job.status }}\``;
+          const labels = ['bug', 'automated issue']; // Customize labels as needed
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: issueTitle,
+            body: issueBody,
+            labels: labels
+          });
