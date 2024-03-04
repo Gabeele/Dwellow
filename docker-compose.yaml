@@ -28,6 +28,7 @@ services:
 
   api:
     image: node:alpine
+    container_name: api
     volumes:
       - ./backend/api:/app  
     ports:
