@@ -21,19 +21,3 @@ jobs:
       run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull &&docker-compose restart api database nginx && exit"
     - name: cleanup
       run: rm -rf ~/.ssh
-
-    - name: create issue on failure
-      if: failure() # This step runs if any of the previous steps fail
-      uses: actions/github-script@v5
-      with:
-        script: |
-          const issueTitle = 'Automated issue for workflow failure';
-          const issueBody = `There was a failure in the workflow execution. Check the logs for more details.\nFailed Job: \`${{ job.status }}\``;
-          const labels = ['bug', 'automated issue']; // Customize labels as needed
-          github.rest.issues.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            title: issueTitle,
-            body: issueBody,
-            labels: labels
-          });
