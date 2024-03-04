@@ -25,6 +25,7 @@ services:
       MSSQL_TCP_PORT: 1433
     ports:
       - "1433:1433"
+    restart: always
 
   api:
     image: node:alpine
@@ -33,5 +34,6 @@ services:
       - ./backend/api:/app  
     ports:
       - "23450:8080"
+    restart: always
     command: sh -c "cd /app && npm install && npm start"
 
