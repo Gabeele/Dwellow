@@ -1,27 +1,31 @@
 
 const express = require('express');
+const cors = require('cors');
 
-//Create an app
+
+// Create an app
 const app = express();
+
+app.use(cors());
+app.use(express.json());
 
 app.get('/', (req, res) => {
     res.contentType('application/json');
-
     res.redirect('https://dwellow.ca');
-
-
 });
 
 app.get('/api/health', (req, res) => {
     res.send("Server is online");
 });
 
-
 app.post('/api/account', (req, res) => {
-    res.send("Account Created");
-    // TODO: Add the database information to create an account
-    // This would involve adding a user to a database
-    // Getting the firebase token and adding it to the database
+    const { email, token } = req.body;
+
+    console.log(email, token);
+
+    // TODO Add the database information to register
+
+    res.send("Account created", email, token);
 });
 
 app.post('/api/login', (req, res) => {
@@ -30,8 +34,8 @@ app.post('/api/login', (req, res) => {
     // TODO Add the database information to login
 });
 
-
 const PORT = 8080; // In docker this runs on port 23450
 
 app.listen(PORT);
 console.log(`Running on port ${PORT}`);
+
