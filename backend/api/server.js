@@ -1,7 +1,7 @@
 
 const express = require('express');
 const cors = require('cors');
-const { getUser, generateCode } = require('./helper.js');
+const { getUser, generateCode, sendCodeByEmail } = require('./helper.js');
 
 
 // Create an app
@@ -106,10 +106,14 @@ app.get('/invitation/:id', (req, res) => {
 });
 
 app.post('/invitation', (req, res) => {
-    const { email, token } = req.body;
-    const user = getUser(token);
+    // const { email, token } = req.body;
+    // const user = getUser(token);
+
+    const email = "abeee.s.gavin@icloud.com";
 
     const code = generateCode();
+
+    sendCodeByEmail(email, code);
 
     // TODO make association with code and user in the database
     // Email the code to the user

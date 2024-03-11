@@ -1,3 +1,6 @@
+require("dotenv").config();
+const nodemailer = require("nodemailer");
+
 // Create a function to get the user and return a user 
 function getUser(token) {
     const user = {
@@ -26,8 +29,47 @@ function generateCode() {
     return result;
 }
 
+async function sendCodeByEmail(email, code) {
+
+    console.log(process.env.INVITATION_EMAIL);
+    console.log(process.env.INVITATION_PASSWORD);
+
+    const subject = "Invitation Code";
+    const text = `Your invitation code is: ${code}`;
+
+    try {
+        // Create a transporter
+        let transporter = nodemailer.createTransport({
+            host: process.env.INVITATION_SMTP,
+            port: process.env.INVITATION_PORT,
+            auth: {
+                user: process.env.INVITATION_EMAIL,
+                pass: process.env.INVITATION_PASSWORD,
+            },
+        });
+
+        // send mail with defined transport object
+        let info = await transporter.sendMail({
+            from: process.env.INVITATION_EMAIL, // sender address
+            to: email, // list of receivers
+            subject: subject, // Subject line
+            text: text, // plain text body
+        });
+
+        console.log(`Message sent: ${info.messageId}`);
+        return `Message sent: ${info.messageId}`;
+    } catch (error) {
+        console.error(error);
+        throw new Error(
+            `Something went wrong in the sendmail method. Error: ${error.message}`
+        );
+    }
+
+}
+
 module.exports = {
     getUser,
-    generateCode
+    generateCode,
+    sendCodeByEmail
 
 };
