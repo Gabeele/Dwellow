@@ -1,8 +1,9 @@
 
 const express = require('express');
 const cors = require('cors');
-const { getUser, generateCode, sendCodeByEmail } = require('./helper.js');
+const {generateCode, sendCodeByEmail } = require('./helper.js');
 
+const {checkEmail, createAccount, getUser, deleteUser, updateUser} = require('./connector.js')
 
 // Create an app
 const app = express();
@@ -23,60 +24,141 @@ app.get('/health', (req, res) => {
 
 // Account Routes ------------------------------------------------------------
 
-app.get('/account/:id', (req, res) => {
+app.get('/account/:id', async (req, res) => {
     console.log("Getting account information");
     const { id } = req.params;
     // const { token } = req.headers;
-    const token = 1;
-    const user = getUser(token);
 
-    if (user.id !== Number(id)) {
-        res.status(401).send("Unauthorized");
-    }
-    else {
-        res.send("Account information");
-    }
+    // tokens used by test accounts are currently 12345 and 54321
+    const token = 12345;
+    const user = await getUser(token);
 
+    if(user != null)
+    {
+        if (user.recordset[0].user_id != Number(id)) 
+        {
+            res.status(401).json({ message: 'Unauthorized' });
+        }
+        else 
+        {
+            res.status(200).json(user.recordset);
+        }
+    }
+    else
+    {
+        res.status(400).json({ message: 'No user found with id' + id });
+    } 
 });
 
-app.put('/account/:id', (req, res) => {
+app.put('/account/:id', async (req, res) => {
     console.log("Updating account information");
-    const { id } = req.params;
-    // const { token } = req.headers;
-    const token = 1;
-    const user = getUser(token);
 
-    if (user.id !== Number(id)) {
-        res.status(401).send("Unauthorized");
+    const { id } = req.params;
+    const { email, token, userType, password, fullName, phoneNumber} = req.query;
+    // const { token } = req.headers;
+    // we probably want to check what user is currently logged in to update an account
+    // i.e. anyone can update their own but admins can update any tenant
+    
+    const user = await getUser(token);
+
+    if(user != null)
+    {
+        if (user.recordset[0].user_id != Number(id)) 
+        {
+            res.status(401).json({ message: 'Unauthorized' });
+        }
+        else 
+        {
+            if(userType == 'admin' || userType == 'tenant')
+            {
+                const updated = await updateUser(email, token, userType, password, fullName, phoneNumber);
+                if(updated)
+                {
+                    res.status(200).json({message: 'Account updated'});
+                }
+                else
+                {
+                    res.status(400).json({ message: 'Error updated user ' + id });
+                }
+            }
+            else
+            {
+                res.status(400).json({ message: 'Invalid user role (admin or tenant)' });
+            }
+        }
     }
-    else {
-        res.send("Account updated");
-    }
+    else
+    {
+        res.status(400).json({ message: 'No user found with id ' + id });
+    } 
 });
 
-app.delete('/account/:id', (req, res) => {
+app.delete('/account/:id', async (req, res) => {
     console.log("Deleting account information");
     const { id } = req.params;
     // const { token } = req.headers;
-    const token = 1;
-    const user = getUser(token);
+    // we probably want to check what user is currently logged in to delete an account
+    // i.e. anyone can delete their own but admins can delete any tenant
 
-    if (user.id !== Number(id)) {
-        res.status(401).send("Unauthorized");
+    const token = 12345;
+    const user = await getUser(token);
+
+    if(user != null)
+    {
+        if (user.recordset[0].user_id != Number(id)) 
+        {
+            res.status(401).json({ message: 'Unauthorized' });
+        }
+        else 
+        {
+            const deleted = await deleteUser(token);
+            if(deleted)
+            {
+                res.status(200).json({message: 'Account deleted'});
+            }
+            else
+            {
+                res.status(400).json({ message: 'Error deleting user' + id });
+            }
+        }
     }
-    else {
-        res.send("Account deleted");
-    }
+    else
+    {
+        res.status(400).json({ message: 'No user found with id ' + id });
+    } 
 });
 
-app.post('/account', (req, res) => {
-    const { email, token } = req.body;
+app.post('/account', async (req, res) => {
+   
+    const { email, token, userType, password, fullName, phoneNumber} = req.query;
 
-    console.log(email, token);
+    //console.log(email, token, userType, password, fullName, phoneNumber);
 
-    // TODO Add the database information to register
+    try {
+        const emailExists = await checkEmail(email);
 
-    res.send("Account created", email, token);
+        if (emailExists) 
+        {
+            res.status(400).json({ message: 'Email already exists' });
+        } 
+        else 
+        {
+
+            if(userType == 'admin' || userType == 'tenant')
+            {
+                const result = await createAccount(email, token, userType, password, fullName, phoneNumber);
+                res.status(200).json({ message: 'Account Created' });
+            }
+            else
+            {
+                res.status(400).json({ message: 'Invalid user role (admin or tenant)' });
+            }
+        }
+    } catch (error) {
+        //error, will just display the sql error thats recieved
+        console.error('Error in account creation:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
 // Login Routes --------------------------------------------------------------
