@@ -1,7 +1,10 @@
 import { Text, View } from "react-native";
+import styles from './Styles'
 
 export default function Page() {
   return (
-    <Text>meow</Text>
+    <View>
+      <Text>meow</Text>
+    </View>
   );
 }
