@@ -21,7 +21,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.anonymous.dwellow"
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -32,7 +33,9 @@
       [
         "expo-font",
         {
-          "fonts": ["node_modules/@expo-google-fonts/inter/Inter_100Thin.ttf"]
+          "fonts": [
+            "node_modules/@expo-google-fonts/inter/Inter_100Thin.ttf"
+          ]
         }
       ],
       "@react-native-firebase/app",

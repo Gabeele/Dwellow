@@ -1,8 +1,10 @@
-import { Text, View, TextInput, Button } from "react-native";
-import { Link, router } from 'expo-router';
+import { Text, View, TextInput, Button, Pressable } from "react-native";
+import { router } from 'expo-router';
 import React, { useState } from 'react'
+import auth from '@react-native-firebase/auth';
 
 export default function Login() {
+  const [initializing, setInitializing] = useState(true);
   const [email, setEmail] = useState({ value: ''})
   const [password, setPassword] = useState({ value: ''})
 
@@ -10,12 +12,16 @@ export default function Login() {
     // fix this to use with firebase
     // validation
     // enter form
-    fetch('https://dwellow.ca/login', {
+    fetch('https://api.dwellow.ca/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': ''
       },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({
+        token: '',
+        email: ''
+        }),
     })
       .then(response => response.json())
       .then(data => {
@@ -26,7 +32,6 @@ export default function Login() {
         console.error('Error:', error);
       });
   }
-
   return (
     <View className='items-center'>
       <Text className='text-xl'>Log Into Dwellow</Text>
@@ -47,15 +52,12 @@ export default function Login() {
         placeholder='Enter Password'
         className=''
       />
-      <Button 
-        title="Login"
+      <Pressable 
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        onPress={() => {
-          //onLoginPressed
-          //temp nav for now
-          router.navigate('/home');
-        }}>
-      </Button>
+        onPress={onLoginPressed}>
+          <button>Login</button>
+      </Pressable>
+
     </View>
   );
 }
