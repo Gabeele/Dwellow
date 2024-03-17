@@ -168,7 +168,7 @@ app.post('/account', async (req, res) => {
 
 app.post('/login', async (req, res) => {
     console.log("Logging into account");
-    const { email, token } = req.query;
+    const { email, token } = req.body;
 
     const decoded = jwt.decode(token, {complete: true});
 
