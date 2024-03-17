@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Call original entrypoint
+/opt/mssql/bin/sqlservr &
+
+# Wait for SQL Server to start and then run the configure-db.sh script
+/usr/config/configure-db.sh
+
+# Keep the container running
+wait
