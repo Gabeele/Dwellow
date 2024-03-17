@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.2.3",
+    "@react-native-firebase/app": "^19.0.1",
+    "@react-native-firebase/auth": "^19.0.1",
     "expo": "^50.0.13",
     "expo-constants": "~15.4.5",
     "expo-font": "~11.10.3",

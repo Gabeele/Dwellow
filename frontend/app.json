@@ -34,7 +34,9 @@
         {
           "fonts": ["node_modules/@expo-google-fonts/inter/Inter_100Thin.ttf"]
         }
-      ]
+      ],
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth"
     ],
     "scheme": "dwellow-scheme"
   }
