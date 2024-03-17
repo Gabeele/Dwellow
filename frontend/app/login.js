@@ -7,8 +7,24 @@ export default function Login() {
   const [password, setPassword] = useState({ value: ''})
 
   const onLoginPressed = () => {
+    // fix this to use with firebase
     // validation
     // enter form
+    fetch('https://dwellow.ca/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        router.navigate('/home');
+        //router.navigate('home', { user: data.user, user_id: data.user.data.user_id });
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
   }
 
   return (
@@ -36,6 +52,7 @@ export default function Login() {
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         onPress={() => {
           //onLoginPressed
+          //temp nav for now
           router.navigate('/home');
         }}>
       </Button>
