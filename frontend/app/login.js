@@ -1,9 +1,9 @@
-import { Text, View } from "react-native";
-import styles from './Styles'
+import { Text, View, TextInput } from "react-native";
+//import styles from './styles'
 
 export default function Page() {
   return (
-    <View>
+    <View classname=''>
       <Text>meow</Text>
     </View>
   );

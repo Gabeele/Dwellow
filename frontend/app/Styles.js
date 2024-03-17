@@ -1,10 +1,3 @@
-import { StyleSheet } from 'react-native';
-
-export default StyleSheet.create({
-  links: {
-    color: Colours.PrimaryGreen,
-    textDecorationLine: "underline",}
-});
 
 export const Colours = {
     MainWhite: '#F5F5F5',
