@@ -2,6 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const {generateCode, sendCodeByEmail } = require('./helper.js');
+const jwt = require('jsonwebtoken');
 
 const {checkEmail, createAccount, getUser, deleteUser, updateUser} = require('./connector.js')
 
@@ -27,11 +28,10 @@ app.get('/health', (req, res) => {
 app.get('/account/:id', async (req, res) => {
     console.log("Getting account information");
     const { id } = req.params;
-    // const { token } = req.headers;
 
-    // tokens used by test accounts are currently 12345 and 54321
-    const token = 12345;
-    const user = await getUser(token);
+    const decoded = jwt.decode(token, {complete: true});
+
+    const user = await getUser(decoded);
 
     if(user != null)
     {
@@ -59,7 +59,9 @@ app.put('/account/:id', async (req, res) => {
     // we probably want to check what user is currently logged in to update an account
     // i.e. anyone can update their own but admins can update any tenant
     
-    const user = await getUser(token);
+    const decoded = jwt.decode(token, {complete: true});
+
+    const user = await getUser(decoded);
 
     if(user != null)
     {
@@ -71,7 +73,7 @@ app.put('/account/:id', async (req, res) => {
         {
             if(userType == 'admin' || userType == 'tenant')
             {
-                const updated = await updateUser(email, token, userType, password, fullName, phoneNumber);
+                const updated = await updateUser(email, decoded, userType, password, fullName, phoneNumber);
                 if(updated)
                 {
                     res.status(200).json({message: 'Account updated'});
@@ -100,8 +102,9 @@ app.delete('/account/:id', async (req, res) => {
     // we probably want to check what user is currently logged in to delete an account
     // i.e. anyone can delete their own but admins can delete any tenant
 
-    const token = 12345;
-    const user = await getUser(token);
+    const decoded = jwt.decode(token, {complete: true});
+
+    const user = await getUser(decoded);
 
     if(user != null)
     {
@@ -111,7 +114,7 @@ app.delete('/account/:id', async (req, res) => {
         }
         else 
         {
-            const deleted = await deleteUser(token);
+            const deleted = await deleteUser(decoded);
             if(deleted)
             {
                 res.status(200).json({message: 'Account deleted'});
@@ -132,7 +135,7 @@ app.post('/account', async (req, res) => {
    
     const { email, token, userType, password, fullName, phoneNumber} = req.query;
 
-    //console.log(email, token, userType, password, fullName, phoneNumber);
+    const decoded = jwt.decode(token, {complete: true});
 
     try {
         const emailExists = await checkEmail(email);
@@ -146,7 +149,7 @@ app.post('/account', async (req, res) => {
 
             if(userType == 'admin' || userType == 'tenant')
             {
-                const result = await createAccount(email, token, userType, password, fullName, phoneNumber);
+                const result = await createAccount(email, decoded, userType, password, fullName, phoneNumber);
                 res.status(200).json({ message: 'Account Created' });
             }
             else
@@ -163,10 +166,23 @@ app.post('/account', async (req, res) => {
 
 // Login Routes --------------------------------------------------------------
 
-app.post('/login', (req, res) => {
-    res.send("Logged in");
+app.post('/login', async (req, res) => {
+    console.log("Logging into account");
+    const { email, token } = req.query;
 
-    // TODO Add the database information to login
+    const decoded = jwt.decode(token, {complete: true});
+
+    const user = await getUser(decoded.payload.user_id);
+
+    if(user != null)
+    {
+        res.status(200).json({ message: 'Logged ' });
+    }
+    else
+    {
+        res.status(400).json({ message: 'No user found'});
+    } 
+
 });
 
 // Invitation Routes ----------------------------------------------------------
