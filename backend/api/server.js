@@ -54,7 +54,7 @@ app.put('/account/:id', async (req, res) => {
     console.log("Updating account information");
 
     const { id } = req.params;
-    const { email, token, userType, password, fullName, phoneNumber} = req.query;
+    const { email, token, userType, password, fullName, phoneNumber} = req.body;
     // const { token } = req.headers;
     // we probably want to check what user is currently logged in to update an account
     // i.e. anyone can update their own but admins can update any tenant
@@ -133,7 +133,7 @@ app.delete('/account/:id', async (req, res) => {
 
 app.post('/account', async (req, res) => {
    
-    const { email, token, userType, password, fullName, phoneNumber} = req.query;
+    const { email, token, userType, password, fullName, phoneNumber} = req.body;
 
     const decoded = jwt.decode(token, {complete: true});
 
