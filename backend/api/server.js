@@ -172,6 +172,10 @@ app.post('/login', async (req, res) => {
 
     const decoded = jwt.decode(token, {complete: true});
 
+    console.log(token)
+    console.log("decoded:")
+    console.log(decoded)
+
     const user = await getUser(decoded.payload.user_id);
 
     if(user != null)
