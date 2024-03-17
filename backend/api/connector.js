@@ -8,6 +8,8 @@ const config = {
     options: {
         encrypt: true,
         trustServerCertificate: true,
+        database: 'Dwellow',
+        connectionRole: 'db_datawriter'
     }
 };
 
