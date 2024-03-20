@@ -1,44 +1,61 @@
-import { Text, View, TextInput, Button, Pressable } from "react-native";
+import { Text, View, TextInput,Pressable } from "react-native";
 import { router } from 'expo-router';
 import React, { useState } from 'react'
-import auth from '@react-native-firebase/auth';
+import { app } from "../firebaseConfig";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, getAuth } from 'firebase/auth';
 
 export default function Login() {
-  const [initializing, setInitializing] = useState(true);
-  const [email, setEmail] = useState({ value: ''})
-  const [password, setPassword] = useState({ value: ''})
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
-  const onLoginPressed = () => {
-    // fix this to use with firebase
-    // validation
-    // enter form
-    fetch('https://api.dwellow.ca/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': ''
-      },
-      body: JSON.stringify({
-        token: '',
-        email: ''
-        }),
-    })
-      .then(response => response.json())
-      .then(data => {
-        router.navigate('/home');
-        //router.navigate('home', { user: data.user, user_id: data.user.data.user_id });
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      });
+  const onLoginPressed = async(e) => {
+    // user validation with firebase
+    // firebase will get back token id
+    // fetch to our database
+    const auth = getAuth(app);
+    try{
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        const token = await user.getIdToken();
+
+        fetch('https://api.dwellow.ca/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token
+          },
+          body: JSON.stringify({
+            token: token,
+            email: email
+            }),
+        })
+          .then(response => response.json())
+          .then(data => {
+            console.log(data);
+            console.log('Success logging in');
+            router.navigate('/home');
+          })
+          .catch(error => {
+            console.error('Error logging into database:', error);
+          });
+      }
+      catch(error){
+        console.error('Error authenticating with firebase:', error);
+      };
   }
+
+  const onCreateAccountPressed = async(e) => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  }
+  
+  // page view
   return (
     <View className='items-center'>
       <Text className='text-xl'>Log Into Dwellow</Text>
       <Text className='font-semibold'>Email Address</Text>
       <TextInput 
-        value={email.value}
-        onChangeText={(text) => setEmail({ value: text})}
+        value={email}
+        onChangeText={text => setEmail(text)}
         autoCompleteType="email"
         textContentType="emailAddress"
         className='text-opacity-50 border'
@@ -46,8 +63,8 @@ export default function Login() {
         />
       <Text className='font-semibold'>Password</Text>
       <TextInput 
-        value={password.value}
-        onChangeText={(text) => setPassword({ value: text})} 
+        value={password}
+        onChangeText={text => setPassword(text)} 
         secureTextEntry 
         placeholder='Enter Password'
         className=''
