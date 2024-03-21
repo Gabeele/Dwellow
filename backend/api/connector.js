@@ -14,47 +14,39 @@ const config = {
 };
 
 // Test function to check the database functionality
-async function executeQuery(query) 
-{ 
-    try 
-    {
+async function executeQuery(query) {
+    try {
 
         await sql.connect(config);
 
         const result = await sql.query(query);
 
-        return result; 
-    } 
-    finally 
-    {
+        return result;
+    }
+    finally {
         await sql.close();
     }
 }
 
-async function createAccount(email, token, userType, password, fullName, phoneNumber)
-{
-    try 
-    {
+async function createAccount(email, token, userType, fullName, phoneNumber) {
+    try {
 
         await sql.connect(config);
 
-        const query = `insert into [dbo].[users]([user_type],[password],[email],[full_name],[token],[phone_number]) values ('${userType}', '${password}', '${email}', '${fullName}', '${token}', '${phoneNumber}')`;
+        const query = `insert into [dbo].[users]([user_type],[email],[full_name],[token],[phone_number]) values ('${userType}', '${email}', '${fullName}', '${token}', '${phoneNumber}')`;
 
         const result = await sql.query(query);
 
-        return result; 
-    } 
-    finally 
-    {
+        return result;
+    }
+    finally {
         await sql.close();
     }
 }
 
 //checks the email to see if it exists since they must be unqiue
-async function checkEmail(email) 
-{
-    try 
-    {
+async function checkEmail(email) {
+    try {
         await sql.connect(config);
 
         const query = `select top 1 1 from [Dwellow].[dbo].[users] where [email] = '${email}'`;
@@ -62,45 +54,37 @@ async function checkEmail(email)
         const result = await sql.query(query);
 
         return result.recordset.length > 0;
-    } 
-    finally 
-    {
+    }
+    finally {
         await sql.close();
     }
 }
 
 //gets any user from the database with a specific token, but since they are unique it will always be 1 user
-async function getUser(token) 
-{
-    try 
-    {
+async function getUser(token) {
+    try {
         await sql.connect(config);
 
         const query = `select * from users where token = '${token}'`;
 
         const result = await sql.query(query);
 
-        if (result.recordset.length === 0) 
-        {
-            return null; 
+        if (result.recordset.length === 0) {
+            return null;
         }
         return result;
-    } 
-    catch (error) 
-    { 
+    }
+    catch (error) {
         console.error('Error fetching user:', error);
         throw error;
-    } 
-    finally 
-    {
+    }
+    finally {
         await sql.close();
     }
 }
 
-async function deleteUser(token) 
-{
-    try 
-    {
+async function deleteUser(token) {
+    try {
         await sql.connect(config);
 
         const query = `delete from users where token = '${token}'`;
@@ -109,25 +93,21 @@ async function deleteUser(token)
 
         if (result.rowsAffected[0] > 0) {
             return true;
-        } 
-        else 
-        {
+        }
+        else {
             return false;
         }
-    } 
-    catch (error) 
-    {
+    }
+    catch (error) {
         console.error('Error deleting user:', error);
         throw error;
-    } 
-    finally 
-    {
+    }
+    finally {
         await sql.close();
     }
 }
 
-async function updateUser(email, token, userType, password, fullName, phoneNumber)
-{
+async function updateUser(email, token, userType, password, fullName, phoneNumber) {
     try {
         await sql.connect(config);
 
@@ -142,7 +122,7 @@ async function updateUser(email, token, userType, password, fullName, phoneNumbe
         WHERE 
             [token] = '${token}'
     `;
-    
+
         const result = await sql.query(query);
 
         if (result.rowsAffected[0] > 0) {

@@ -1,10 +1,10 @@
 
 const express = require('express');
 const cors = require('cors');
-const {generateCode, sendCodeByEmail } = require('./helper.js');
+const { generateCode, sendCodeByEmail } = require('./helper.js');
 const jwt = require('jsonwebtoken');
 
-const {checkEmail, createAccount, getUser, deleteUser, updateUser} = require('./connector.js')
+const { checkEmail, createAccount, getUser, deleteUser, updateUser } = require('./connector.js')
 
 // Create an app
 const app = express();
@@ -29,70 +29,58 @@ app.get('/account/:id', async (req, res) => {
     console.log("Getting account information");
     const { id } = req.params;
 
-    const decoded = jwt.decode(token, {complete: true});
+    const decoded = jwt.decode(token, { complete: true });
 
     const user = await getUser(decoded);
 
-    if(user != null)
-    {
-        if (user.recordset[0].user_id != Number(id)) 
-        {
+    if (user != null) {
+        if (user.recordset[0].user_id != Number(id)) {
             res.status(401).json({ message: 'Unauthorized' });
         }
-        else 
-        {
+        else {
             res.status(200).json(user.recordset);
         }
     }
-    else
-    {
+    else {
         res.status(400).json({ message: 'No user found with id' + id });
-    } 
+    }
 });
 
 app.put('/account/:id', async (req, res) => {
     console.log("Updating account information");
 
     const { id } = req.params;
-    const { email, token, userType, password, fullName, phoneNumber} = req.body;
+    const { email, token, userType, fullName, phoneNumber } = req.body;
     // const { token } = req.headers;
     // we probably want to check what user is currently logged in to update an account
     // i.e. anyone can update their own but admins can update any tenant
-    
-    const decoded = jwt.decode(token, {complete: true});
+
+    const decoded = jwt.decode(token, { complete: true });
 
     const user = await getUser(decoded);
 
-    if(user != null)
-    {
-        if (user.recordset[0].user_id != Number(id)) 
-        {
+    if (user != null) {
+        if (user.recordset[0].user_id != Number(id)) {
             res.status(401).json({ message: 'Unauthorized' });
         }
-        else 
-        {
-            if(userType == 'admin' || userType == 'tenant')
-            {
-                const updated = await updateUser(email, decoded, userType, password, fullName, phoneNumber);
-                if(updated)
-                {
-                    res.status(200).json({message: 'Account updated'});
+        else {
+            if (userType == 'admin' || userType == 'tenant') {
+                const updated = await updateUser(email, decoded, userType, fullName, phoneNumber);
+                if (updated) {
+                    res.status(200).json({ message: 'Account updated' });
                 }
-                else
-                {
+                else {
                     res.status(400).json({ message: 'Error updated user ' + id });
                 }
             }
-            else
-            {
+            else {
                 res.status(400).json({ message: 'Invalid user role (admin or tenant)' });
             }
         }
     }
-    else
-    {
+    else {
         res.status(400).json({ message: 'No user found with id ' + id });
-    } 
+    }
 });
 
 app.delete('/account/:id', async (req, res) => {
@@ -102,58 +90,48 @@ app.delete('/account/:id', async (req, res) => {
     // we probably want to check what user is currently logged in to delete an account
     // i.e. anyone can delete their own but admins can delete any tenant
 
-    const decoded = jwt.decode(token, {complete: true});
+    const decoded = jwt.decode(token, { complete: true });
 
     const user = await getUser(decoded);
 
-    if(user != null)
-    {
-        if (user.recordset[0].user_id != Number(id)) 
-        {
+    if (user != null) {
+        if (user.recordset[0].user_id != Number(id)) {
             res.status(401).json({ message: 'Unauthorized' });
         }
-        else 
-        {
+        else {
             const deleted = await deleteUser(decoded);
-            if(deleted)
-            {
-                res.status(200).json({message: 'Account deleted'});
+            if (deleted) {
+                res.status(200).json({ message: 'Account deleted' });
             }
-            else
-            {
+            else {
                 res.status(400).json({ message: 'Error deleting user' + id });
             }
         }
     }
-    else
-    {
+    else {
         res.status(400).json({ message: 'No user found with id ' + id });
-    } 
+    }
 });
 
 app.post('/account', async (req, res) => {
-   
-    const { email, token, userType, password, fullName, phoneNumber} = req.body;
+    console.log("Creating account");
 
-    const decoded = jwt.decode(token, {complete: true});
-
+    const { email, token, userType, fullName, phoneNumber } = req.body;
     try {
+        const decoded = jwt.decode(token, { complete: true });
+
         const emailExists = await checkEmail(email);
 
-        if (emailExists) 
-        {
+        if (emailExists) {
             res.status(400).json({ message: 'Email already exists' });
-        } 
-        else 
-        {
+        }
+        else {
 
-            if(userType == 'admin' || userType == 'tenant')
-            {
-                const result = await createAccount(email, decoded, userType, password, fullName, phoneNumber);
+            if (userType == 'admin' || userType == 'tenant') {
+                const result = await createAccount(email, decoded, userType, fullName, phoneNumber);
                 res.status(200).json({ message: 'Account Created' });
             }
-            else
-            {
+            else {
                 res.status(400).json({ message: 'Invalid user role (admin or tenant)' });
             }
         }
@@ -170,7 +148,7 @@ app.post('/login', async (req, res) => {
     console.log("Logging into account");
     const { email, token } = req.body;
 
-    const decoded = jwt.decode(token, {complete: true});
+    const decoded = jwt.decode(token, { complete: true });
 
     console.log(token)
     console.log("decoded:")
@@ -178,14 +156,12 @@ app.post('/login', async (req, res) => {
 
     const user = await getUser(decoded.payload.user_id);
 
-    if(user != null)
-    {
+    if (user != null) {
         res.status(200).json({ message: 'Logged ' });
     }
-    else
-    {
-        res.status(400).json({ message: 'No user found'});
-    } 
+    else {
+        res.status(400).json({ message: 'No user found' });
+    }
 
 });
 
