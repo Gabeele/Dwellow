@@ -15,6 +15,8 @@
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
     "mssql": "^10.0.2",
-    "nodemailer": "^6.9.12"
+    "nodemailer": "^6.9.12",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.0"
   }
 }

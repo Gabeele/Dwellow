@@ -3,14 +3,51 @@ const express = require('express');
 const cors = require('cors');
 const { generateCode, sendCodeByEmail } = require('./helper.js');
 const jwt = require('jsonwebtoken');
+swaggerJsdoc = require("swagger-jsdoc"),
+    swaggerUi = require("swagger-ui-express");
 
 const { checkEmail, createAccount, getUser, deleteUser, updateUser } = require('./connector.js')
 
+// Swagger setup
+const options = {
+    definition: {
+        info: {
+
+            openapi: "3.1.0",
+            title: "Dwellow API Documentation",
+            version: "0.0.1",
+            description:
+                "This is the API documentation for the Dwellow API. It provides information on the endpoints and how to use them.",
+            license: {
+                name: "MIT",
+                url: "https://spdx.org/licenses/MIT.html",
+            },
+            contact: {
+                name: "Dwellow Help",
+                url: "https://dwellow.ca",
+                email: "hello@dwellow.ca",
+            },
+        },
+        servers: [
+            {
+                url: "http://localhost:23450",
+            },
+        ],
+    },
+    apis: ["./routes/*.js"],
+};
+
 // Create an app
 const app = express();
+const specs = swaggerJsdoc(options);
 
 app.use(cors());
 app.use(express.json());
+app.use(
+    "/api-docs",
+    swaggerUi.serve,
+    swaggerUi.setup(specs)
+);
 
 // Server System Routes ------------------------------------------------------
 
@@ -119,6 +156,8 @@ app.post('/account', async (req, res) => {
     const { email, token, userType, fullName, phoneNumber } = req.body;
     try {
         const decoded = jwt.decode(token, { complete: true });
+        console.log(decoded)
+        const token = decoded.payload.user_id;
 
         const emailExists = await checkEmail(email);
 
@@ -128,7 +167,7 @@ app.post('/account', async (req, res) => {
         else {
 
             if (userType == 'admin' || userType == 'tenant') {
-                const result = await createAccount(email, decoded, userType, fullName, phoneNumber);
+                const result = await createAccount(email, token, userType, fullName, phoneNumber);
                 res.status(200).json({ message: 'Account Created' });
             }
             else {
