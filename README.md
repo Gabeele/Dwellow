@@ -1,9 +1,10 @@
 
 # Dwellow
 
-# Project Overview
+## What is it?
+Dwellow is a communication app that connects tenants with property managers, streamlining ticketing, resource management, and interactions. It's designed to make property management more efficient and tenant issues easier to resolve. The platform integrates various tools for effective property oversight and enhanced communication. 
 
-## Project Justification
+## Project Goal
 Dwellow seeks to significantly improve communication between tenants and landowners, streamline efficient property management practices, and enhance tenant satisfaction through a digital platform. By incorporating chatbots and a robust ticketing system for issue tracking, Dwellow addresses common challenges in property management such as delayed communications, inefficient issue resolution, and the absence of data-driven decision-making. The initiative not only proposes immediate solutions but also looks towards future advancements, including the use of AI to automate and optimize the ticketing system. These enhancements aim to mitigate property manager complacency and introduce a more proactive, responsive approach to property management.
 
 ## Future Directions
