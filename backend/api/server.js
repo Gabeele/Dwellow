@@ -28,11 +28,6 @@ const options = {
                 email: "hello@dwellow.ca",
             },
         },
-        servers: [
-            {
-                url: "http://localhost:23450",
-            },
-        ],
     },
     apis: ["./routes/*.js"],
 };
@@ -157,7 +152,7 @@ app.post('/account', async (req, res) => {
     try {
         const decoded = jwt.decode(token, { complete: true });
         console.log(decoded)
-        const token = decoded.payload.user_id;
+        const user_id = decoded.payload.user_id;
 
         const emailExists = await checkEmail(email);
 
@@ -167,7 +162,7 @@ app.post('/account', async (req, res) => {
         else {
 
             if (userType == 'admin' || userType == 'tenant') {
-                const result = await createAccount(email, token, userType, fullName, phoneNumber);
+                const result = await createAccount(email, user_id, userType, fullName, phoneNumber);
                 res.status(200).json({ message: 'Account Created' });
             }
             else {
