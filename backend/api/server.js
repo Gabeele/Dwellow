@@ -35,7 +35,7 @@ const { checkEmail, createAccount, getUser, deleteUser, updateUser } = require('
 
 // Create an app
 const app = express();
-const specs = swaggerJsdoc(options);
+// const specs = swaggerJsdoc(options);
 
 
 app.use(cors());
