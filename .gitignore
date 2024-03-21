@@ -20,6 +20,7 @@
 .env
 .env.local
 .env.*.local
+**/.env
 
 # Ignore macOS system files
 .DS_Store
@@ -59,6 +60,4 @@ node_modules/.cache
 .env.*.local
 
 site/package-lock.json
-frontend/.env
-frontend/.env
-frontend/.env
+**/.env
