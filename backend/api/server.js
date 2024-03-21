@@ -55,13 +55,13 @@ app.get('/', (req, res) => {
 app.get('/health', (req, res) => {
     res.send("Server is online");
 });
-app.use(
-    "/docs",
-    swaggerUi.serve,
-    swaggerUi.setup(specs)
-);
 
 
+// app.use(
+//     "/docs",
+//     swaggerUi.serve,
+//     swaggerUi.setup(specs)
+// );
 
 // Account Routes ------------------------------------------------------------
 
