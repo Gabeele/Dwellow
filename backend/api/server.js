@@ -11,7 +11,6 @@ require('dotenv').config();
 const { checkEmail, createAccount, getUser, deleteUser, updateUser } = require('./connector.js')
 
 // Swagger setup
-<<<<<<< HEAD
 // const options = {
 //     definition: {
 //         info: {
@@ -33,22 +32,6 @@ const { checkEmail, createAccount, getUser, deleteUser, updateUser } = require('
 //     },
 //     apis: ["./routes/*.js"],
 // };
-=======
-const options = {
-    swaggerDefinition: {
-        restapi: '3.0.0',
-        info: {
-            title: 'Dwellow API Documentation',
-            version: '1.0.0',
-            description: 'Documentation for the Dwellow API endpoints',
-        },
-        servers: [
-            { url: process.env.BASE_URL },
-        ],
-    },
-    apis: ['**/*.js'],
-}
->>>>>>> f8e3486e46191f781a80f9ba9b6444c2d40ef3c9
 
 // Create an app
 const app = express();
@@ -57,14 +40,11 @@ const specs = swaggerJsdoc(options);
 
 app.use(cors());
 app.use(express.json());
-<<<<<<< HEAD
 // app.use(
 //     "/api-docs",
 //     swaggerUi.serve,
 //     swaggerUi.setup(specs)
 // );
-=======
->>>>>>> f8e3486e46191f781a80f9ba9b6444c2d40ef3c9
 
 // Server System Routes ------------------------------------------------------
 
