@@ -3,8 +3,10 @@ const express = require('express');
 const cors = require('cors');
 const { generateCode, sendCodeByEmail } = require('./helper.js');
 const jwt = require('jsonwebtoken');
+require('dotenv').config();
 swaggerJsdoc = require("swagger-jsdoc"),
     swaggerUi = require("swagger-ui-express");
+
 
 const { checkEmail, createAccount, getUser, deleteUser, updateUser } = require('./connector.js')
 
@@ -18,15 +20,14 @@ const options = {
             version: "0.0.1",
             description:
                 "This is the API documentation for the Dwellow API. It provides information on the endpoints and how to use them.",
-            license: {
-                name: "MIT",
-                url: "https://spdx.org/licenses/MIT.html",
-            },
             contact: {
-                name: "Dwellow Help",
+                name: "Dwellow",
                 url: "https://dwellow.ca",
                 email: "hello@dwellow.ca",
             },
+            servers: [
+                { url: process.env.BASE_URL }
+            ],
         },
     },
     apis: ["./routes/*.js"],
