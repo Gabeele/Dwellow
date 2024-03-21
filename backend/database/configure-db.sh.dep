@@ -1,9 +1,0 @@
-#!/bin/bash
-# Initialize the database using the dbscript.sql
-
-# Wait for the SQL Server to start up
-echo "Waiting for SQL Server to start..."
-sleep 30s
-
-# Execute the SQL script
-/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P $MSSQL_SA_PASSWORD -d master -i /app/dbscript.sql
