@@ -1,8 +1,8 @@
 import { Text, View, TextInput,Pressable } from "react-native";
-import { router } from 'expo-router';
+import { router, Link } from 'expo-router';
 import React, { useState } from 'react'
 import { app } from "../firebaseConfig";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, getAuth } from 'firebase/auth';
+import { signInWithEmailAndPassword, getAuth } from 'firebase/auth';
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -43,11 +43,6 @@ export default function Login() {
         console.error('Error authenticating with firebase:', error);
       };
   }
-
-  const onCreateAccountPressed = async(e) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  }
-  
   // page view
   return (
     <View className='items-center'>
@@ -69,12 +64,18 @@ export default function Login() {
         placeholder='Enter Password'
         className=''
       />
+
+      <Text>
+        Don't have an account?
+        <Pressable>
+            <Text className="text-decoration-line: underline"><Link href="/register">Create Account</Link></Text>
+        </Pressable>
+      </Text>
       <Pressable 
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
         onPress={onLoginPressed}>
           <button>Login</button>
       </Pressable>
-
     </View>
   );
 }

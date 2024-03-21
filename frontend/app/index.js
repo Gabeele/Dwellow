@@ -6,6 +6,7 @@ export default function Index() {
     <View className='items-center'>
         <Text>Temp Page - Navigation</Text>
         <Text><Link href="/login">Login</Link></Text>
+        <Text><Link href="/register">Create Account</Link></Text>
     </View>
   );
 }
