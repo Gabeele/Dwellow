@@ -30,7 +30,6 @@ yarn-error.*
 
 # local env files
 .env*.local
-firebaseConfig.js
 .env
 
 # typescript
