@@ -4,47 +4,18 @@ const cors = require('cors');
 const { generateCode, sendCodeByEmail } = require('./helper.js');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
-// swaggerJsdoc = require("swagger-jsdoc"),
-//     swaggerUi = require("swagger-ui-express");
+
 
 
 const { checkEmail, createAccount, getUser, deleteUser, updateUser } = require('./connector.js')
 
-// Swagger setup
-// const options = {
-//     definition: {
-//         info: {
-
-//             openapi: "3.1.0",
-//             title: "Dwellow API Documentation",
-//             version: "0.0.1",
-//             description:
-//                 "This is the API documentation for the Dwellow API. It provides information on the endpoints and how to use them.",
-//             contact: {
-//                 name: "Dwellow",
-//                 url: "https://dwellow.ca",
-//                 email: "hello@dwellow.ca",
-//             },
-//             servers: [
-//                 { url: process.env.BASE_URL }
-//             ],
-//         },
-//     },
-//     apis: ["./routes/*.js"],
-// };
-
 // Create an app
 const app = express();
-// const specs = swaggerJsdoc(options);
+const specs = swaggerJsdoc(options);
 
 
 app.use(cors());
 app.use(express.json());
-// app.use(
-//     "/api-docs",
-//     swaggerUi.serve,
-//     swaggerUi.setup(specs)
-// );
 
 // Server System Routes ------------------------------------------------------
 
@@ -56,12 +27,6 @@ app.get('/health', (req, res) => {
     res.send("Server is online");
 });
 
-
-// app.use(
-//     "/docs",
-//     swaggerUi.serve,
-//     swaggerUi.setup(specs)
-// );
 
 // Account Routes ------------------------------------------------------------
 
