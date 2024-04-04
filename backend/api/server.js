@@ -1,21 +1,39 @@
 
 const express = require('express');
+const swaggerJsDoc = require('swagger-jsdoc');
+const swaggerUI = require('swagger-ui-express');
 const cors = require('cors');
 const { generateCode, sendCodeByEmail } = require('./helper.js');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 
-
 const { checkEmail, createAccount, getUser, deleteUser, updateUser } = require('./connector.js')
 
 // Create an app
 const app = express();
-const specs = swaggerJsdoc(options);
+const swaggerOptions = {
+    swaggerDefinition: {
+        info: {
+            title: 'Dwellow API',
+            version: '1.0.0',
+            description: 'Dwellow API Information',
+            contact: {
+                name: 'Dwellow'
 
+            },
+            servers: ['http://127.0.0.1:23450'],
+        }
+    },
+    apis: ['server.js']
+
+};
+
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
 
 app.use(cors());
 app.use(express.json());
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs, { explorer: false }));
 
 // Server System Routes ------------------------------------------------------
 
@@ -28,8 +46,26 @@ app.get('/health', (req, res) => {
 });
 
 
+
 // Account Routes ------------------------------------------------------------
 
+/**
+ * @swagger
+ * /account/{id}:
+ *  get:
+ *      description: Use to get account information
+ *      parameters:
+ *          - name: id
+ *          - token: token
+ *            in: headers
+ *      responses:
+ *          '200':
+ *              description: A successful response
+ *          '400':
+ *              description: No user found with id
+ *          '401':
+ *              description: Unauthorized
+ */
 app.get('/account/:id', async (req, res) => {
     console.log("Getting account information");
     const { id } = req.params;
