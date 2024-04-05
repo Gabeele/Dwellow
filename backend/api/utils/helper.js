@@ -1,17 +1,8 @@
 require("dotenv").config();
 const nodemailer = require("nodemailer");
+const logger = require("./logger");
 
-// Create a function to get the user and return a user 
-function getUser(token) {
-    const user = {
-        id: 1,
-        email: "",
-    };
-
-    return user
-
-}
-
+// Generates a unique code for the invitation
 function generateCode() {
     const length = 6;
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';  // Allows for 1402410240 unique codes
@@ -23,16 +14,16 @@ function generateCode() {
             const randomIndex = Math.floor(Math.random() * characters.length);
             result += characters[randomIndex];
         }
-        // Add to db and check if unique
+        // TODO: Add to db and check if unique
     } while (isUnique);
+
+    logger.info(`Generated code: ${result}`);
 
     return result;
 }
 
+// Sends the code to the user's email
 async function sendCodeByEmail(email, code) {
-
-    console.log(process.env.INVITATION_EMAIL);
-    console.log(process.env.INVITATION_PASSWORD);
 
     const subject = "Invitation Code";
     const text = `Your invitation code is: ${code}`;
@@ -56,10 +47,10 @@ async function sendCodeByEmail(email, code) {
             text: text, // plain text body
         });
 
-        console.log(`Message sent: ${info.messageId}`);
+        logger.info(`Message sent: ${info.messageId}`);
         return `Message sent: ${info.messageId}`;
     } catch (error) {
-        console.error(error);
+        logger.error(`Something went wrong in the sendmail method. Error: ${error.message}`);
         throw new Error(
             `Something went wrong in the sendmail method. Error: ${error.message}`
         );
@@ -68,7 +59,6 @@ async function sendCodeByEmail(email, code) {
 }
 
 module.exports = {
-    getUser,
     generateCode,
     sendCodeByEmail
 
