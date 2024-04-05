@@ -21,7 +21,7 @@ const authenticate = async (req, res, next) => {
         }
 
         const decodedToken = await admin.auth().verifyIdToken(token);
-        req.user = decodedToken;
+        req.user = decodedToken;    // TODO: Maybe add a role here so we can determine who can access what
         logger.info(`User ${req.user.user_id} authenticated.`);
         next();
     } catch (error) {
