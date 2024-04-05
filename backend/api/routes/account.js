@@ -5,138 +5,222 @@ const jwt = require('jsonwebtoken');
 const { getUser, deleteUser, updateUser, createAccount, checkEmail } = require('../utils/connector.js');
 
 const router = express.Router();
+/**
+ * @swagger
+ * /account/{id}:
+ *   get:
+ *     description: Use to get account information
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Numeric ID of the user to get.
+ *         schema:
+ *           type: integer
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: A successful response with user data.
+ *       '400':
+ *         description: No user found with id.
+ *       '401':
+ *         description: Unauthorized
+ */
+router.get('/:id', async (req, res) => {
+    const { id } = req.params;
+    const userId = req.user.user_id; // Assuming req.user is populated with user_id from decoded token
+
+    try {
+        const user = await getUser(userId);
+
+        if (!user) {
+            return res.status(400).json({ message: `No user found with id ${id}` });
+        }
+
+        if (user.recordset[0].user_id !== Number(id)) {
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        res.status(200).json(user.recordset);
+    } catch (error) {
+        console.error('Error getting account information:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 
 /**
  * @swagger
  * /account/{id}:
- *  get:
- *      description: Use to get account information
- *      parameters:
- *          - name: id
- *          - token: token
- *            in: headers
- *      responses:
- *          '200':
- *              description: A successful response
- *          '400':
- *              description: No user found with id
- *          '401':
- *              description: Unauthorized
+ *   put:
+ *     description: Update a user account.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Numeric ID of the user to update.
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: New email of the user.
+ *               userType:
+ *                 type: string
+ *                 description: New type of the user (admin or tenant).
+ *               fullName:
+ *                 type: string
+ *                 description: New full name of the user.
+ *               phoneNumber:
+ *                 type: string
+ *                 description: New phone number of the user.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Account updated successfully.
+ *       '400':
+ *         description: Error updating user or invalid user role.
+ *       '401':
+ *         description: Unauthorized attempt to update an account.
+ *       '500':
+ *         description: Internal server error.
  */
-router.get('/:id', async (req, res) => {
-    console.log("Getting account information");
-    const { id } = req.params;
-
-    const decoded = jwt.decode(token, { complete: true });
-
-    const user = await getUser(decoded);
-
-    if (user != null) {
-        if (user.recordset[0].user_id != Number(id)) {
-            res.status(401).json({ message: 'Unauthorized' });
-        }
-        else {
-            res.status(200).json(user.recordset);
-        }
-    }
-    else {
-        res.status(400).json({ message: 'No user found with id' + id });
-    }
-});
-
 router.put('/:id', async (req, res) => {
-    console.log("Updating account information");
-
     const { id } = req.params;
-    const { email, token, userType, fullName, phoneNumber } = req.body;
-    // const { token } = req.headers;
-    // we probably want to check what user is currently logged in to update an account
-    // i.e. anyone can update their own but admins can update any tenant
+    const { email, userType, fullName, phoneNumber } = req.body;
+    const userId = req.user.user_id; // Assuming req.user contains user_id from the decoded token
 
-    const decoded = jwt.decode(token, { complete: true });
-
-    const user = await getUser(decoded);
-
-    if (user != null) {
-        if (user.recordset[0].user_id != Number(id)) {
-            res.status(401).json({ message: 'Unauthorized' });
-        }
-        else {
-            if (userType == 'admin' || userType == 'tenant') {
-                const updated = await updateUser(email, decoded, userType, fullName, phoneNumber);
-                if (updated) {
-                    res.status(200).json({ message: 'Account updated' });
-                }
-                else {
-                    res.status(400).json({ message: 'Error updated user ' + id });
-                }
-            }
-            else {
-                res.status(400).json({ message: 'Invalid user role (admin or tenant)' });
-            }
-        }
-    }
-    else {
-        res.status(400).json({ message: 'No user found with id ' + id });
-    }
-});
-
-router.delete('/:id', async (req, res) => {
-    console.log("Deleting account information");
-    const { id } = req.params;
-    // const { token } = req.headers;
-    // we probably want to check what user is currently logged in to delete an account
-    // i.e. anyone can delete their own but admins can delete any tenant
-
-    const decoded = jwt.decode(token, { complete: true });
-
-    const user = await getUser(decoded);
-
-    if (user != null) {
-        if (user.recordset[0].user_id != Number(id)) {
-            res.status(401).json({ message: 'Unauthorized' });
-        }
-        else {
-            const deleted = await deleteUser(decoded);
-            if (deleted) {
-                res.status(200).json({ message: 'Account deleted' });
-            }
-            else {
-                res.status(400).json({ message: 'Error deleting user' + id });
-            }
-        }
-    }
-    else {
-        res.status(400).json({ message: 'No user found with id ' + id });
-    }
-});
-
-router.post('/', async (req, res) => {
-    console.log("Creating account");
-
-    const { email, token, userType, fullName, phoneNumber } = req.body;
     try {
-        const decoded = jwt.decode(token, { complete: true });
-        console.log(decoded)
-        const user_id = decoded.payload.user_id;
+        // Validate user authorization (ensure the user is updating their own account or has admin privileges)
+        const user = await getUser(userId);
 
+        if (!user || user.recordset[0].user_id !== Number(id)) {
+            return res.status(user ? 401 : 400).json({ message: user ? 'Unauthorized' : `No user found with id ${id}` });
+        }
+
+        // Optionally, validate userType or other fields as required
+        if (userType && userType !== 'admin' && userType !== 'tenant') {
+            return res.status(400).json({ message: 'Invalid user role (admin or tenant)' });
+        }
+
+        // Update the account
+        const updated = await updateUser(email, userId, userType, fullName, phoneNumber);
+        if (updated) {
+            res.status(200).json({ message: 'Account updated successfully' });
+        } else {
+            res.status(400).json({ message: 'Error updating the account' });
+        }
+    } catch (error) {
+        console.error('Error updating account:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+/**
+ * @swagger
+ * /account/{id}:
+ *   delete:
+ *     description: Delete a user account.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Numeric ID of the user to delete.
+ *         schema:
+ *           type: integer
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Account deleted successfully.
+ *       '400':
+ *         description: No user found with the provided ID.
+ *       '401':
+ *         description: Unauthorized attempt to delete an account.
+ *       '500':
+ *         description: Internal server error.
+ */
+router.delete('/:id', async (req, res) => {
+    const { id } = req.params;
+    const userId = req.user.user_id; // Assume req.user contains user_id
+
+    try {
+        // Fetch the user to verify existence and authorization
+        const user = await getUser(userId);
+
+        if (!user || user.recordset[0].user_id !== Number(id)) {
+            return res.status(user ? 401 : 400).json({ message: user ? 'Unauthorized' : `No user found with id ${id}` });
+        }
+
+        // Delete the account
+        const deleted = await deleteUser(userId);
+        if (deleted) {
+            res.status(200).json({ message: 'Account deleted successfully' });
+        } else {
+            res.status(400).json({ message: 'Error deleting the account' });
+        }
+    } catch (error) {
+        console.error('Error deleting account:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+/**
+ * @swagger
+ * /account:
+ *   post:
+ *     description: Create a new account
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               userType:
+ *                 type: string
+ *               fullName:
+ *                 type: string
+ *               phoneNumber:
+ *                 type: string
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: Account created successfully.
+ *       '400':
+ *         description: Email already exists or invalid user role.
+ *       '500':
+ *         description: Internal Server Error
+ */
+router.post('/', async (req, res) => {
+    const { email, userType, fullName, phoneNumber } = req.body;
+    const userId = req.user.user_id; // Use userId from authenticated user
+
+    try {
         const emailExists = await checkEmail(email);
 
         if (emailExists) {
-            res.status(400).json({ message: 'Email already exists' });
+            return res.status(400).json({ message: 'Email already exists' });
         }
-        else {
 
-            if (userType == 'admin' || userType == 'tenant') {
-                const result = await createAccount(email, user_id, userType, fullName, phoneNumber);
-                res.status(200).json({ message: 'Account Created' });
-            }
-            else {
-                res.status(400).json({ message: 'Invalid user role (admin or tenant)' });
-            }
+        if (userType !== 'admin' && userType !== 'tenant') {
+            return res.status(400).json({ message: 'Invalid user role (admin or tenant)' });
         }
+
+        const result = await createAccount(email, userId, userType, fullName, phoneNumber);
+        res.status(200).json({ message: 'Account Created', result });
     } catch (error) {
-        //error, will just display the sql error thats recieved
         console.error('Error in account creation:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }

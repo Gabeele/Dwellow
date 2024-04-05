@@ -45,6 +45,8 @@ app.get('/health', (req, res) => {
     res.send("Server is online");
 });
 
+// app.use('') // This would be routes for public apis
+
 // Routing  -------------------------------------------------------
 app.use('/account', authenticate, accountRoutes);
 
