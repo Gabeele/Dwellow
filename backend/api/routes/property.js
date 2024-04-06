@@ -12,7 +12,8 @@ const { getProperties,
     updateUnit,
     deleteUnit,
     associateUnitWithUser,
-    saveCodeToDB, } = require('../utils/connector');
+    saveCodeToDB,
+    deleteInviteCode } = require('../utils/connector');
 
 /**
  * @swagger
@@ -558,5 +559,60 @@ router.post('/properties/:propertyId/units/:unitId/associate', async (req, res) 
         res.status(500).send('Error associating unit with user');
     }
 });
+
+/**
+ * @swagger
+ * /properties/{propertyId}/units/{unitId}/invite/{code}:
+ *   delete:
+ *     tags: [Properties]
+ *     summary: Delete an invite code
+ *     description: Allows admins to delete an invite code for a unit. Admin only.
+ *     parameters:
+ *       - in: path
+ *         name: propertyId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Numeric ID of the property
+ *       - in: path
+ *         name: unitId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Numeric ID of the unit
+ *       - in: path
+ *         name: code
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The invite code to be deleted
+ *     responses:
+ *       200:
+ *         description: Invite code deleted successfully
+ *       403:
+ *         description: Unauthorized access
+ *       404:
+ *         description: Invite code not found
+ *       500:
+ *         description: Server error
+ */
+
+router.delete('/properties/:propertyId/units/:unitId/invite/:code', isAdmin, async (req, res) => {
+    try {
+        const { propertyId, unitId, code } = req.params;
+        const result = await deleteInviteCode(req.user.user_id, propertyId, unitId, code);
+        if (result) {
+            logger.info(`Invite code '${code}' deleted successfully for unit ID: ${unitId} of property ID: ${propertyId}`);
+            res.send('Invite code deleted successfully');
+        } else {
+            logger.warn(`Failed to delete invite code '${code}' for unit ID: ${unitId} of property ID: ${propertyId}`);
+            res.status(404).send('Invite code not found');
+        }
+    } catch (error) {
+        logger.error(`Error deleting invite code '${req.params.code}' by admin ${req.user.user_id}: ${error}`);
+        res.status(500).send('Error deleting invite code');
+    }
+});
+
 
 module.exports = router;
