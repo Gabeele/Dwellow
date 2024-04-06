@@ -213,8 +213,13 @@ async function saveCodeToDB(code, propertyId, unitId) {
 
 }
 
+async function deleteInviteCode(user_id, propertyId, unitId, code) {
+
+}
+
 
 module.exports = {
+    deleteInviteCode,
     getProperties,
     createProperty,
     updateProperty,
