@@ -168,10 +168,64 @@ async function getAnnouncementById(announcementId) {
 
 }
 
-module.exports = { getUserAnnouncements, createAnnouncement, deleteAnnouncement, getAnnouncementById };
+async function getProperties(user_id) {
+
+}
+
+async function createProperty(user_id, propertyData) {
+
+}
+
+async function updateProperty(user_id, propertyId, propertyData) {
+
+}
+
+async function deleteProperty(user_id, propertyId) {
+
+}
+
+async function getPropertyAndUnits(user_id, propertyId) {
+
+}
+
+async function getUnitById(user_id, unitId) {
+
+}
+
+async function createUnit(user_id, propertyId, unitData) {
+
+}
+
+async function updateUnit(user_id, unitId, unitData) {
+
+}
+
+async function deleteUnit(user_id, unitId) {
+
+}
+
+
+async function associateUnitWithUser(user_id, unitId, code) {
+
+}
+
+async function saveCodeToDB(code, propertyId, unitId) {
+
+}
 
 
 module.exports = {
+    getProperties,
+    createProperty,
+    updateProperty,
+    deleteProperty,
+    getPropertyAndUnits,
+    getUnitById,
+    createUnit,
+    updateUnit,
+    deleteUnit,
+    associateUnitWithUser,
+    saveCodeToDB,
     getUserAnnouncements,
     createAnnouncement,
     deleteAnnouncement,
