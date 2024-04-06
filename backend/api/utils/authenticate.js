@@ -1,4 +1,5 @@
 require('dotenv').config();
+const getRole = require('./connector');
 const logger = require('./logger');
 const admin = require('firebase-admin');
 
@@ -21,7 +22,9 @@ const authenticate = async (req, res, next) => {
         }
 
         const decodedToken = await admin.auth().verifyIdToken(token);
-        req.user = decodedToken;    // TODO: Maybe add a role here so we can determine who can access what
+        req.user = decodedToken;
+        req.role = getRole(req.user.user_id);   // Adds a role to the request object
+
         logger.info(`User ${req.user.user_id} authenticated.`);
         next();
     } catch (error) {

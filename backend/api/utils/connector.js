@@ -64,6 +64,24 @@ async function checkEmail(email) {
 }
 
 
+async function getRole(userId) {
+
+    try {
+        await sql.connect(config);
+        const query = `SELECT user_type FROM users WHERE token = '${token}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching user with token ${token}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+};
+
 // gets any user from the database with a specific token, but since they are unique it will always be 1 user
 async function getUser(token) {
     try {
@@ -134,8 +152,31 @@ async function updateUser(email, token, userType, password, fullName, phoneNumbe
     }
 }
 
+async function getUserAnnouncements(userId) {
+
+}
+
+async function createAnnouncement(announcement) {
+
+}
+
+async function deleteAnnouncement(announcementId) {
+
+}
+
+async function getAnnouncementById(announcementId) {
+
+}
+
+module.exports = { getUserAnnouncements, createAnnouncement, deleteAnnouncement, getAnnouncementById };
+
 
 module.exports = {
+    getUserAnnouncements,
+    createAnnouncement,
+    deleteAnnouncement,
+    getAnnouncementById,
+    getRole,
     executeQuery,
     createAccount,
     checkEmail,

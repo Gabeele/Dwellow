@@ -5,6 +5,8 @@ const swaggerUI = require('swagger-ui-express');
 const cors = require('cors');
 const accountRoutes = require('./routes/account');
 const loginRoutes = require('./routes/login');
+const announcementRoutes = require('./routes/announcement');
+const propertyRoutes = require('./routes/property');
 const authenticate = require('./utils/authenticate');
 const logger = require('./utils/logger');
 
@@ -63,7 +65,7 @@ const swaggerUIOptions = {
 
 app.use(cors());
 app.use(express.json());
-app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs, swaggerUIOptions));
+app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs, swaggerUIOptions));
 
 // Middleware to log all requests
 app.use((req, res, next) => {
@@ -88,6 +90,8 @@ app.get('/health', (req, res) => {
 // Routing  -------------------------------------------------------
 app.use('/account', authenticate, accountRoutes);
 app.use('/login', authenticate, loginRoutes);
+app.use('/announcements', authenticate, announcementRoutes);
+app.use('/properties', authenticate, propertyRoutes);
 
 
 // Error handling middleware
