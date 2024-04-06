@@ -1,0 +1,159 @@
+const express = require('express');
+const router = express.Router();
+const logger = require('../utils/logger');
+const { getUserAnnouncements, createAnnouncement, deleteAnnouncement, getAnnouncementById } = require('../utils/connector');
+
+/**
+ * @swagger
+ * tags:
+ *   - name: Announcements
+ *     description: API endpoints related to announcements
+ */
+
+/**
+ * @swagger
+ * /announcements:
+ *   get:
+ *     tags: [Announcements]
+ *     summary: Retrieves all announcements for a user
+ *     description: Returns a list of all announcements associated with the requesting user's ID.
+ *     responses:
+ *       200:
+ *         description: A list of announcements
+ *       500:
+ *         description: Error message
+ */
+router.get('/', async (req, res) => {
+    try {
+        const userId = req.user.user_id;
+        logger.info(`Fetching announcements for user ${userId}`);
+        const announcements = await getUserAnnouncements(userId);
+        res.json(announcements);
+    } catch (error) {
+        logger.error(`Error fetching announcements: ${error}`);
+        res.status(500).send('Error fetching announcements');
+    }
+});
+
+/**
+ * @swagger
+ * /announcements:
+ *   post:
+ *     tags: [Announcements]
+ *     summary: Creates an announcement (admin only)
+ *     description: Allows admins to create a new announcement by providing announcement details.
+ *     parameters:
+ *       - in: body
+ *         name: announcement
+ *         description: Announcement to create
+ *         required: true
+ *         schema:
+ *           type: object
+ *           required:
+ *             - title
+ *             - text
+ *             - userId
+ *             - date
+ *             - time
+ *             - propertyId
+ *           properties:
+ *             title:
+ *               type: string
+ *             text:
+ *               type: string
+ *             userId:
+ *               type: integer
+ *             datetime:
+ *               type: datetime-string
+ *             propertyId:
+ *               type: integer
+ *     responses:
+ *       200:
+ *         description: Announcement created successfully
+ *       403:
+ *         description: Unauthorized
+ *       500:
+ *         description: Error message
+ */
+router.post('/', async (req, res) => {
+    try {
+        if (req.role !== 'admin') {
+            logger.warn('Unauthorized attempt to create announcement');
+            return res.status(403).send('Unauthorized');
+        }
+        logger.info('Creating announcement');
+        await createAnnouncement(req.body);
+        res.send('Announcement created successfully');
+    } catch (error) {
+        logger.error(`Error creating announcement: ${error}`);
+        res.status(500).send('Error creating announcement');
+    }
+});
+
+/**
+ * @swagger
+ * /announcements/{id}:
+ *   delete:
+ *     tags: [Announcements]
+ *     summary: Deletes an announcement by ID (admin only)
+ *     description: Allows admins to delete an announcement by specifying its ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         type: integer
+ *         description: The ID of the announcement to delete
+ *     responses:
+ *       200:
+ *         description: Announcement deleted successfully
+ *       403:
+ *         description: Unauthorized
+ *       500:
+ *         description: Error message
+ */
+router.delete('/:id', async (req, res) => {
+    try {
+        if (req.role !== 'admin') {
+            logger.warn('Unauthorized attempt to delete announcement');
+            return res.status(403).send('Unauthorized');
+        }
+        logger.info(`Deleting announcement with ID ${req.params.id}`);
+        await deleteAnnouncement(req.params.id);
+        res.send('Announcement deleted successfully');
+    } catch (error) {
+        logger.error(`Error deleting announcement: ${error}`);
+        res.status(500).send('Error deleting announcement');
+    }
+});
+
+/**
+ * @swagger
+ * /announcements/{id}:
+ *   get:
+ *     tags: [Announcements]
+ *     summary: Retrieves an announcement by ID
+ *     description: Fetches a single announcement by its ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         type: integer
+ *         description: The ID of the announcement to retrieve
+ *     responses:
+ *       200:
+ *         description: An announcement object
+ *       500:
+ *         description: Error message
+ */
+router.get('/:id', async (req, res) => {
+    try {
+        logger.info(`Fetching announcement with ID ${req.params.id}`);
+        const announcement = await getAnnouncementById(req.params.id);
+        res.json(announcement);
+    } catch (error) {
+        logger.error(`Error fetching the announcement: ${error}`);
+        res.status(500).send('Error fetching the announcement');
+    }
+});
+
+module.exports = router;
