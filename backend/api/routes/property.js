@@ -26,7 +26,7 @@ const { getProperties,
 // Middleware to verify that the rest of the routes are only accessible to admins
 const isAdmin = (req, res, next) => {
     if (req.role !== 'admin') {
-        logger.warn(`User with ID: ${req.user.user_id} attempted to perform an admin action`);
+        logger.warn(`User with ID: ${req.user_id} attempted to perform an admin action`);
         return res.status(403).send('Unauthorized: This action is allowed for admin only');
     }
     next();
@@ -56,7 +56,7 @@ const isAdmin = (req, res, next) => {
 
 router.get('/properties', isAdmin, async (req, res) => {
     try {
-        const properties = await getProperties(req.user.user_id);
+        const properties = await getProperties(req.user_id);
         logger.info('Fetched all properties');
         res.json(properties);
     } catch (error) {
@@ -103,7 +103,7 @@ router.get('/properties', isAdmin, async (req, res) => {
 
 router.get('/properties/:propertyId/units', isAdmin, async (req, res) => {
     try {
-        const propertyAndUnits = await getPropertyAndUnits(req.user.user_id, req.params.propertyId);
+        const propertyAndUnits = await getPropertyAndUnits(req.user_id, req.params.propertyId);
         if (!propertyAndUnits) {
             logger.warn(`Property with ID: ${req.params.propertyId} not found`);
             return res.status(404).send('Property not found');
@@ -153,7 +153,7 @@ router.get('/properties/:propertyId/units', isAdmin, async (req, res) => {
 
 router.get('/properties/:propertyId/units/:unitId', isAdmin, async (req, res) => {
     try {
-        const unit = await getUnitById(req.user.user_id, req.params.unitId);
+        const unit = await getUnitById(req.user_id, req.params.unitId);
         if (!unit) {
             logger.warn(`Unit with ID: ${req.params.unitId} not found`);
             return res.status(404).send('Unit not found');
@@ -197,14 +197,14 @@ router.post('/properties', isAdmin, async (req, res) => {
     try {
         const newProperty = await createProperty(req.body);
         if (newProperty) {
-            logger.info(`Admin with ID: ${req.user.user_id} created a new property with ID: ${newProperty.id}`);
+            logger.info(`Admin with ID: ${req.user_id} created a new property with ID: ${newProperty.id}`);
             res.status(201).json(newProperty);
         } else {
-            logger.warn(`Property creation failed by admin ${req.user.user_id}`);
+            logger.warn(`Property creation failed by admin ${req.user_id}`);
             res.status(400).send('Failed to create property');
         }
     } catch (error) {
-        logger.error(`Error creating property by admin ${req.user.user_id}: ${error}`);
+        logger.error(`Error creating property by admin ${req.user_id}: ${error}`);
         res.status(500).send('Error creating property');
     }
 });
@@ -243,16 +243,16 @@ router.post('/properties', isAdmin, async (req, res) => {
  */
 router.put('/properties/:propertyId', isAdmin, async (req, res) => {
     try {
-        const updatedProperty = await updateProperty(req.user.user_id, req.params.propertyId, req.body);
+        const updatedProperty = await updateProperty(req.user_id, req.params.propertyId, req.body);
         if (updatedProperty) {
-            logger.info(`Admin with ID: ${req.user.user_id} updated property ID: ${req.params.propertyId}`);
+            logger.info(`Admin with ID: ${req.user_id} updated property ID: ${req.params.propertyId}`);
             res.json(updatedProperty);
         } else {
-            logger.warn(`Property update failed for ID: ${req.params.propertyId} by admin ${req.user.user_id}`);
+            logger.warn(`Property update failed for ID: ${req.params.propertyId} by admin ${req.user_id}`);
             res.status(400).send('Failed to update property');
         }
     } catch (error) {
-        logger.error(`Error updating property by admin ${req.user.user_id}: ${error}`);
+        logger.error(`Error updating property by admin ${req.user_id}: ${error}`);
         res.status(500).send('Error updating property');
     }
 });
@@ -283,16 +283,16 @@ router.put('/properties/:propertyId', isAdmin, async (req, res) => {
  */
 router.delete('/properties/:propertyId', isAdmin, async (req, res) => {
     try {
-        const result = await deleteProperty(req.user.user_id, req.params.propertyId);
+        const result = await deleteProperty(req.user_id, req.params.propertyId);
         if (result) {
-            logger.info(`Admin with ID: ${req.user.user_id} deleted property ID: ${req.params.propertyId}`);
+            logger.info(`Admin with ID: ${req.user_id} deleted property ID: ${req.params.propertyId}`);
             res.send('Property deleted successfully');
         } else {
-            logger.warn(`Property deletion failed for ID: ${req.params.propertyId} by admin ${req.user.user_id}`);
+            logger.warn(`Property deletion failed for ID: ${req.params.propertyId} by admin ${req.user_id}`);
             res.status(400).send('Failed to delete property');
         }
     } catch (error) {
-        logger.error(`Error deleting property by admin ${req.user.user_id}: ${error}`);
+        logger.error(`Error deleting property by admin ${req.user_id}: ${error}`);
         res.status(500).send('Error deleting property');
     }
 });
@@ -331,16 +331,16 @@ router.delete('/properties/:propertyId', isAdmin, async (req, res) => {
  */
 router.post('/properties/:propertyId/units', isAdmin, async (req, res) => {
     try {
-        const newUnit = await createUnit(req.user.user_id, req.params.propertyId, req.body);
+        const newUnit = await createUnit(req.user_id, req.params.propertyId, req.body);
         if (newUnit) {
-            logger.info(`Admin with ID: ${req.user.user_id} created a unit with ID: ${newUnit.id} for property ID: ${req.params.propertyId}`);
+            logger.info(`Admin with ID: ${req.user_id} created a unit with ID: ${newUnit.id} for property ID: ${req.params.propertyId}`);
             res.status(201).json(newUnit);
         } else {
-            logger.warn(`Unit creation failed for property ID: ${req.params.propertyId} by admin ${req.user.user_id}`);
+            logger.warn(`Unit creation failed for property ID: ${req.params.propertyId} by admin ${req.user_id}`);
             res.status(400).send('Failed to create unit');
         }
     } catch (error) {
-        logger.error(`Error creating unit by admin ${req.user.user_id}: ${error}`);
+        logger.error(`Error creating unit by admin ${req.user_id}: ${error}`);
         res.status(500).send('Error creating unit');
     }
 });
@@ -383,16 +383,16 @@ router.post('/properties/:propertyId/units', isAdmin, async (req, res) => {
  */
 router.put('/properties/:propertyId/units/:unitId', isAdmin, async (req, res) => {
     try {
-        const updatedUnit = await updateUnit(req.user.user_id, req.params.unitId, req.body);
+        const updatedUnit = await updateUnit(req.user_id, req.params.unitId, req.body);
         if (updatedUnit) {
-            logger.info(`Admin with ID: ${req.user.user_id} updated unit ID: ${req.params.unitId}`);
+            logger.info(`Admin with ID: ${req.user_id} updated unit ID: ${req.params.unitId}`);
             res.json(updatedUnit);
         } else {
-            logger.warn(`Unit update failed for ID: ${req.params.unitId} by admin ${req.user.user_id}`);
+            logger.warn(`Unit update failed for ID: ${req.params.unitId} by admin ${req.user_id}`);
             res.status(400).send('Failed to update unit');
         }
     } catch (error) {
-        logger.error(`Error updating unit by admin ${req.user.user_id}: ${error}`);
+        logger.error(`Error updating unit by admin ${req.user_id}: ${error}`);
         res.status(500).send('Error updating unit');
     }
 });
@@ -427,16 +427,16 @@ router.put('/properties/:propertyId/units/:unitId', isAdmin, async (req, res) =>
  */
 router.delete('/properties/:propertyId/units/:unitId', isAdmin, async (req, res) => {
     try {
-        const result = await deleteUnit(req.user.user_id, req.params.unitId);
+        const result = await deleteUnit(req.user_id, req.params.unitId);
         if (result) {
-            logger.info(`Admin with ID: ${req.user.user_id} deleted unit ID: ${req.params.unitId}`);
+            logger.info(`Admin with ID: ${req.user_id} deleted unit ID: ${req.params.unitId}`);
             res.send('Unit deleted successfully');
         } else {
-            logger.warn(`Unit deletion failed for ID: ${req.params.unitId} by admin ${req.user.user_id}`);
+            logger.warn(`Unit deletion failed for ID: ${req.params.unitId} by admin ${req.user_id}`);
             res.status(400).send('Failed to delete unit');
         }
     } catch (error) {
-        logger.error(`Error deleting unit by admin ${req.user.user_id}: ${error}`);
+        logger.error(`Error deleting unit by admin ${req.user_id}: ${error}`);
         res.status(500).send('Error deleting unit');
     }
 });
@@ -486,14 +486,14 @@ router.post('/properties/:propertyId/units/:unitId/invite', isAdmin, async (req,
         const inviteSent = await sendCodeByEmail(email, code);
         if (inviteSent) {
             await saveCodeToDB(code, req.params.propertyId, req.params.unitId);
-            logger.info(`Admin with ID: ${req.user.user_id} sent an invite code to ${email}`);
+            logger.info(`Admin with ID: ${req.user_id} sent an invite code to ${email}`);
             res.send('Invite code sent successfully');
         } else {
-            logger.warn(`Failed to send invite code to ${email} by admin ${req.user.user_id}`);
+            logger.warn(`Failed to send invite code to ${email} by admin ${req.user_id}`);
             res.status(400).send('Failed to send invite code');
         }
     } catch (error) {
-        logger.error(`Error sending invite code by admin ${req.user.user_id}: ${error}`);
+        logger.error(`Error sending invite code by admin ${req.user_id}: ${error}`);
         res.status(500).send('Error sending invite code');
     }
 });
@@ -542,8 +542,8 @@ router.post('/properties/:propertyId/units/:unitId/invite', isAdmin, async (req,
 router.post('/properties/:propertyId/units/:unitId/associate', async (req, res) => {
     try {
         const { userId, code } = req.body;
-        if (req.user.user_id !== userId) {
-            logger.warn(`User with ID: ${req.user.user_id} attempted to use a code for a different user`);
+        if (req.user_id !== userId) {
+            logger.warn(`User with ID: ${req.user_id} attempted to use a code for a different user`);
             return res.status(403).send('Unauthorized: Cannot use code for a different user');
         }
         const associationResult = await associateUnitWithUser(userId, req.params.unitId, code);
@@ -555,7 +555,7 @@ router.post('/properties/:propertyId/units/:unitId/associate', async (req, res) 
             res.status(400).send('Failed to associate unit with user or invalid code');
         }
     } catch (error) {
-        logger.error(`Error associating user ${req.user.user_id} with unit: ${error}`);
+        logger.error(`Error associating user ${req.user_id} with unit: ${error}`);
         res.status(500).send('Error associating unit with user');
     }
 });
@@ -600,7 +600,7 @@ router.post('/properties/:propertyId/units/:unitId/associate', async (req, res) 
 router.delete('/properties/:propertyId/units/:unitId/invite/:code', isAdmin, async (req, res) => {
     try {
         const { propertyId, unitId, code } = req.params;
-        const result = await deleteInviteCode(req.user.user_id, propertyId, unitId, code);
+        const result = await deleteInviteCode(req.user_id, propertyId, unitId, code);
         if (result) {
             logger.info(`Invite code '${code}' deleted successfully for unit ID: ${unitId} of property ID: ${propertyId}`);
             res.send('Invite code deleted successfully');
@@ -609,7 +609,7 @@ router.delete('/properties/:propertyId/units/:unitId/invite/:code', isAdmin, asy
             res.status(404).send('Invite code not found');
         }
     } catch (error) {
-        logger.error(`Error deleting invite code '${req.params.code}' by admin ${req.user.user_id}: ${error}`);
+        logger.error(`Error deleting invite code '${req.params.code}' by admin ${req.user_id}: ${error}`);
         res.status(500).send('Error deleting invite code');
     }
 });

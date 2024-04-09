@@ -47,17 +47,17 @@ const { getUser } = require('../utils/connector.js');
  */
 router.post('/', async (req, res) => {
     try {
-        const user = await getUser(req.user.user_id);
+        const id = await getUserId(req.user_id);
 
         if (user != null) {
-            logger.info(`User ${req.user.user_id} logged in successfully.`);
+            logger.info(`User ${id} logged in successfully.`);
             res.status(200).json({ message: 'Logged in ' });
         } else {
-            logger.warn(`Login attempt failed for user ID: ${req.user.user_id}. No user found.`);
+            logger.warn(`Login attempt failed for user ID: ${id}. No user found.`);
             res.status(400).json({ message: 'No user found' });
         }
     } catch (error) {
-        logger.error(`An error occurred during the login process for user ID: ${req.user ? req.user.user_id : 'unknown'} - ${error.message}`);
+        logger.error(`An error occurred during the login process for user ID: ${req.use_idr ? id : 'unknown'} - ${error.message}`);
         res.status(500).json({ message: 'An error occurred during the login process.' });
     }
 });

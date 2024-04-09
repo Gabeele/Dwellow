@@ -25,9 +25,9 @@ const { getUserAnnouncements, createAnnouncement, deleteAnnouncement, getAnnounc
  */
 router.get('/', async (req, res) => {
     try {
-        const userId = req.user.user_id;
-        logger.info(`Fetching announcements for user ${userId}`);
-        const announcements = await getUserAnnouncements(userId);
+        const id = req.user_id;
+        logger.info(`Fetching announcements for user ${id}`);
+        const announcements = await getUserAnnouncements(id);
         res.json(announcements);
     } catch (error) {
         logger.error(`Error fetching announcements: ${error}`);

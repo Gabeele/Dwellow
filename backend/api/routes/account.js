@@ -51,7 +51,7 @@ router.get('/', async (req, res) => {
 
 
     try {
-        const id = req.user.user_id;
+        const id = req.user_id;
         const user = await getUser(id);
 
         if (!user) {
@@ -59,10 +59,10 @@ router.get('/', async (req, res) => {
             return res.status(400).json({ message: `No user found with id ${id}` });
         }
 
-        logger.info(`Get Account: User ${req.user.user_id} information accessed.`); // TODO: We should return the user infromation here as json or somehting. IDK what is returned back. (Also update the comments)
+        logger.info(`Get Account: User ${id} information accessed.`); // TODO: We should return the user infromation here as json or somehting. IDK what is returned back. (Also update the comments)
         res.status(200).json(user.recordset);
     } catch (error) {
-        logger.error(`Error getting account information for user ${req.user.user_id}: ${error.message}`);
+        logger.error(`Error getting account information for user ${id}: ${error.message}`);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
@@ -112,7 +112,7 @@ router.get('/', async (req, res) => {
 router.put('/', async (req, res) => {
 
     const { email, userType, fullName, phoneNumber } = req.body;
-    const id = req.user.user_id;
+    const id = req.user_id;
 
     try {
         // Validate user authorization (ensure the user is updating their own account or has admin privileges)
@@ -166,7 +166,7 @@ router.put('/', async (req, res) => {
 router.delete('/', async (req, res) => {
 
     try {
-        const id = req.user.user_id;
+        const id = req.user_id;
         const user = await getUser(id);
 
         if (!user) {
@@ -183,6 +183,8 @@ router.delete('/', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+// TODO: This post account route should be protected but it would cause issues with not having an id from the authentication middleware
 
 /**
  * @swagger
@@ -228,7 +230,7 @@ router.post('/', async (req, res) => {
     const { email, userType, fullName, phoneNumber } = req.body;
 
     try {
-        const id = req.user.user_id;
+        // const id = req.user_id;
         const emailExists = await checkEmail(email);
 
         if (emailExists) {
@@ -237,7 +239,7 @@ router.post('/', async (req, res) => {
         }
 
         logger.info(`Create Account: New account being created with email: ${email}`);
-        const result = await createAccount(email, id, userType, fullName, phoneNumber);
+        const result = await createAccount(email, userType, fullName, phoneNumber);
 
         if (result) {
             logger.info(`Create Account: Account created successfully`);
