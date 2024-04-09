@@ -100,6 +100,23 @@ async function getUser(token) {
     }
 }
 
+async function getUserId(token) { // TODO: Gavin's attempt at making a user ID thing
+
+    try {
+        await sql.connect(config);
+        const query = `SELECT user_id FROM users WHERE token = '${token}'`;
+        const result = await sql.query
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching user with token ${token}: ${error}`);
+        throw error;
+    }
+}
+
+
 // TODO: I believe this is meant to be a soft delete, so we should update the query to set a flag instead of deleting the record
 async function deleteUser(token) {
     try {
@@ -219,6 +236,7 @@ async function deleteInviteCode(user_id, propertyId, unitId, code) {
 
 
 module.exports = {
+    getUserId,
     deleteInviteCode,
     getProperties,
     createProperty,

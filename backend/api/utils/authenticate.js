@@ -1,7 +1,8 @@
 require('dotenv').config();
-const getRole = require('./connector');
+const { getRole, getUserId } = require('./connector');
 const logger = require('./logger');
 const admin = require('firebase-admin');
+
 
 admin.initializeApp({
     credential: admin.credential.cert({
@@ -22,7 +23,10 @@ const authenticate = async (req, res, next) => {
         }
 
         const decodedToken = await admin.auth().verifyIdToken(token);
-        req.user = decodedToken;
+
+        req.token = decodedToken;
+
+        req.user_id = getUserId(req.token.user_id);  // assigned the dwellow user id to the request object
         req.role = getRole(req.user.user_id);   // Adds a role to the request object
 
         logger.info(`User ${req.user.user_id} authenticated.`);
