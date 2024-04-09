@@ -68,14 +68,14 @@ async function getRole(userId) {
 
     try {
         await sql.connect(config);
-        const query = `SELECT user_type FROM users WHERE token = '${token}'`;
+        const query = `SELECT user_type FROM users WHERE token = '${userId}'`;
         const result = await sql.query(query);
         if (result.recordset.length === 0) {
             return null;
         }
         return result;
     } catch (error) {
-        logger.error(`Error fetching user with token ${token}: ${error}`);
+        logger.error(`Error fetching user with token ${userId}: ${error}`);
         throw error;
     } finally {
         await sql.close();
@@ -83,17 +83,17 @@ async function getRole(userId) {
 };
 
 // gets any user from the database with a specific token, but since they are unique it will always be 1 user
-async function getUser(token) {
+async function getUser(id) {
     try {
         await sql.connect(config);
-        const query = `SELECT * FROM users WHERE token = '${token}'`;
+        const query = `SELECT * FROM users WHERE user_id = '${id}'`;
         const result = await sql.query(query);
         if (result.recordset.length === 0) {
             return null;
         }
         return result;
     } catch (error) {
-        logger.error(`Error fetching user with token ${token}: ${error}`);
+        logger.error(`Error fetching user with user_id ${id}: ${error}`);
         throw error;
     } finally {
         await sql.close();
@@ -104,34 +104,15 @@ async function getUserId(token) { // TODO: Gavin's attempt at making a user ID t
 
     try {
         await sql.connect(config);
-        const query = `SELECT user_id FROM users WHERE token = '${token}'`;
-        const result = await sql.query
+        const query = `SELECT * FROM users WHERE token = '${token}'`;
+        const result = await sql.query(query);
         if (result.recordset.length === 0) {
             return null;
         }
-        return result;
+        console.log(result.recordset[0].user_id);
+        return result.recordset[0].user_id;
     } catch (error) {
         logger.error(`Error fetching user with token ${token}: ${error}`);
-        throw error;
-    }
-}
-
-
-// TODO: I believe this is meant to be a soft delete, so we should update the query to set a flag instead of deleting the record
-async function deleteUser(token) {
-    try {
-        await sql.connect(config);
-        const query = `DELETE FROM users WHERE token = '${token}'`;
-        const result = await sql.query(query);
-        if (result.rowsAffected[0] > 0) {
-            logger.info(`User with token ${token} deleted successfully.`);
-            return true;
-        } else {
-            logger.warn(`No user found with token ${token} to delete.`);
-            return false;
-        }
-    } catch (error) {
-        logger.error(`Error deleting user with token ${token}: ${error}`);
         throw error;
     } finally {
         await sql.close();
@@ -139,7 +120,29 @@ async function deleteUser(token) {
 }
 
 
-async function updateUser(email, token, userType, password, fullName, phoneNumber) {
+// TODO: I believe this is meant to be a soft delete, so we should update the query to set a flag instead of deleting the record
+async function deleteUser(id) {
+    try {
+        await sql.connect(config);
+        const query = `DELETE FROM users WHERE user_id = '${id}'`;
+        const result = await sql.query(query);
+        if (result.rowsAffected[0] > 0) {
+            logger.info(`User with user_id ${id} deleted successfully.`);
+            return true;
+        } else {
+            logger.warn(`No user found with user_id ${id} to delete.`);
+            return false;
+        }
+    } catch (error) {
+        logger.error(`Error deleting user with user_id ${id}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+
+async function updateUser(email, id, userType, password, fullName, phoneNumber) {
     try {
         await sql.connect(config);
         const query = `
@@ -151,18 +154,18 @@ async function updateUser(email, token, userType, password, fullName, phoneNumbe
             [full_name] = '${fullName}',
             [phone_number] = '${phoneNumber}'
         WHERE 
-            [token] = '${token}'
+            [user_id] = '${id}'
     `;
         const result = await sql.query(query);
         if (result.rowsAffected[0] > 0) {
-            logger.info(`User with token ${token} updated successfully.`);
+            logger.info(`User with user_id ${id} updated successfully.`);
             return true;
         } else {
-            logger.warn(`No user found with token ${token} to update.`);
+            logger.warn(`No user found with user_id ${id} to update.`);
             return false;
         }
     } catch (error) {
-        logger.error(`Error updating user with token ${token}: ${error}`);
+        logger.error(`Error updating user with user_id ${id}: ${error}`);
         throw error;
     } finally {
         await sql.close();
@@ -170,57 +173,248 @@ async function updateUser(email, token, userType, password, fullName, phoneNumbe
 }
 
 async function getUserAnnouncements(userId) {
-
+    try {
+        await sql.connect(config);
+        const query = `SELECT * FROM announcements WHERE user_id = '${id}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching announcements with user_id ${id}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
 }
 
-async function createAnnouncement(announcement) {
-
+async function createAnnouncement(user_id, title, text, datetime) {
+    try {
+        await sql.connect(config);
+        const query = `INSERT INTO [dbo].[announcements] ([user_id],[title],[text],[datetime]) VALUES ('${user_id}', '${title}', '${text}', '${datetime}')`;
+        const result = await sql.query(query);
+        logger.info('Announcements created successfully:', result);
+        return result;
+    } catch (error) {
+        logger.error(`Error creating announcement for user ${user_id}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
 }
 
 async function deleteAnnouncement(announcementId) {
-
+    try {
+        await sql.connect(config);
+        const query = `DELETE FROM announcements WHERE announcement_id = '${announcementId}'`;
+        const result = await sql.query(query);
+        if (result.rowsAffected[0] > 0) {
+            logger.info(`Announcement with announcement_id ${announcementId} deleted successfully.`);
+            return true;
+        } else {
+            logger.warn(`No Announcement found with announcement_id ${announcementId} to delete.`);
+            return false;
+        }
+    } catch (error) {
+        logger.error(`Error deleting Announcement with announcement_id ${announcementId}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
 }
 
 async function getAnnouncementById(announcementId) {
-
+    try {
+        await sql.connect(config);
+        const query = `SELECT * FROM announcements WHERE announcement_id = '${announcementId}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching announcements with announcement_id ${id}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
 }
 
 async function getProperties(user_id) {
-
+    try {
+        await sql.connect(config);
+        const query = `SELECT * FROM properties WHERE user_id = '${id}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching properties with user_id ${id}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
 }
 
-async function createProperty(user_id, propertyData) {
-
+async function createProperty(user_id, propertyData, address, name) {
+    try {
+        await sql.connect(config);
+        const query = `INSERT INTO [dbo].[properties] ([user_id],[property_name],[property_address],[property_data]) VALUES ('${user_id}', '${propertyData}', '${address}', '${name}')`;
+        const result = await sql.query(query);
+        logger.info('Property created successfully:', result);
+        return result;
+    } catch (error) {
+        logger.error(`Error creating Property for user ${user_id}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
 }
 
-async function updateProperty(user_id, propertyId, propertyData) {
-
+async function updateProperty(user_id, propertyData, property_id) {
+    try {
+        await sql.connect(config);
+        const query = `
+        UPDATE [dbo].[properties] 
+        SET 
+            [user_id] = '${user_id}',
+            [property_data] = '${propertyData}',
+        WHERE 
+            [property_id] = '${property_id}'
+    `;
+        const result = await sql.query(query);
+        if (result.rowsAffected[0] > 0) {
+            logger.info(`Property with property_id ${property_id} updated successfully.`);
+            return true;
+        } else {
+            logger.warn(`No property found with property_id ${property_id} to update.`);
+            return false;
+        }
+    } catch (error) {
+        logger.error(`Error updating property with property_id ${property_id}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
 }
 
 async function deleteProperty(user_id, propertyId) {
-
+    try {
+        await sql.connect(config);
+        const query = `DELETE FROM properties WHERE property_id = '${propertyId}'`;
+        const result = await sql.query(query);
+        if (result.rowsAffected[0] > 0) {
+            logger.info(`Property with property_id ${propertyId} deleted successfully.`);
+            return true;
+        } else {
+            logger.warn(`No Property found with property_id ${propertyId} to delete.`);
+            return false;
+        }
+    } catch (error) {
+        logger.error(`Error deleting Property with property_id ${propertyId}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
 }
 
 async function getPropertyAndUnits(user_id, propertyId) {
-
+    try {
+        await sql.connect(config);
+        const query = `SELECT * FROM properties, units WHERE units.property_id = '${propertyId}' and properties.property_id = '${propertyId}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching properties and units with user_id ${id}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
 }
 
 async function getUnitById(user_id, unitId) {
-
+    try {
+        await sql.connect(config);
+        const query = `SELECT * FROM properties WHERE user_id = '${user_id}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching properties with user_id ${user_id}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
 }
 
 async function createUnit(user_id, propertyId, unitData) {
-
+    try {
+        await sql.connect(config);
+        const query = `INSERT INTO [dbo].[units] ([user_id],[propertyId],[unitData]) VALUES ('${user_id}', '${propertyId}', '${unitData}')`;
+        const result = await sql.query(query);
+        logger.info('Unit created successfully:', result);
+        return result;
+    } catch (error) {
+        logger.error(`Error creating Unit for user ${user_id}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
 }
 
 async function updateUnit(user_id, unitId, unitData) {
-
+    try {
+        await sql.connect(config);
+        const query = `
+        UPDATE [dbo].[units] 
+        SET 
+            [user_id] = '${user_id}',
+            [unit_data] = '${unitData}',
+        WHERE 
+            [unit_id] = '${unitId}'
+    `;
+        const result = await sql.query(query);
+        if (result.rowsAffected[0] > 0) {
+            logger.info(`Unit with unit_id ${unitId} updated successfully.`);
+            return true;
+        } else {
+            logger.warn(`No Unit found with unit_id ${unitId} to update.`);
+            return false;
+        }
+    } catch (error) {
+        logger.error(`Error updating Unit with unit_id ${unitId}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
 }
 
 async function deleteUnit(user_id, unitId) {
-
+    try {
+        await sql.connect(config);
+        const query = `DELETE FROM units WHERE unit_id = '${unitId}'`;
+        const result = await sql.query(query);
+        if (result.rowsAffected[0] > 0) {
+            logger.info(`Unit with unit_id ${unitId} deleted successfully.`);
+            return true;
+        } else {
+            logger.warn(`No Unit found with unit_id ${unitId} to delete.`);
+            return false;
+        }
+    } catch (error) {
+        logger.error(`Error deleting Unit with unit_id ${unitId}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
 }
-
 
 async function associateUnitWithUser(user_id, unitId, code) {
 

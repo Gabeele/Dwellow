@@ -15,7 +15,10 @@ admin.initializeApp({
 const authenticate = async (req, res, next) => {
     // Correctly extract the token from the Authorization header
     try {
-        const token = req.headers['authorization'].split(' ')[1];
+        const token = req.headers['authorization'].split(' ')[0];
+
+        //console.log(token)
+        //console.log(req.headers)
 
         if (!token) {
             logger.info('No token provided.');
@@ -26,10 +29,15 @@ const authenticate = async (req, res, next) => {
 
         req.token = decodedToken;
 
-        req.user_id = getUserId(req.token.user_id);  // assigned the dwellow user id to the request object
-        req.role = getRole(req.user.user_id);   // Adds a role to the request object
+        console.log(req.token.user_id)
+        //console.log(decodedToken)
 
-        logger.info(`User ${req.user.user_id} authenticated.`);
+        req.user_id = await getUserId(req.token.user_id);  // assigned the dwellow user id to the request object
+        req.role = await getRole(req.user_id);   // Adds a role to the request object
+
+        //console.log (req);
+
+        logger.info(`User ${req.user_id} authenticated.`);
         next();
     } catch (error) {
         logger.error(`Error authenticating user: ${error.message}`);

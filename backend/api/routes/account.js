@@ -52,6 +52,7 @@ router.get('/', async (req, res) => {
 
     try {
         const id = req.user_id;
+        //console.log (req);
         const user = await getUser(id);
 
         if (!user) {
