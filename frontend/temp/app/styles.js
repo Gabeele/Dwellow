@@ -1,5 +1,5 @@
 
-export const Colours = {
+module.exports = {
     MainWhite: '#F5F5F5',
     PrimaryGreen: '#368156',
     SecondaryGreen: '#8FC5A6',

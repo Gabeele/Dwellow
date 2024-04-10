@@ -8,13 +8,14 @@ export default function Register() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [phoneNumber, setPhoneNumber] = useState('')
-    const [firstName] = useState('')
-    const [lastName] = useState('')
-    const [fullName, setFullName] = useState('')
+    const [firstName, setFirstName] = useState('')
+    const [lastName, setLastName] = useState('')
     const [userType, setUserType] = useState('')
     const [inviteCode, setInviteCode] = useState('')
 
     const onRegisterPressed = async(e) => {
+      let fullName = firstName.concat(" " + lastName);
+      
       const auth = getAuth(app);
       try{
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -74,12 +75,19 @@ export default function Register() {
             className='text-opacity-50 border'
             placeholder="Invite Code"
           />
-          <Text className='font-semibold'>Full Name</Text>
+          <Text className='font-semibold'>First Name</Text>
           <TextInput 
-            value={fullName}
-            onChangeText={text => setFullName(text)}
+            value={firstName}
+            onChangeText={text => setFirstName(text)}
             className='text-opacity-50 border'
-            placeholder="Full Name"
+            placeholder="First Name"
+          />
+          <Text className='font-semibold'>Last Name</Text>
+          <TextInput 
+            value={lastName}
+            onChangeText={text => setLastName(text)}
+            className='text-opacity-50 border'
+            placeholder="Last Name"
           />
           <Text className='font-semibold'>Phone Number</Text>
           <TextInput 
