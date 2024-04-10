@@ -1,9 +1,10 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./utils/Protected";
-import Home from "./pages/home";
+import Dashboard from "./pages/dashboard";
 import Login from "./pages/login";
 import Landing from "./pages/landing";
+import Properties from "./pages/properties";
 
 const App: React.FC = () => {
   return (
@@ -12,10 +13,18 @@ const App: React.FC = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Landing />} />
         <Route
-          path="/home"
+          path="/dashboard"
           element={
             <ProtectedRoute>
-              <Home />
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/properties"
+          element={
+            <ProtectedRoute>
+              <Properties />
             </ProtectedRoute>
           }
         />

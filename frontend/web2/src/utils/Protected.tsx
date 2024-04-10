@@ -2,6 +2,7 @@ import React, { useEffect, useState, ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 import { auth } from "../config/Firebase";
 import { onAuthStateChanged, User } from "firebase/auth";
+import Navigation from "../components/Navigation";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -23,7 +24,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     return <div>Loading...</div>;
   }
 
-  return user ? <>{children}</> : <Navigate to="/login" />;
+  return user ? (
+    <>
+      <Navigation />
+      {children}
+    </>
+  ) : (
+    <Navigate to="/login" />
+  );
 };
 
 export default ProtectedRoute;
