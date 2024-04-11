@@ -5,6 +5,7 @@ import Dashboard from "./pages/dashboard";
 import Login from "./pages/login";
 import Landing from "./pages/landing";
 import Properties from "./pages/properties";
+import Property from "./pages/property";
 
 // Define your route configurations
 const publicRoutes = [
@@ -15,6 +16,7 @@ const publicRoutes = [
 const protectedRoutes = [
   { path: "/dashboard", component: Dashboard },
   { path: "/properties", component: Properties },
+  { path: "/property/:id", component: Property },
 ];
 
 const App: React.FC = () => {

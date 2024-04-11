@@ -17,6 +17,7 @@ interface Property {
   title: string;
   address: string;
   units: number;
+  description: string;
   photo: string;
 }
 
@@ -30,7 +31,8 @@ function Properties() {
           id: property.id,
           title: property.title,
           address: property.address,
-          units: property.units || "N/A",
+          units: property.unit_count || "0 units",
+          description: property.description,
           photo: property.photo || "apartment-building.jpg",
         }));
         console.log(propertiesData);
@@ -54,8 +56,8 @@ function Properties() {
         Add New Property
       </Button>
       <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-4 p-4">
-        {properties.map(({ id, title, address, units, photo }) => (
-          <Link key={id} to={`/properties/${id}`} className="max-w-xs">
+        {properties.map(({ id, title, address, units, photo, description }) => (
+          <Link key={id} to={`/property/${id}`} className="max-w-xs">
             {" "}
             <Card>
               <CardHeader>
@@ -66,8 +68,7 @@ function Properties() {
                 <img className="w-full" src={photo} alt={`Property ${id}`} />
                 <p className="mt-4">{units} Units</p>
               </CardContent>
-
-              <CardFooter />
+              <CardFooter>{description}</CardFooter>
             </Card>
           </Link>
         ))}

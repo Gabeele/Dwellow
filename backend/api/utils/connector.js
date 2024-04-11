@@ -243,7 +243,14 @@ async function getAnnouncementById(announcementId) {
 async function getProperties(user_id) {
     try {
         await sql.connect(config);
-        const query = `SELECT * FROM properties WHERE user_id = '${user_id}'`;
+        const query = `
+        SELECT
+            p.*,
+            (SELECT COUNT(*) FROM units u WHERE u.property_id = p.id) AS unit_count
+        FROM
+            properties p
+        WHERE
+            p.user_id = '${user_id}'`;
         const result = await sql.query(query);
         if (result.recordset.length === 0) {
             return null;
@@ -322,7 +329,14 @@ async function deleteProperty(user_id, propertyId) {
 async function getPropertyAndUnits(user_id, propertyId) {
     try {
         await sql.connect(config);
-        const query = `SELECT * FROM properties, units WHERE units.property_id = '${propertyId}' and properties.property_id = '${propertyId}'`;
+        const query = `SELECT 
+        *
+    FROM 
+        units
+    JOIN 
+        users ON units.tenant_id = users.user_id
+    WHERE 
+       units.property_id = ${propertyId}`;
         const result = await sql.query(query);
         if (result.recordset.length === 0) {
             return null;
