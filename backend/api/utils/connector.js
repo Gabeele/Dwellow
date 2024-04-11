@@ -264,11 +264,18 @@ async function getProperties(user_id) {
     }
 }
 
-async function createProperty(user_id, propertyData, address, name) {
+async function createProperty(user_id, title, address, description, units) {
     try {
         await sql.connect(config);
-        const query = `INSERT INTO [dbo].[properties] ([user_id],[property_name],[property_address],[property_data]) VALUES ('${user_id}', '${propertyData}', '${address}', '${name}')`;
-        const result = await sql.query(query);
+        const request = new sql.Request();
+        request.input('title', sql.NVarChar(255), title);
+        request.input('address', sql.NVarChar(255), address);
+        request.input('photo', sql.VarBinary(sql.MAX), null);
+        request.input('description', sql.NVarChar(255), description);
+        request.input('num_units', sql.Int, parseInt(units, 10));
+        request.input('user_id', sql.Int, user_id);
+
+        const result = await request.execute('AddProperty');
         logger.info('Property created successfully:', result);
         return result;
     } catch (error) {
@@ -333,9 +340,11 @@ async function getPropertyAndUnits(user_id, propertyId) {
         *
     FROM 
         units
-    JOIN 
+LEFT JOIN 
         users ON units.tenant_id = users.user_id
-    WHERE 
+        LEFT JOIN 
+        properties on units.property_id = properties.id
+    WHERE
        units.property_id = ${propertyId}`;
         const result = await sql.query(query);
         if (result.recordset.length === 0) {

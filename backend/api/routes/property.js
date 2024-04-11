@@ -200,7 +200,12 @@ router.get('/:propertyId/units/:unitId', isAdmin, async (req, res) => {
  */
 router.post('/', isAdmin, async (req, res) => {
     try {
-        const newProperty = await createProperty(req.body);
+
+        const { title, address, description, photo, units } = req.body;
+        console.log(req.body);
+        console.log(title, address, description, photo, units)
+
+        const newProperty = await createProperty(req.user_id, title, address, description, units);
         if (newProperty) {
             logger.info(`Admin with ID: ${req.user_id} created a new property with ID: ${newProperty.id}`);
             res.status(201).json(newProperty);

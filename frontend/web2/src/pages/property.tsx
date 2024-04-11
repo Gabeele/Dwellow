@@ -15,6 +15,7 @@ interface Property {
   id: number;
   title: string;
   address: string;
+  description: string;
 }
 
 interface Unit {
@@ -55,6 +56,7 @@ function Property() {
         <div>
           <h2>{property.title}</h2>
           <p>{property.address}</p>
+          <p>{property.description}</p>
         </div>
       )}
       <Table>

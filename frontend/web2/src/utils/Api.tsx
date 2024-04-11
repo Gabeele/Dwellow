@@ -48,6 +48,7 @@ class API {
   }
 
   static async post(endpoint: string, data: any) {
+    console.log("POSTING DATA", data);
     return API.request(endpoint, {
       method: "POST",
       body: JSON.stringify(data),
