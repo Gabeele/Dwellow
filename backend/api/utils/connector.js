@@ -68,12 +68,12 @@ async function getRole(userId) {
 
     try {
         await sql.connect(config);
-        const query = `SELECT user_type FROM users WHERE token = '${userId}'`;
+        const query = `SELECT user_type FROM users WHERE user_id = '${userId}'`;
         const result = await sql.query(query);
-        if (result.recordset.length === 0) {
+        if (result.recordsetlength === 0) {
             return null;
         }
-        return result;
+        return result.recordset[0].user_type;
     } catch (error) {
         logger.error(`Error fetching user with token ${userId}: ${error}`);
         throw error;
@@ -109,7 +109,6 @@ async function getUserId(token) { // TODO: Gavin's attempt at making a user ID t
         if (result.recordset.length === 0) {
             return null;
         }
-        console.log(result.recordset[0].user_id);
         return result.recordset[0].user_id;
     } catch (error) {
         logger.error(`Error fetching user with token ${token}: ${error}`);
@@ -244,14 +243,14 @@ async function getAnnouncementById(announcementId) {
 async function getProperties(user_id) {
     try {
         await sql.connect(config);
-        const query = `SELECT * FROM properties WHERE user_id = '${id}'`;
+        const query = `SELECT * FROM properties WHERE user_id = '${user_id}'`;
         const result = await sql.query(query);
         if (result.recordset.length === 0) {
             return null;
         }
-        return result;
+        return result.recordset;
     } catch (error) {
-        logger.error(`Error fetching properties with user_id ${id}: ${error}`);
+        logger.error(`Error fetching properties with user_id ${user_id}: ${error}`);
         throw error;
     } finally {
         await sql.close();

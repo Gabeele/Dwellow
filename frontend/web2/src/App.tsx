@@ -6,28 +6,38 @@ import Login from "./pages/login";
 import Landing from "./pages/landing";
 import Properties from "./pages/properties";
 
+// Define your route configurations
+const publicRoutes = [
+  { path: "/login", component: Login },
+  { path: "/", component: Landing },
+];
+
+const protectedRoutes = [
+  { path: "/dashboard", component: Dashboard },
+  { path: "/properties", component: Properties },
+];
+
 const App: React.FC = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Landing />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/properties"
-          element={
-            <ProtectedRoute>
-              <Properties />
-            </ProtectedRoute>
-          }
-        />
+        {/* Map public routes */}
+        {publicRoutes.map(({ path, component: Component }) => (
+          <Route key={path} path={path} element={<Component />} />
+        ))}
+
+        {/* Map protected routes */}
+        {protectedRoutes.map(({ path, component: Component }) => (
+          <Route
+            key={path}
+            path={path}
+            element={
+              <ProtectedRoute>
+                <Component />
+              </ProtectedRoute>
+            }
+          />
+        ))}
       </Routes>
     </Router>
   );

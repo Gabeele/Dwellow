@@ -29,6 +29,10 @@ const isAdmin = (req, res, next) => {
         logger.warn(`User with ID: ${req.user_id} attempted to perform an admin action`);
         return res.status(403).send('Unauthorized: This action is allowed for admin only');
     }
+    else {
+        logger.info(`Admin with ID: ${req.user_id} is accessing admin routes`);
+
+    }
     next();
 };
 
@@ -54,10 +58,11 @@ const isAdmin = (req, res, next) => {
  *         description: Server error
  */
 
-router.get('/properties', isAdmin, async (req, res) => {
+router.get('/', isAdmin, async (req, res) => {
     try {
         const properties = await getProperties(req.user_id);
         logger.info('Fetched all properties');
+
         res.json(properties);
     } catch (error) {
         logger.error(`Error fetching properties: ${error}`);
@@ -101,7 +106,7 @@ router.get('/properties', isAdmin, async (req, res) => {
  *         description: Server error
  */
 
-router.get('/properties/:propertyId/units', isAdmin, async (req, res) => {
+router.get('/:propertyId/units', isAdmin, async (req, res) => {
     try {
         const propertyAndUnits = await getPropertyAndUnits(req.user_id, req.params.propertyId);
         if (!propertyAndUnits) {
@@ -151,7 +156,7 @@ router.get('/properties/:propertyId/units', isAdmin, async (req, res) => {
  *         description: Server error
  */
 
-router.get('/properties/:propertyId/units/:unitId', isAdmin, async (req, res) => {
+router.get('/:propertyId/units/:unitId', isAdmin, async (req, res) => {
     try {
         const unit = await getUnitById(req.user_id, req.params.unitId);
         if (!unit) {
@@ -193,7 +198,7 @@ router.get('/properties/:propertyId/units/:unitId', isAdmin, async (req, res) =>
  *       500:
  *         description: Server error
  */
-router.post('/properties', isAdmin, async (req, res) => {
+router.post('/', isAdmin, async (req, res) => {
     try {
         const newProperty = await createProperty(req.body);
         if (newProperty) {
@@ -241,7 +246,7 @@ router.post('/properties', isAdmin, async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.put('/properties/:propertyId', isAdmin, async (req, res) => {
+router.put('/:propertyId', isAdmin, async (req, res) => {
     try {
         const updatedProperty = await updateProperty(req.user_id, req.params.propertyId, req.body);
         if (updatedProperty) {
@@ -281,7 +286,7 @@ router.put('/properties/:propertyId', isAdmin, async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.delete('/properties/:propertyId', isAdmin, async (req, res) => {
+router.delete('/:propertyId', isAdmin, async (req, res) => {
     try {
         const result = await deleteProperty(req.user_id, req.params.propertyId);
         if (result) {
@@ -329,7 +334,7 @@ router.delete('/properties/:propertyId', isAdmin, async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.post('/properties/:propertyId/units', isAdmin, async (req, res) => {
+router.post('/:propertyId/units', isAdmin, async (req, res) => {
     try {
         const newUnit = await createUnit(req.user_id, req.params.propertyId, req.body);
         if (newUnit) {
@@ -381,7 +386,7 @@ router.post('/properties/:propertyId/units', isAdmin, async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.put('/properties/:propertyId/units/:unitId', isAdmin, async (req, res) => {
+router.put('/:propertyId/units/:unitId', isAdmin, async (req, res) => {
     try {
         const updatedUnit = await updateUnit(req.user_id, req.params.unitId, req.body);
         if (updatedUnit) {
@@ -425,7 +430,7 @@ router.put('/properties/:propertyId/units/:unitId', isAdmin, async (req, res) =>
  *       500:
  *         description: Server error
  */
-router.delete('/properties/:propertyId/units/:unitId', isAdmin, async (req, res) => {
+router.delete('/:propertyId/units/:unitId', isAdmin, async (req, res) => {
     try {
         const result = await deleteUnit(req.user_id, req.params.unitId);
         if (result) {
@@ -479,7 +484,7 @@ router.delete('/properties/:propertyId/units/:unitId', isAdmin, async (req, res)
  *       500:
  *         description: Server error
  */
-router.post('/properties/:propertyId/units/:unitId/invite', isAdmin, async (req, res) => {
+router.post('/:propertyId/units/:unitId/invite', isAdmin, async (req, res) => {
     try {
         const { email } = req.body;
         const code = generateCode();
@@ -539,7 +544,7 @@ router.post('/properties/:propertyId/units/:unitId/invite', isAdmin, async (req,
  *       500:
  *         description: Server error
  */
-router.post('/properties/:propertyId/units/:unitId/associate', async (req, res) => {
+router.post('/:propertyId/units/:unitId/associate', async (req, res) => {
     try {
         const { userId, code } = req.body;
         if (req.user_id !== userId) {
@@ -597,7 +602,7 @@ router.post('/properties/:propertyId/units/:unitId/associate', async (req, res) 
  *         description: Server error
  */
 
-router.delete('/properties/:propertyId/units/:unitId/invite/:code', isAdmin, async (req, res) => {
+router.delete('/:propertyId/units/:unitId/invite/:code', isAdmin, async (req, res) => {
     try {
         const { propertyId, unitId, code } = req.params;
         const result = await deleteInviteCode(req.user_id, propertyId, unitId, code);
