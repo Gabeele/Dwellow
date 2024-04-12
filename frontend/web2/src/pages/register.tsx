@@ -26,40 +26,52 @@ const Register: React.FC = () => {
 
   const handleRegister = async() => {
     let fullName = firstName.concat(" " + lastName);
-    
-    try{
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        const token = await user.getIdToken();
-        
-        // NEEDS TO BE UPDATED
-        // note: invite code is not used here
-        API.post(`/public/account`, {email, userType, fullName, phoneNumber})
-          .then((response) => 
-            {
-              if( response.status === 200)
-              {
-                console.log('Success creating account');
-                // check invite code here?
-                // auto log user in and nav to home
-                handleLogin()
+    if(accepted)
+        {
+            try{
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                const token = await user.getIdToken();
+                
+                // NEEDS TO BE UPDATED
+                // note: invite code is not used here
+                API.post(`/public/account`, {email, userType, fullName, phoneNumber})
+                  .then((response) => 
+                    {
+                      if( response.status == 200)
+                      {
+                        console.log('Success creating account');
+                        // check invite code here?
+                        // auto log user in and nav to home
+                        handleLogin()
+                      }
+                      else{
+                        // if the database returns an error the firebase account gets deleted
+                        // will change this if we can send the req before the firebase account is created & update db once token is recieved
+                        console.log("Can't add info to database");
+                        user.delete();
+                      }
+                    })
+                  .catch((error: Error) => {
+                    console.error("Database error: ", error);
+                    console.log("Deleting firebase account");
+                    user.delete();
+                  });
               }
-              else{
-                // if the database returns an error the firebase account gets deleted
-                // will change this if we can send the req before the firebase account is created & update db once token is recieved
-                console.log("Can't add info to database");
-                user.delete();
-              }
-            })
-          .catch((error: Error) => {
-            console.error("Database error: ", error);
-            console.log("Deleting firebase account");
-            user.delete();
-          });
-      }
-      catch(error){
-        console.error('Error creating account with firebase', error);
-      };
+              catch(error: any){
+                console.error('Error creating account with firebase', error);
+
+                if(error.message == "Firebase: Error (auth/invalid-email).")
+                    setErrorMessage("Please enter a valid email");
+                else if(error.message == "Firebase: Error (auth/missing-password).")
+                    setErrorMessage("Please enter a valid password");
+              };
+        }
+        else
+        {
+            setErrorMessage("Please accept the terms and conditions");
+            console.log("Terms and conditions not accepted");
+        }
     };
 
     const handleLogin = async () => {
