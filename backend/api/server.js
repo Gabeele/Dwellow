@@ -9,6 +9,7 @@ const announcementRoutes = require('./routes/announcement');
 const propertyRoutes = require('./routes/property');
 const authenticate = require('./utils/authenticate');
 const logger = require('./utils/logger');
+const publicRoutes = require('./routes/public');
 
 
 
@@ -86,6 +87,7 @@ app.get('/health', (req, res) => {
 });
 
 // app.use('') // This would be routes for public apis
+app.use('/public', publicRoutes);
 
 // Routing  -------------------------------------------------------
 app.use('/account', authenticate, accountRoutes);
