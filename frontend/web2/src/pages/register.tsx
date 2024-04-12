@@ -10,6 +10,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from "@/components/ui/tooltip";
 import InfoIcon from "../assets/info-circle.svg";
+import API from "@/utils/Api";
 
 const Register: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -31,37 +32,29 @@ const Register: React.FC = () => {
         const user = userCredential.user;
         const token = await user.getIdToken();
         
-        fetch('https://api.dwellow.ca/account', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': token
-          },
-          body: JSON.stringify({
-            token: token,
-            email: email,
-            userType: userType,
-            fullName: fullName,
-            phoneNumber: phoneNumber
-            }),
-        })
-          .then(response => 
+        // NEEDS TO BE UPDATED
+        // note: invite code is not used here
+        API.post(`/public/account`, {email, userType, fullName, phoneNumber})
+          .then((response) => 
             {
-              if( response.status == 200)
+              if( response.status === 200)
               {
                 console.log('Success creating account');
+                // check invite code here?
                 // auto log user in and nav to home
                 handleLogin()
               }
               else{
                 // if the database returns an error the firebase account gets deleted
                 // will change this if we can send the req before the firebase account is created & update db once token is recieved
-                console.log('Error with database');
+                console.log("Can't add info to database");
                 user.delete();
               }
             })
-          .catch(error => {
-            console.error('Error creating account with database', error);
+          .catch((error: Error) => {
+            console.error("Database error: ", error);
+            console.log("Deleting firebase account");
+            user.delete();
           });
       }
       catch(error){
@@ -92,9 +85,9 @@ const Register: React.FC = () => {
         {errorMessage && (
           <div className="mb-4 text-center text-red-500">{errorMessage}</div>
         )}
-        <div className="flex flex-row space-x-7">
+        <div className="flex flex-row space-x-4">
             <div>
-                <p className="font-semibold text-dwellow-black">I am registering as a(n)...</p>
+                <p className="font-semibold text-dwellow-black w-40">I am a(n)...</p>
                 <Select
                     value={userType}
                     onValueChange={(e) => setUserType(e)}>
@@ -122,7 +115,7 @@ const Register: React.FC = () => {
                 </TooltipProvider>
                 </p>
                 <InputOTP
-                    maxLength={5}
+                    maxLength={6}
                     pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
                     value={inviteCode}
                     onChange={setInviteCode}
@@ -132,6 +125,7 @@ const Register: React.FC = () => {
                     <InputOTPSlot index={1} />
                     <InputOTPSlot index={2} />
                     <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
                     <InputOTPSlot index={4} />
                 </InputOTPGroup>
                 </InputOTP>
@@ -186,8 +180,9 @@ const Register: React.FC = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+        <div className="h-4" />
         
-        <p className="text-center mt-4 text-dwellow-primary text-sm font-medium">
+        <p className="text-center text-dwellow-primary text-sm font-medium">
             <Checkbox className="mr-1"
                 onCheckedChange={(checked) => 
                     {
