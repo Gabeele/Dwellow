@@ -492,16 +492,14 @@ router.delete('/:propertyId/units/:unitId', isAdmin, async (req, res) => {
 router.post('/:propertyId/units/:unitId/invite', isAdmin, async (req, res) => {
     try {
         const { propertyId, unitId } = req.params;
-        console.log(req.params);
         const { email } = req.body;
 
-        const result = await createCode(propertyId, unitId, email);
-        const inviteCode = result.recordset[0].InviteCode;
+        const inviteCode = await createCode(propertyId, unitId, email);
 
         const inviteSent = await sendCodeByEmail(email, inviteCode);
 
         if (inviteSent) {
-            logger.info(`Admin with ID: ${adminId} sent an invite code to ${email}`);
+            logger.info(`Admin with ID: ${req.user_id} sent an invite code to ${email}`);
             res.send('Invite code sent successfully');
         } else {
             logger.warn(`Failed to send invite code to ${email}`);

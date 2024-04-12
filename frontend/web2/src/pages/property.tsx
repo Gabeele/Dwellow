@@ -257,7 +257,7 @@ function Property() {
         </TableHeader>
         <TableBody>
           {units.map((unit) => (
-            <TableRow key={unit.id}>
+            <TableRow key={unit.unit_id}>
               <TableCell>{unit.unit}</TableCell>
               <TableCell>{unit.description}</TableCell>
             </TableRow>

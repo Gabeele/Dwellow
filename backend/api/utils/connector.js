@@ -337,7 +337,7 @@ async function getPropertyAndUnits(user_id, propertyId) {
     try {
         await sql.connect(config);
         const query = `SELECT 
-        units.id as unit_id, ,
+        units.id as unit_id,
         units.unit,
         units.description,
         users.email ,
@@ -457,9 +457,9 @@ async function createCode(propertyId, unitId, email) {
         await sql.connect(config);
         const request = new sql.Request();
 
-        request.input('email', sql.NVarChar, email);
-        request.input('property_id', sql.Int, propertyId);
-        request.input('unit_id', sql.Int, unitId);
+        request.input('Email', sql.NVarChar, email);
+        request.input('PropertyID', sql.Int, propertyId);
+        request.input('UnitID', sql.Int, unitId);
 
         const result = await request.execute('InsertInviteCode');
 
