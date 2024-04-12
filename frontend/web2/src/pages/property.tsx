@@ -54,6 +54,9 @@ interface Unit {
   unit: string;
   property_id: number;
   description: string;
+  email: string;
+  full_name: string;
+  phone_number: string;
 }
 
 function Property() {
@@ -253,6 +256,9 @@ function Property() {
           <TableRow>
             <TableHead>Unit</TableHead>
             <TableHead>Description</TableHead>
+            <TableHead>Tenant</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Phone</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -260,6 +266,9 @@ function Property() {
             <TableRow key={unit.unit_id}>
               <TableCell>{unit.unit}</TableCell>
               <TableCell>{unit.description}</TableCell>
+              <TableCell>{unit.full_name}</TableCell>
+              <TableCell>{unit.email}</TableCell>
+              <TableCell>{unit.phone_number}</TableCell>
             </TableRow>
           ))}
         </TableBody>
