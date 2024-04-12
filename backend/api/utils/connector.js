@@ -337,15 +337,25 @@ async function getPropertyAndUnits(user_id, propertyId) {
     try {
         await sql.connect(config);
         const query = `SELECT 
-        *
+        units.id as unit_id, ,
+        units.unit,
+        units.description,
+        users.email ,
+        users.full_name, 
+        users.phone_number ,
+        properties.id ,
+        properties.title ,
+        properties.address,
+        properties.description AS pDescription
     FROM 
         units
-LEFT JOIN 
+    LEFT JOIN 
         users ON units.tenant_id = users.user_id
-        LEFT JOIN 
+    LEFT JOIN 
         properties on units.property_id = properties.id
     WHERE
-       units.property_id = ${propertyId}`;
+    
+        units.property_id = ${propertyId}`;
         const result = await sql.query(query);
         if (result.recordset.length === 0) {
             return null;
@@ -442,8 +452,27 @@ async function associateUnitWithUser(user_id, unitId, code) {
 
 }
 
-async function saveCodeToDB(code, propertyId, unitId) {
+async function createCode(propertyId, unitId, email) {
+    try {
+        await sql.connect(config);
+        const request = new sql.Request();
 
+        request.input('email', sql.NVarChar, email);
+        request.input('property_id', sql.Int, propertyId);
+        request.input('unit_id', sql.Int, unitId);
+
+        const result = await request.execute('InsertInviteCode');
+
+        const code = result.recordset[0].InviteCode;
+
+        logger.info(`Code ${code} created and associated with property ID ${propertyId} and unit ID ${unitId}.`);
+        return code;
+    } catch (error) {
+        logger.error(`Error creating code for property ID ${propertyId}, unit ID ${unitId}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
 }
 
 async function deleteInviteCode(user_id, propertyId, unitId, code) {
@@ -464,7 +493,7 @@ module.exports = {
     updateUnit,
     deleteUnit,
     associateUnitWithUser,
-    saveCodeToDB,
+    createCode,
     getUserAnnouncements,
     createAnnouncement,
     deleteAnnouncement,

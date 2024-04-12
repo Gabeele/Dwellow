@@ -12,7 +12,7 @@ const { getProperties,
     updateUnit,
     deleteUnit,
     associateUnitWithUser,
-    saveCodeToDB,
+    createCode,
     deleteInviteCode } = require('../utils/connector');
 
 /**
@@ -491,19 +491,24 @@ router.delete('/:propertyId/units/:unitId', isAdmin, async (req, res) => {
  */
 router.post('/:propertyId/units/:unitId/invite', isAdmin, async (req, res) => {
     try {
+        const { propertyId, unitId } = req.params;
+        console.log(req.params);
         const { email } = req.body;
-        const code = generateCode();
-        const inviteSent = await sendCodeByEmail(email, code);
+
+        const result = await createCode(propertyId, unitId, email);
+        const inviteCode = result.recordset[0].InviteCode;
+
+        const inviteSent = await sendCodeByEmail(email, inviteCode);
+
         if (inviteSent) {
-            await saveCodeToDB(code, req.params.propertyId, req.params.unitId);
-            logger.info(`Admin with ID: ${req.user_id} sent an invite code to ${email}`);
+            logger.info(`Admin with ID: ${adminId} sent an invite code to ${email}`);
             res.send('Invite code sent successfully');
         } else {
-            logger.warn(`Failed to send invite code to ${email} by admin ${req.user_id}`);
+            logger.warn(`Failed to send invite code to ${email}`);
             res.status(400).send('Failed to send invite code');
         }
     } catch (error) {
-        logger.error(`Error sending invite code by admin ${req.user_id}: ${error}`);
+        logger.error(`Error sending invite code: ${error}`);
         res.status(500).send('Error sending invite code');
     }
 });

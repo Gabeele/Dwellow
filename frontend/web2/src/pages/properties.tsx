@@ -36,7 +36,7 @@ function Properties() {
   const [newProperty, setNewProperty] = useState<Partial<Property>>({
     title: "",
     address: "",
-    units: "",
+    units: 0,
     photo: "",
     description: "",
   });
@@ -75,7 +75,6 @@ function Properties() {
 
   const handleSaveProperty = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Saving property:", newProperty); // Log newProperty before sending
     API.post("/properties", newProperty)
       .then((response) => {
         console.log("Property saved successfully:", response);
