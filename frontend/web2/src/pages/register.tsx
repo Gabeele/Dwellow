@@ -69,12 +69,7 @@ const Register: React.FC = () => {
           navigate("/home");
         } catch (error: any) {
           console.error("Login error:", error.message);
-          if (
-            error.message == "Firebase: Error (auth/user-not-found)." ||
-            error.message == "Firebase: Error (auth/wrong-password)."
-          ) {
-            setErrorMessage("Invalid email or password");
-          }
+          navigate("/login");
         }
       };
 
