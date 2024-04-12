@@ -76,7 +76,7 @@ function Property() {
     fetchData(id);
   }, [id]);
 
-  const fetchData = async (id) => {
+  const fetchData = async (id: any) => {
     try {
       const response = await API.get(`/properties/${id}/units`);
       if (response.data) {

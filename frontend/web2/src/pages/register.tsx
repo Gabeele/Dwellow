@@ -60,7 +60,7 @@ const Register: React.FC = () => {
               console.log("Success creating account");
 
               if (userType === "tenant") {
-                API.post(`/properties/associate`, { inviteCode }).then(
+                API.post(`/properties/associate`, { code: inviteCode }).then(
                   (response) => {
                     if (response.status === 200) {
                       console.log(

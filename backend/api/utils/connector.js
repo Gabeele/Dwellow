@@ -434,10 +434,12 @@ async function deleteUnit(user_id, unitId) {
 }
 
 async function associateUnitWithUser(user_id, code) {
-    let pool;
     try {
-        pool = await sql.connect(config);
-        const request = new sql.Request(pool);
+
+        console.log('user_id:', user_id);
+        console.log('code:', code);
+        await sql.connect(config);
+        const request = new sql.Request();
 
         request.input('UserID', sql.Int, user_id);
         request.input('Code', sql.NVarChar, code);
@@ -446,7 +448,7 @@ async function associateUnitWithUser(user_id, code) {
 
         if (result.recordset?.[0]?.Status === 'Success') {
             const unitId = result.recordset[0].UnitId;
-            logger.info(`Unit ${unitId} associated with user ${user_id}.`);
+            logger.info(`Unit ${unitId} associated with user ${user_id}. ${result.recordset[0].Message}`);
             return { success: true, unitId: unitId };
         } else {
             logger.error(`Failed to associate unit with user ${user_id}.`);
@@ -457,9 +459,8 @@ async function associateUnitWithUser(user_id, code) {
         logger.error(`Error in associateUnitWithUser: ${error}`);
         throw error;
     } finally {
-        if (pool) {
-            await pool.close();
-        }
+        await sql.close();
+
     }
 }
 
@@ -469,7 +470,7 @@ async function createCode(propertyId, unitId, email) {
         await sql.connect(config);
         const request = new sql.Request();
 
-        request.input('Email', sql.NVarChar, email); s
+        request.input('Email', sql.NVarChar, email);
         request.input('PropertyID', sql.Int, propertyId);
         request.input('UnitID', sql.Int, unitId);
 
