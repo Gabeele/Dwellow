@@ -40,7 +40,10 @@ class API {
       );
     }
 
-    return response.json();
+    return {
+      status: response.status,
+      data: response.json(),
+    };
   }
 
   static async get(endpoint: string) {
@@ -48,7 +51,6 @@ class API {
   }
 
   static async post(endpoint: string, data: any) {
-    console.log("POSTING DATA", data);
     return API.request(endpoint, {
       method: "POST",
       body: JSON.stringify(data),
@@ -65,8 +67,6 @@ class API {
   static async delete(endpoint: string) {
     return API.request(endpoint, { method: "DELETE" });
   }
-
-  // Add more methods as needed
 }
 
 export default API;

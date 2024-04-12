@@ -46,11 +46,11 @@ interface Property {
   id: number;
   title: string;
   address: string;
-  pDescription: string;
+  description: string;
 }
 
 interface Unit {
-  unit_id: number;
+  id: number;
   unit: string;
   property_id: number;
   description: string;
@@ -73,44 +73,45 @@ function Property() {
   });
 
   useEffect(() => {
-    API.get(`/properties/${id}/units`)
-      .then((response) => {
-        console.log(response);
-        const propertyData: Property = response.recordset[0];
-        const unitsData: Unit[] = response.recordsets[0];
-        setProperty(propertyData);
-        setUnits(unitsData);
-      })
-      .catch((error: Error) => {
-        console.error(error);
-      });
+    fetchData(id);
   }, [id]);
+
+  const fetchData = async (id) => {
+    try {
+      const response = await API.get(`/properties/${id}/units`);
+      if (response.data) {
+        const jsonData = await response.data;
+        console.log("Property data:", jsonData);
+        setProperty(jsonData.property);
+        setUnits(jsonData.units);
+      } else {
+        console.error("No data found");
+      }
+    } catch (error) {
+      console.error("Failed to fetch property data:", error);
+    }
+  };
 
   const handleAddUnit = () => {
     setIsDrawerOpen(true);
   };
 
-  const handleSaveUnit = (e: React.FormEvent) => {
+  const handleSaveUnit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Saving unit:", newUnit); // Log newUnit before sending
-    API.post(`/properties/${id}/units`, newUnit)
-      .then((response) => {
-        console.log("Unit saved successfully:", response);
-        // Refresh units data after adding a new unit
-        API.get(`/properties/${id}/units`)
-          .then((response) => {
-            const unitsData: Unit[] = response.recordsets[0];
-            setUnits(unitsData);
-          })
-          .catch((error: Error) => {
-            console.error(error);
-          });
-        setIsDrawerOpen(false);
-        setNewUnit({});
-      })
-      .catch((error) => {
-        console.error("Error saving unit:", error);
-      });
+
+    try {
+      // Post new unit data to the server
+      const postResponse = await API.post(`/properties/${id}/units`, newUnit);
+      console.log("Unit saved successfully:", postResponse);
+
+      // Refresh unit list after successful post
+      fetchData(id);
+
+      setNewUnit({});
+    } catch (error) {
+      console.error("Error during save or refresh units:", error);
+    }
   };
 
   const closeDrawer = () => {
@@ -131,12 +132,13 @@ function Property() {
       return;
     }
 
-    const unitId = units.find((unit) => unit.unit === selectedUnit)?.unit_id;
+    const unitId = units.find((unit) => unit.unit === selectedUnit)?.id;
     if (!unitId) {
       alert("Invalid unit selected.");
       return;
     }
-
+    console.log("Sending invite to:", email, "for unit:", unitId);
+    console.log(unitId);
     try {
       const response = await API.post(
         `/properties/${id}/units/${unitId}/invite`,
@@ -154,7 +156,7 @@ function Property() {
         <div>
           <h2>{property.title}</h2>
           <p>{property.address}</p>
-          <p>{property.pDescription}</p>
+          <p>{property.description}</p>
         </div>
       )}
       <Button onClick={handleAddUnit}>
@@ -237,7 +239,7 @@ function Property() {
             </SelectTrigger>
             <SelectContent>
               {units.map((unit) => (
-                <SelectItem key={unit.unit_id} value={unit.unit}>
+                <SelectItem key={unit.id} value={unit.unit}>
                   {unit.unit}
                 </SelectItem>
               ))}
@@ -263,7 +265,7 @@ function Property() {
         </TableHeader>
         <TableBody>
           {units.map((unit) => (
-            <TableRow key={unit.unit_id}>
+            <TableRow key={unit.id}>
               <TableCell>{unit.unit}</TableCell>
               <TableCell>{unit.description}</TableCell>
               <TableCell>{unit.full_name}</TableCell>

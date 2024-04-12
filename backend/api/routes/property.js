@@ -6,8 +6,8 @@ const { getProperties,
     createProperty,
     updateProperty,
     deleteProperty,
-    getPropertyAndUnits,
-    getUnitById,
+    getProperty,
+    getUnits,
     createUnit,
     updateUnit,
     deleteUnit,
@@ -60,13 +60,22 @@ const isAdmin = (req, res, next) => {
 
 router.get('/', isAdmin, async (req, res) => {
     try {
-        const properties = await getProperties(req.user_id);
+        const userId = req.user_id;
+        const properties = await getProperties(userId);
         logger.info('Fetched all properties');
 
-        res.json(properties);
+        res.json({
+            success: true,
+            count: properties.length,
+            data: properties
+        });
     } catch (error) {
         logger.error(`Error fetching properties: ${error}`);
-        res.status(500).send('Error fetching properties');
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching properties',
+            error: error.message
+        });
     }
 });
 
@@ -108,7 +117,16 @@ router.get('/', isAdmin, async (req, res) => {
 
 router.get('/:propertyId/units', isAdmin, async (req, res) => {
     try {
-        const propertyAndUnits = await getPropertyAndUnits(req.user_id, req.params.propertyId);
+
+        const property_id = req.params.propertyId;
+        const property = await getProperty(req.user_id, property_id)
+        const units = await getUnits(req.user_id, req.params.propertyId);
+
+        const propertyAndUnits = {
+            property,
+            units
+        };
+
         if (!propertyAndUnits) {
             logger.warn(`Property with ID: ${req.params.propertyId} not found`);
             return res.status(404).send('Property not found');
@@ -156,9 +174,10 @@ router.get('/:propertyId/units', isAdmin, async (req, res) => {
  *         description: Server error
  */
 
+/*
 router.get('/:propertyId/units/:unitId', isAdmin, async (req, res) => {
     try {
-        const unit = await getUnitById(req.user_id, req.params.unitId);
+        const unit = await getUnit(req.user_id, req.params.unitId);
         if (!unit) {
             logger.warn(`Unit with ID: ${req.params.unitId} not found`);
             return res.status(404).send('Unit not found');
@@ -170,6 +189,8 @@ router.get('/:propertyId/units/:unitId', isAdmin, async (req, res) => {
         res.status(500).send('Error fetching unit');
     }
 });
+
+*/
 
 /**
  * @swagger
@@ -341,7 +362,11 @@ router.delete('/:propertyId', isAdmin, async (req, res) => {
  */
 router.post('/:propertyId/units', isAdmin, async (req, res) => {
     try {
-        const newUnit = await createUnit(req.user_id, req.params.propertyId, req.body);
+
+        const property_id = req.params.propertyId;
+        const { unit, description } = req.body;
+
+        const newUnit = await createUnit(req.user_id, property_id, unit, description);
         if (newUnit) {
             logger.info(`Admin with ID: ${req.user_id} created a unit with ID: ${newUnit.id} for property ID: ${req.params.propertyId}`);
             res.status(201).json(newUnit);
@@ -552,23 +577,21 @@ router.post('/:propertyId/units/:unitId/invite', isAdmin, async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.post('/:propertyId/units/:unitId/associate', async (req, res) => {
+router.post('/associate/', async (req, res) => {
     try {
-        const { userId, code } = req.body;
-        if (req.user_id !== userId) {
-            logger.warn(`User with ID: ${req.user_id} attempted to use a code for a different user`);
-            return res.status(403).send('Unauthorized: Cannot use code for a different user');
-        }
-        const associationResult = await associateUnitWithUser(userId, req.params.unitId, code);
+        const code = req.body.code;
+
+        const associationResult = await associateUnitWithUser(req.user_id, code);
+
         if (associationResult) {
-            logger.info(`User with ID: ${userId} associated with unit ID: ${req.params.unitId} using code`);
+            logger.info(`Unit associated with user successfully`);
             res.send('Unit associated with user successfully');
         } else {
-            logger.warn(`Failed to associate unit ID: ${req.params.unitId} with user ID: ${userId}`);
+            logger.warn(`Failed to associate unit with user or invalid code`);
             res.status(400).send('Failed to associate unit with user or invalid code');
         }
     } catch (error) {
-        logger.error(`Error associating user ${req.user_id} with unit: ${error}`);
+        logger.error(`Error associating unit with user: ${error}`);
         res.status(500).send('Error associating unit with user');
     }
 });

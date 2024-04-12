@@ -21,7 +21,7 @@ const authenticate = async (req, res, next) => {
             return res.status(401).send({ error: 'No token provided. Provide a token in the header.' });
         }
 
-        const decodedToken = await admin.auth().verifyIdToken(token);
+        const decodedToken = await decodeToken(token);
 
         req.token = decodedToken;
         req.user_id = await getUserId(req.token.user_id);  // assigned the dwellow user id to the request object
@@ -35,5 +35,12 @@ const authenticate = async (req, res, next) => {
     }
 };
 
+const decodeToken = async (token) => {
+    return admin.auth().verifyIdToken(token);
+}
 
-module.exports = authenticate;
+
+module.exports = {
+    authenticate,
+    decodeToken
+};

@@ -32,16 +32,17 @@ async function executeQuery(query) {
 }
 
 
-async function createAccount(email, token, userType, fullName, phoneNumber) {
+async function createAccount(email, userType, fullName, phoneNumber, fb_uuid) {
     try {
         await sql.connect(config);
-        const query = `INSERT INTO [dbo].[users] ([user_type],[email],[full_name],[token],[phone_number]) VALUES ('${userType}', '${email}', '${fullName}', '${token}', '${phoneNumber}')`;
+        const query = `INSERT INTO [dbo].[users] ([user_type],[email],[full_name],[token],[phone_number]) VALUES ('${userType}', '${email}', '${fullName}', '${fb_uuid}', '${phoneNumber}')`;
         const result = await sql.query(query);
         logger.info('Account created successfully:', result);
-        return result;
+        return true;
     } catch (error) {
         logger.error(`Error creating account for email ${email}: ${error}`);
         throw error;
+        return false;
     } finally {
         await sql.close();
     }
@@ -333,51 +334,35 @@ async function deleteProperty(user_id, propertyId) {
     }
 }
 
-async function getPropertyAndUnits(user_id, propertyId) {
+async function getProperty(user_id, propertyId) {
     try {
         await sql.connect(config);
-        const query = `SELECT 
-        units.id as unit_id,
-        units.unit,
-        units.description,
-        users.email ,
-        users.full_name, 
-        users.phone_number ,
-        properties.id ,
-        properties.title ,
-        properties.address,
-        properties.description AS pDescription
-    FROM 
-        units
-    LEFT JOIN 
-        users ON units.tenant_id = users.user_id
-    LEFT JOIN 
-        properties on units.property_id = properties.id
-    WHERE
-    
-        units.property_id = ${propertyId}`;
+        const query = `Select * from properties where properties.id = ${propertyId}`;
         const result = await sql.query(query);
         if (result.recordset.length === 0) {
             return null;
         }
-        return result;
+        return result.recordset[0];
     } catch (error) {
-        logger.error(`Error fetching properties and units with user_id ${id}: ${error}`);
+        logger.error(`Error fetching properties and units with user_id ${user_id}: ${error}`);
         throw error;
     } finally {
         await sql.close();
     }
 }
 
-async function getUnitById(user_id, unitId) {
+async function getUnits(user_id, property_id) {
     try {
         await sql.connect(config);
-        const query = `SELECT * FROM properties WHERE user_id = '${user_id}'`;
+        const query = `SELECT u.*, us.email, us.full_name, us.phone_number
+        FROM units u
+        LEFT JOIN users us ON u.tenant_id = us.user_id
+        WHERE u.property_id = ${property_id}`;
         const result = await sql.query(query);
         if (result.recordset.length === 0) {
             return null;
         }
-        return result;
+        return result.recordset;
     } catch (error) {
         logger.error(`Error fetching properties with user_id ${user_id}: ${error}`);
         throw error;
@@ -386,10 +371,10 @@ async function getUnitById(user_id, unitId) {
     }
 }
 
-async function createUnit(user_id, propertyId, unitData) {
+async function createUnit(user_id, propertyId, unit, description) {
     try {
         await sql.connect(config);
-        const query = `INSERT INTO [dbo].[units] ([user_id],[propertyId],[unitData]) VALUES ('${user_id}', '${propertyId}', '${unitData}')`;
+        const query = `INSERT INTO [dbo].[units] ([unit],[property_id], [description]) VALUES ('${unit}', '${propertyId}', '${description}')`;
         const result = await sql.query(query);
         logger.info('Unit created successfully:', result);
         return result;
@@ -448,16 +433,43 @@ async function deleteUnit(user_id, unitId) {
     }
 }
 
-async function associateUnitWithUser(user_id, unitId, code) {
+async function associateUnitWithUser(user_id, code) {
+    let pool;
+    try {
+        pool = await sql.connect(config);
+        const request = new sql.Request(pool);
 
+        request.input('UserID', sql.Int, user_id);
+        request.input('Code', sql.NVarChar, code);
+
+        const result = await request.execute('AssociateUnitWithUser');
+
+        if (result.recordset?.[0]?.Status === 'Success') {
+            const unitId = result.recordset[0].UnitId;
+            logger.info(`Unit ${unitId} associated with user ${user_id}.`);
+            return { success: true, unitId: unitId };
+        } else {
+            logger.error(`Failed to associate unit with user ${user_id}.`);
+            return { success: false };
+        }
+
+    } catch (error) {
+        logger.error(`Error in associateUnitWithUser: ${error}`);
+        throw error;
+    } finally {
+        if (pool) {
+            await pool.close();
+        }
+    }
 }
+
 
 async function createCode(propertyId, unitId, email) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
 
-        request.input('Email', sql.NVarChar, email);
+        request.input('Email', sql.NVarChar, email); s
         request.input('PropertyID', sql.Int, propertyId);
         request.input('UnitID', sql.Int, unitId);
 
@@ -487,8 +499,7 @@ module.exports = {
     createProperty,
     updateProperty,
     deleteProperty,
-    getPropertyAndUnits,
-    getUnitById,
+    getProperty, getUnits,
     createUnit,
     updateUnit,
     deleteUnit,

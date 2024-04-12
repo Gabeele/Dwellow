@@ -2,6 +2,7 @@ const express = require('express');
 const logger = require('../utils/logger');
 const { createAccount, checkEmail } = require('../utils/connector.js');
 const router = express.Router();
+const { decodeToken } = require('../utils/authenticate');
 
 /**
  * @swagger
@@ -45,6 +46,11 @@ const router = express.Router();
 
 router.post('/account', async (req, res) => {
     const { email, userType, fullName, phoneNumber } = req.body;
+    const token = req.headers.authorization;
+
+    const decoded = await decodeToken(token);
+
+    const fb_uuid = decoded.user_id;
 
     try {
 
@@ -55,8 +61,8 @@ router.post('/account', async (req, res) => {
             return res.status(400).json({ message: 'Email already exists' });
         }
 
-        logger.info(`Create Account: New account being created with email: ${email}`);
-        const result = await createAccount(email, userType, fullName, phoneNumber);
+        logger.info(`Create Account: New account being created with email ${email}, user type ${userType}, full name ${fullName}, and phone number ${phoneNumber}, and firebase uuid ${fb_uuid}`);
+        const result = await createAccount(email, userType, fullName, phoneNumber, fb_uuid);
 
         if (result) {
             logger.info(`Create Account: Account created successfully`);
@@ -73,3 +79,5 @@ router.post('/account', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+module.exports = router;

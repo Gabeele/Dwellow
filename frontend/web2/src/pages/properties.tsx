@@ -45,28 +45,36 @@ function Properties() {
     fetchProperties();
   }, []);
 
-  const fetchProperties = () => {
-    API.get("/properties")
-      .then((response) => {
-        const propertiesData: Property[] = response.map((property: any) => ({
-          id: property.id,
-          title: property.title,
-          address: property.address,
-          units: property.unit_count || 0,
-          description: property.description,
-          photo: property.photo || "apartment-building.jpg",
-        }));
-
-        if (propertiesData.length > 0) {
-          setProperties(propertiesData);
+  const fetchProperties = async () => {
+    try {
+      const response = await API.get("/properties");
+      if (response.status === 200) {
+        const jsonData = await response.data;
+        if (jsonData.success && Array.isArray(jsonData.data)) {
+          const formattedProperties = jsonData.data.map((property: any) => ({
+            id: property.id,
+            title: property.title,
+            address: property.address,
+            units: property.unit_count || 0,
+            description: property.description || "No description provided",
+            photo: property.photo || "apartment-building.jpg",
+          }));
+          setProperties(formattedProperties);
         } else {
-          console.error("No properties found");
+          console.error("No properties found or invalid data structure");
           setProperties([]);
         }
-      })
-      .catch((error: Error) => {
-        console.error(error);
-      });
+      } else {
+        console.error(
+          "Failed to fetch properties, status code:",
+          response.status
+        );
+        setProperties([]);
+      }
+    } catch (error: any) {
+      console.error("Failed to fetch properties:", error.message);
+      setProperties([]);
+    }
   };
 
   const handleAddProperty = () => {

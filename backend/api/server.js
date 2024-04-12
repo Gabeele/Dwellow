@@ -7,7 +7,7 @@ const accountRoutes = require('./routes/account');
 const loginRoutes = require('./routes/login');
 const announcementRoutes = require('./routes/announcement');
 const propertyRoutes = require('./routes/property');
-const authenticate = require('./utils/authenticate');
+const { authenticate } = require('./utils/authenticate');
 const logger = require('./utils/logger');
 const publicRoutes = require('./routes/public');
 
