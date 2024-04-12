@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./utils/Protected";
 import Dashboard from "./pages/dashboard";
 import Login from "./pages/login";
+import Register from "./pages/register";
 import Landing from "./pages/landing";
 import Properties from "./pages/properties";
 import Property from "./pages/property";
@@ -11,6 +12,7 @@ import Property from "./pages/property";
 const publicRoutes = [
   { path: "/login", component: Login },
   { path: "/", component: Landing },
+  { path: "/register", component: Register },
 ];
 
 const protectedRoutes = [

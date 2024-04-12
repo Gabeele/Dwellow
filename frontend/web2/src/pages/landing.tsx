@@ -13,10 +13,15 @@ const Landing: React.FC = () => {
         <a href="/login">
           <Button variant="link">Login</Button>
         </a>
-        <a href="/signup">
-          <Button variant="link">Sign up</Button>
+        <a href="/register">
+          <Button variant="link">Register</Button>
         </a>
       </div>
+      <footer className="w-screen bg-dwellow-primary flex flex-row items-center space-x-7 justify-center text-white font-normal text-sm absolute bottom-0">
+        <a href="" className="hover:underline">Terms of Use</a>
+        <p>Dwellow © 2024</p>
+        <a href="" className="hover:underline">Privacy Policy</a>
+      </footer>
     </div>
   );
 };

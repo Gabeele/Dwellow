@@ -28,7 +28,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen">
+    <div className="flex justify-center items-center h-screen bg-dwellow-white">
       <div className="bg-white p-8 rounded shadow">
         <h1 className="text-2xl font-bold mb-4">Login to Dwellow</h1>
         {errorMessage && (
@@ -50,16 +50,21 @@ const Login: React.FC = () => {
         />
         <div className="h-4" />
         <Button onClick={handleLogin}>Login</Button>
-        <a href="/forgot-password" className="text-primary block mt-2">
+        <a href="/forgot-password" className="text-primary block mt-2 hover:underline">
           Forgot password?
         </a>
         <p className="text-center mt-4 text-gray-600 text-sm">
           Don't have an account?{" "}
-          <a href="/signup" className="text-primary">
-            Sign up
+          <a href="/register" className="text-primary hover:underline">
+            Create Account
           </a>
         </p>
       </div>
+      <footer className="w-screen bg-dwellow-primary flex flex-row items-center space-x-7 justify-center text-white font-normal text-sm absolute bottom-0">
+        <a href="" className="hover:underline">Terms of Use</a>
+        <p>Dwellow © 2024</p>
+        <a href="" className="hover:underline">Privacy Policy</a>
+      </footer>
     </div>
   );
 };

@@ -18,6 +18,17 @@ module.exports = {
     },
     extend: {
       colors: {
+        'dwellow': {
+          primary: '#368156',
+          secondary: '#8FC5A6',
+          tertiary: '#D3EDDE',
+          white: '#F5F5F5',
+          black: '#25272D',
+          grey: '#5B606D'
+        },
+        fontFamily: {
+          inter: ["Inter", "sans-serif"]
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
