@@ -6,6 +6,10 @@ import { auth } from "../config/Firebase";
 import { useNavigate } from "react-router-dom";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectValue, SelectItem, SelectContent, SelectTrigger } from "@/components/ui/select";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,} from "@/components/ui/tooltip";
+import InfoIcon from "../assets/info-circle.svg";
 
 const Register: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -88,7 +92,7 @@ const Register: React.FC = () => {
         {errorMessage && (
           <div className="mb-4 text-center text-red-500">{errorMessage}</div>
         )}
-        <div className="flex-row space-x-5">
+        <div className="flex flex-row space-x-7">
             <div>
                 <p className="font-semibold text-dwellow-black">I am registering as a(n)...</p>
                 <Select
@@ -102,6 +106,35 @@ const Register: React.FC = () => {
                             <SelectItem value="admin">Admin</SelectItem>
                         </SelectContent>
                 </Select>
+            </div>
+        {/* INVITE CODE LOGIC IS HERE IDK IF IT SHOULD BE HERE OR ON THE NEXT PAGE */} 
+            <div>
+                <p className="font-semibold text-dwellow-black inline-flex">Invite Code
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <img className="h-5 pl-1 pt-1 hover:cursor-help" src={InfoIcon}/>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                        <p>Get your invite code from an admin!</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
+                </p>
+                <InputOTP
+                    maxLength={5}
+                    pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
+                    value={inviteCode}
+                    onChange={setInviteCode}
+                >
+                <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                </InputOTPGroup>
+                </InputOTP>
             </div>
         </div>
         <div className="h-4" />
