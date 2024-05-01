@@ -14,7 +14,6 @@ function generateCode() {
             const randomIndex = Math.floor(Math.random() * characters.length);
             result += characters[randomIndex];
         }
-        // TODO: Add to db and check if unique
     } while (isUnique);
 
     logger.info(`Generated code: ${result}`);

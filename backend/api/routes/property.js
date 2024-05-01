@@ -6,13 +6,13 @@ const { getProperties,
     createProperty,
     updateProperty,
     deleteProperty,
-    getPropertyAndUnits,
-    getUnitById,
+    getProperty,
+    getUnits,
     createUnit,
     updateUnit,
     deleteUnit,
     associateUnitWithUser,
-    saveCodeToDB,
+    createCode,
     deleteInviteCode } = require('../utils/connector');
 
 /**
@@ -28,6 +28,10 @@ const isAdmin = (req, res, next) => {
     if (req.role !== 'admin') {
         logger.warn(`User with ID: ${req.user_id} attempted to perform an admin action`);
         return res.status(403).send('Unauthorized: This action is allowed for admin only');
+    }
+    else {
+        logger.info(`Admin with ID: ${req.user_id} is accessing admin routes`);
+
     }
     next();
 };
@@ -54,14 +58,24 @@ const isAdmin = (req, res, next) => {
  *         description: Server error
  */
 
-router.get('/properties', isAdmin, async (req, res) => {
+router.get('/', isAdmin, async (req, res) => {
     try {
-        const properties = await getProperties(req.user_id);
+        const userId = req.user_id;
+        const properties = await getProperties(userId);
         logger.info('Fetched all properties');
-        res.json(properties);
+
+        res.json({
+            success: true,
+            count: properties.length,
+            data: properties
+        });
     } catch (error) {
         logger.error(`Error fetching properties: ${error}`);
-        res.status(500).send('Error fetching properties');
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching properties',
+            error: error.message
+        });
     }
 });
 
@@ -101,9 +115,18 @@ router.get('/properties', isAdmin, async (req, res) => {
  *         description: Server error
  */
 
-router.get('/properties/:propertyId/units', isAdmin, async (req, res) => {
+router.get('/:propertyId/units', isAdmin, async (req, res) => {
     try {
-        const propertyAndUnits = await getPropertyAndUnits(req.user_id, req.params.propertyId);
+
+        const property_id = req.params.propertyId;
+        const property = await getProperty(req.user_id, property_id)
+        const units = await getUnits(req.user_id, req.params.propertyId);
+
+        const propertyAndUnits = {
+            property,
+            units
+        };
+
         if (!propertyAndUnits) {
             logger.warn(`Property with ID: ${req.params.propertyId} not found`);
             return res.status(404).send('Property not found');
@@ -151,9 +174,10 @@ router.get('/properties/:propertyId/units', isAdmin, async (req, res) => {
  *         description: Server error
  */
 
-router.get('/properties/:propertyId/units/:unitId', isAdmin, async (req, res) => {
+/*
+router.get('/:propertyId/units/:unitId', isAdmin, async (req, res) => {
     try {
-        const unit = await getUnitById(req.user_id, req.params.unitId);
+        const unit = await getUnit(req.user_id, req.params.unitId);
         if (!unit) {
             logger.warn(`Unit with ID: ${req.params.unitId} not found`);
             return res.status(404).send('Unit not found');
@@ -165,6 +189,8 @@ router.get('/properties/:propertyId/units/:unitId', isAdmin, async (req, res) =>
         res.status(500).send('Error fetching unit');
     }
 });
+
+*/
 
 /**
  * @swagger
@@ -193,9 +219,14 @@ router.get('/properties/:propertyId/units/:unitId', isAdmin, async (req, res) =>
  *       500:
  *         description: Server error
  */
-router.post('/properties', isAdmin, async (req, res) => {
+router.post('/', isAdmin, async (req, res) => {
     try {
-        const newProperty = await createProperty(req.body);
+
+        const { title, address, description, photo, units } = req.body;
+        console.log(req.body);
+        console.log(title, address, description, photo, units)
+
+        const newProperty = await createProperty(req.user_id, title, address, description, units);
         if (newProperty) {
             logger.info(`Admin with ID: ${req.user_id} created a new property with ID: ${newProperty.id}`);
             res.status(201).json(newProperty);
@@ -241,7 +272,7 @@ router.post('/properties', isAdmin, async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.put('/properties/:propertyId', isAdmin, async (req, res) => {
+router.put('/:propertyId', isAdmin, async (req, res) => {
     try {
         const updatedProperty = await updateProperty(req.user_id, req.params.propertyId, req.body);
         if (updatedProperty) {
@@ -281,7 +312,7 @@ router.put('/properties/:propertyId', isAdmin, async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.delete('/properties/:propertyId', isAdmin, async (req, res) => {
+router.delete('/:propertyId', isAdmin, async (req, res) => {
     try {
         const result = await deleteProperty(req.user_id, req.params.propertyId);
         if (result) {
@@ -329,9 +360,13 @@ router.delete('/properties/:propertyId', isAdmin, async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.post('/properties/:propertyId/units', isAdmin, async (req, res) => {
+router.post('/:propertyId/units', isAdmin, async (req, res) => {
     try {
-        const newUnit = await createUnit(req.user_id, req.params.propertyId, req.body);
+
+        const property_id = req.params.propertyId;
+        const { unit, description } = req.body;
+
+        const newUnit = await createUnit(req.user_id, property_id, unit, description);
         if (newUnit) {
             logger.info(`Admin with ID: ${req.user_id} created a unit with ID: ${newUnit.id} for property ID: ${req.params.propertyId}`);
             res.status(201).json(newUnit);
@@ -381,7 +416,7 @@ router.post('/properties/:propertyId/units', isAdmin, async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.put('/properties/:propertyId/units/:unitId', isAdmin, async (req, res) => {
+router.put('/:propertyId/units/:unitId', isAdmin, async (req, res) => {
     try {
         const updatedUnit = await updateUnit(req.user_id, req.params.unitId, req.body);
         if (updatedUnit) {
@@ -425,7 +460,7 @@ router.put('/properties/:propertyId/units/:unitId', isAdmin, async (req, res) =>
  *       500:
  *         description: Server error
  */
-router.delete('/properties/:propertyId/units/:unitId', isAdmin, async (req, res) => {
+router.delete('/:propertyId/units/:unitId', isAdmin, async (req, res) => {
     try {
         const result = await deleteUnit(req.user_id, req.params.unitId);
         if (result) {
@@ -479,21 +514,24 @@ router.delete('/properties/:propertyId/units/:unitId', isAdmin, async (req, res)
  *       500:
  *         description: Server error
  */
-router.post('/properties/:propertyId/units/:unitId/invite', isAdmin, async (req, res) => {
+router.post('/:propertyId/units/:unitId/invite', isAdmin, async (req, res) => {
     try {
+        const { propertyId, unitId } = req.params;
         const { email } = req.body;
-        const code = generateCode();
-        const inviteSent = await sendCodeByEmail(email, code);
+
+        const inviteCode = await createCode(propertyId, unitId, email);
+
+        const inviteSent = await sendCodeByEmail(email, inviteCode);
+
         if (inviteSent) {
-            await saveCodeToDB(code, req.params.propertyId, req.params.unitId);
             logger.info(`Admin with ID: ${req.user_id} sent an invite code to ${email}`);
             res.send('Invite code sent successfully');
         } else {
-            logger.warn(`Failed to send invite code to ${email} by admin ${req.user_id}`);
+            logger.warn(`Failed to send invite code to ${email}`);
             res.status(400).send('Failed to send invite code');
         }
     } catch (error) {
-        logger.error(`Error sending invite code by admin ${req.user_id}: ${error}`);
+        logger.error(`Error sending invite code: ${error}`);
         res.status(500).send('Error sending invite code');
     }
 });
@@ -539,23 +577,21 @@ router.post('/properties/:propertyId/units/:unitId/invite', isAdmin, async (req,
  *       500:
  *         description: Server error
  */
-router.post('/properties/:propertyId/units/:unitId/associate', async (req, res) => {
+router.post('/associate/', async (req, res) => {
     try {
-        const { userId, code } = req.body;
-        if (req.user_id !== userId) {
-            logger.warn(`User with ID: ${req.user_id} attempted to use a code for a different user`);
-            return res.status(403).send('Unauthorized: Cannot use code for a different user');
-        }
-        const associationResult = await associateUnitWithUser(userId, req.params.unitId, code);
+        const code = req.body.code;
+
+        const associationResult = await associateUnitWithUser(req.user_id, code);
+
         if (associationResult) {
-            logger.info(`User with ID: ${userId} associated with unit ID: ${req.params.unitId} using code`);
+            logger.info(`Unit associated with user successfully`);
             res.send('Unit associated with user successfully');
         } else {
-            logger.warn(`Failed to associate unit ID: ${req.params.unitId} with user ID: ${userId}`);
+            logger.warn(`Failed to associate unit with user or invalid code`);
             res.status(400).send('Failed to associate unit with user or invalid code');
         }
     } catch (error) {
-        logger.error(`Error associating user ${req.user_id} with unit: ${error}`);
+        logger.error(`Error associating unit with user: ${error}`);
         res.status(500).send('Error associating unit with user');
     }
 });
@@ -597,7 +633,7 @@ router.post('/properties/:propertyId/units/:unitId/associate', async (req, res) 
  *         description: Server error
  */
 
-router.delete('/properties/:propertyId/units/:unitId/invite/:code', isAdmin, async (req, res) => {
+router.delete('/:propertyId/units/:unitId/invite/:code', isAdmin, async (req, res) => {
     try {
         const { propertyId, unitId, code } = req.params;
         const result = await deleteInviteCode(req.user_id, propertyId, unitId, code);
