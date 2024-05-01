@@ -1,3 +1,4 @@
+
 version: '3'
 
 services:
@@ -13,7 +14,7 @@ services:
     restart: always
 
   database:
-    image: mcr.microsoft.com/mssql/server:2019-latest
+    image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: database
     volumes:
     - ./backend/database:/app  
@@ -21,8 +22,8 @@ services:
       - .env  
     environment:
       ACCEPT_EULA: Y
-      MSSQL_PID: Developer
       MSSQL_TCP_PORT: 1433
+      TrustServerCertificate: True
     ports:
       - "1433:1433"
     restart: always
@@ -37,3 +38,13 @@ services:
     restart: always
     command: sh -c "cd /app && npm install && npm start"
 
+  web:
+    image: node:alpine
+    container_name: web
+    volumes:
+      - ./frontend/web:/app
+    ports:
+      - "5173:5173"
+    restart: always
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host"
