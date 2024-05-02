@@ -10,14 +10,17 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: install ssh keys
-      # check this thread to understand why its needed:
-      # https://stackoverflow.com/a/70447517
+    - name: Install Tailscale client
       run: |
-        install -m 600 -D /dev/null ~/.ssh/id_rsa
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
-    - name: connect and pull
-      run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull &&docker-compose restart api nginx web && exit"
-    - name: cleanup
-      run: rm -rf ~/.ssh
+        curl -fsSL https://tailscale.com/install.sh | sh
+        - name: Connect to Tailscale network
+            run: |
+              tailscale up --authkey ${{ secrets.TAILSCALE_AUTH_KEY }}
+              - name: Pull code with Git
+                  run: |
+                    git clone --single-branch --branch ${{ secrets.MAIN_BRANCH }} https://github.com/gabeele/dwellow.git ${{ secrets.WORK_DIR }}
+                    cd ${{ secrets.WORK_DIR }}
+                    git pull
+                    docker-compose restart api nginx web
+                    exit
+
