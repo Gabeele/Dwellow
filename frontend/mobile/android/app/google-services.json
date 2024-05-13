@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "666477642597",
+    "project_id": "dwellow-ab144",
+    "storage_bucket": "dwellow-ab144.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:666477642597:android:70969e2e0a534d0ccdd78c",
+        "android_client_info": {
+          "package_name": "com.example.mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_GCvDqRCqOhrIfkjM9ogs2tk6k41LJ74"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
