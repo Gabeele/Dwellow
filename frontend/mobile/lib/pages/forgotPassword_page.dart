@@ -1,27 +1,36 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/components/button.dart';
 import 'package:mobile/components/textfield.dart';
 import 'package:mobile/components/wave_container.dart';
 import 'package:mobile/helper/helper_functions.dart';
-import 'forgotPassword_page.dart';
 
-class LoginPage extends StatefulWidget {
-  void Function()? onTap;
-  LoginPage({super.key, required this.onTap});
+class ForgotPasswordPage extends StatefulWidget {
   final String logo = 'images/logo.svg';
-
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  _ForgotPasswordPageState createState() => _ForgotPasswordPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  void login() async {
+  @override
+  void initState() {
+    super.initState();
+    // Set the status bar color to match the theme
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors
+          .transparent, // Use transparent if you want to show the header background color
+      statusBarIconBrightness:
+          Brightness.light, // Change this based on your theme
+    ));
+  }
+
+  void resetPassword() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -34,14 +43,13 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     try {
-      UserCredential? userCredential =
-          await FirebaseAuth.instance.signInWithEmailAndPassword(
+      await FirebaseAuth.instance.sendPasswordResetEmail(
         email: emailController.text,
-        password: passwordController.text,
       );
 
       Navigator.pop(context);
-      // Navigate to another page if needed
+      displayMessage(
+          'Password reset email sent. Please check your inbox.', context);
     } on FirebaseAuthException catch (e) {
       Navigator.pop(context);
       String errorMessage;
@@ -49,17 +57,11 @@ class _LoginPageState extends State<LoginPage> {
         case 'user-not-found':
           errorMessage = 'No user found for that email.';
           break;
-        case 'wrong-password':
-          errorMessage = 'Wrong password provided.';
-          break;
         case 'invalid-email':
           errorMessage = 'The email address is not valid.';
           break;
-        case 'user-disabled':
-          errorMessage = 'This user has been disabled.';
-          break;
         default:
-          errorMessage = 'There is an error in logging in. Please try again.';
+          errorMessage = 'An error occurred. Please try again.';
       }
       displayMessage(errorMessage, context);
     }
@@ -100,69 +102,26 @@ class _LoginPageState extends State<LoginPage> {
                           return null;
                         },
                       ),
+                      const SizedBox(height: 25),
+                      // Reset Password button
+                      MyButton(text: "Reset Password", onTap: resetPassword),
                       const SizedBox(height: 10),
-                      // Password
-                      MyTextField(
-                        hintText: "Password",
-                        obscureText: true,
-                        controller: passwordController,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your password';
-                          }
-                          if (value.length < 6) {
-                            return 'Password must be at least 6 characters';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      // Forgot password
+                      // Back to Login
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "Forgot password?",
+                            "Remember your password? ",
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.secondary,
                             ),
                           ),
                           GestureDetector(
                             onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => ForgotPasswordPage()),
-                              );
+                              Navigator.pop(context);
                             },
                             child: Text(
-                              " Reset",
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 25),
-                      // Login button
-                      MyButton(text: "Login", onTap: login),
-                      const SizedBox(height: 10),
-                      // Don't have an account? Register
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Don't have an account? ",
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.secondary,
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: widget.onTap,
-                            child: Text(
-                              "Register",
+                              "Login here",
                               style: TextStyle(
                                 color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.bold,
