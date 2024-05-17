@@ -23,7 +23,10 @@ class MyTextField extends StatelessWidget {
       decoration: InputDecoration(
         filled: true,
         fillColor: theme.colorScheme.surface,
-        hintText: hintText,
+        labelText: hintText,
+        labelStyle:
+            TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
         hintStyle:
             TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
         contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),

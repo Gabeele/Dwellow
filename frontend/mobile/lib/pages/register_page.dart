@@ -7,6 +7,7 @@ import 'package:mobile/components/button.dart';
 import 'package:mobile/components/textfield.dart';
 import 'package:mobile/components/wave_container.dart';
 import 'package:mobile/helper/helper_functions.dart';
+import 'package:mobile/pages/otp_vertificatinon_page.dart';
 
 class RegisterPage extends StatefulWidget {
   void Function()? onTap;
@@ -60,7 +61,14 @@ class _RegisterPageState extends State<RegisterPage> {
         );
 
         Navigator.pop(context);
-        // Navigate to another page if needed
+        // Navigate to OTP Verification Page
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                OTPVerificationPage(email: emailController.text),
+          ),
+        );
       } on FirebaseAuthException catch (e) {
         Navigator.pop(context);
         String errorMessage;
