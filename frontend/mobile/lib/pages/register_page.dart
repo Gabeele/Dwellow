@@ -1,41 +1,31 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/components/button.dart';
 import 'package:mobile/components/textfield.dart';
 import 'package:mobile/components/wave_container.dart';
 import 'package:mobile/helper/helper_functions.dart';
-import 'package:mobile/pages/otp_vertificatinon_page.dart';
+import 'package:mobile/pages/otp_verification_page.dart';
 
 class RegisterPage extends StatefulWidget {
-  void Function()? onTap;
-  RegisterPage({super.key, required this.onTap});
-  final String logo = 'images/logo.svg';
+  final String logo;
+  final VoidCallback onTap;
+
+  const RegisterPage({required this.logo, required this.onTap, Key? key})
+      : super(key: key);
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  _RegisterPageState createState() => _RegisterPageState();
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
   final _formKey = GlobalKey<FormState>();
-
-  @override
-  void initState() {
-    super.initState();
-    // Set the status bar color to match the theme
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors
-          .transparent, // Use transparent if you want to show the header background color
-      statusBarIconBrightness:
-          Brightness.light, // Change this based on your theme
-    ));
-  }
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
+  final fullNameController = TextEditingController();
+  final phoneNumberController = TextEditingController();
 
   void register() async {
     if (!_formKey.currentState!.validate()) {
@@ -53,43 +43,98 @@ class _RegisterPageState extends State<RegisterPage> {
       Navigator.pop(context);
       displayMessage("Passwords do not match", context);
     } else {
-      try {
-        UserCredential? userCredential =
-            await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: emailController.text,
-          password: passwordController.text,
-        );
+      bool fbResult = await handleUserRegistrationFirebase(
+          emailController.text, passwordController.text);
 
-        Navigator.pop(context);
-        // Navigate to OTP Verification Page
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                OTPVerificationPage(email: emailController.text),
-          ),
-        );
-      } on FirebaseAuthException catch (e) {
-        Navigator.pop(context);
-        String errorMessage;
-        switch (e.code) {
-          case 'email-already-in-use':
-            errorMessage = 'The email address is already in use.';
-            break;
-          case 'invalid-email':
-            errorMessage = 'The email address is not valid.';
-            break;
-          case 'operation-not-allowed':
-            errorMessage = 'Operation not allowed.';
-            break;
-          case 'weak-password':
-            errorMessage = 'The password is too weak.';
-            break;
-          default:
-            errorMessage = 'An error occurred. Please try again.';
+      if (fbResult) {
+        bool dResult = await handleUserRegistrationDwellow(
+            fullNameController.text,
+            emailController.text,
+            phoneNumberController.text);
+
+        if (!dResult) {
+          await handleRemoveUserFirebase();
+          if (mounted) Navigator.pop(context);
+          displayMessage("Registration failed. Please try again.", context);
+        } else {
+          Navigator.pop(context);
+          // Navigate to OTP Verification Page
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  OTPVerificationPage(email: emailController.text),
+            ),
+          );
         }
-        displayMessage(errorMessage, context);
       }
+    }
+  }
+
+  Future<bool> handleUserRegistrationFirebase(
+      String email, String password) async {
+    try {
+      UserCredential? userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
+      return true;
+    } on FirebaseAuthException catch (e) {
+      Navigator.pop(context);
+      String errorMessage;
+      switch (e.code) {
+        case 'email-already-in-use':
+          errorMessage = 'The email address is already in use.';
+          break;
+        case 'invalid-email':
+          errorMessage = 'The email address is not valid.';
+          break;
+        case 'operation-not-allowed':
+          errorMessage = 'Operation not allowed.';
+          break;
+        case 'weak-password':
+          errorMessage = 'The password is too weak.';
+          break;
+        default:
+          errorMessage = 'An error occurred. Please try again.';
+      }
+      displayMessage(errorMessage, context);
+    }
+    return false;
+  }
+
+  Future<bool> handleUserRegistrationDwellow(
+      String fullName, String email, String phoneNumber) async {
+    try {
+      final response = await http.post(
+        Uri.parse('https://api.dwellow.ca/register'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'fullName': fullName,
+          'email': email,
+          'phoneNumber': phoneNumber,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      // Handle any exceptions here
+      return false;
+    }
+  }
+
+  Future<void> handleRemoveUserFirebase() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await user.delete();
+      }
+    } catch (e) {
+      // Handle any exceptions here
     }
   }
 
@@ -113,6 +158,35 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      // Full Name
+                      MyTextField(
+                        hintText: "Full Name",
+                        obscureText: false,
+                        controller: fullNameController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your full name';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      // Phone Number
+                      MyTextField(
+                        hintText: "Phone Number",
+                        obscureText: false,
+                        controller: phoneNumberController,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your phone number';
+                          }
+                          if (!RegExp(r'^\+?[0-9]{10,15}$').hasMatch(value)) {
+                            return 'Please enter a valid phone number';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 10),
                       // Email
                       MyTextField(
                         hintText: "Email",
