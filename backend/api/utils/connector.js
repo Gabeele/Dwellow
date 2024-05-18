@@ -449,6 +449,82 @@ async function deleteUnit(userId, unitId) {
     }
 }
 
+async function createTicket(unitId, userId, description) {
+    try {
+        await sql.connect(config);
+        const request = new sql.Request();
+        request.input('unitId', sql.Int, unitId);
+        request.input('userId', sql.Int, userId);
+        request.input('description', sql.NVarChar(sql.MAX), description);
+
+        const result = await request.execute('CreateTicket');
+        logger.info('Ticket created successfully:', result);
+        return result;
+    } catch (error) {
+        logger.error(`Error creating ticket for user ${userId}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+async function updateTicket(ticketId, unitId, userId, description) {
+    try {
+        await sql.connect(config);
+        const request = new sql.Request();
+        request.input('ticketId', sql.Int, ticketId);
+        request.input('unitId', sql.Int, unitId);
+        request.input('userId', sql.Int, userId);
+        request.input('description', sql.NVarChar(sql.MAX), description);
+
+        const result = await request.execute('UpdateTicket');
+        if (result.rowsAffected[0] > 0) {
+            logger.info(`Ticket with ticket_id ${ticketId} updated successfully.`);
+            return true;
+        } else {
+            logger.warn(`No Ticket found with ticket_id ${ticketId} to update.`);
+            return false;
+        }
+    } catch (error) {
+        logger.error(`Error updating Ticket with ticket_id ${ticketId}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+async function removeTicket(ticketId) {
+    try {
+        await sql.connect(config);
+        const request = new sql.Request();
+        request.input('ticketId', sql.Int, ticketId);
+
+        const result = await request.execute('RemoveTicket');
+        if (result.rowsAffected[0] > 0) {
+            logger.info(`Ticket with ticket_id ${ticketId} removed successfully.`);
+            return true;
+        } else {
+            logger.warn(`No Ticket found with ticket_id ${ticketId} to remove.`);
+            return false;
+        }
+    } catch (error) {
+        logger.error(`Error removing Ticket with ticket_id ${ticketId}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+// Modify other functions similarly
+
+module.exports = {
+    createTicket,
+    updateTicket,
+    removeTicket,
+    // Add other functions here
+};
+
+
 async function associateUnitWithUser(user_id, code) {
     try {
 
@@ -532,5 +608,8 @@ module.exports = {
     checkEmail,
     getUser,
     deleteUser,
-    updateUser
+    updateUser,
+    createTicket,
+    updateTicket,
+    removeTicket
 };
