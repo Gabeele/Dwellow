@@ -48,8 +48,7 @@ const router = express.Router();
  *         description: Internal server error. An unexpected error occurred.
  */
 router.get('/', async (req, res) => {
-
-
+//console.log("hello")
     try {
         const id = req.user_id;
         //console.log (req);

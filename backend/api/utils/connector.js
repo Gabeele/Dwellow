@@ -35,8 +35,14 @@ async function executeQuery(query) {
 async function createAccount(email, userType, fullName, phoneNumber, fb_uuid) {
     try {
         await sql.connect(config);
-        const query = `INSERT INTO [dbo].[users] ([user_type],[email],[full_name],[token],[phone_number]) VALUES ('${userType}', '${email}', '${fullName}', '${fb_uuid}', '${phoneNumber}')`;
-        const result = await sql.query(query);
+        const request = new sql.Request();
+        request.input('userType', sql.NVarChar, userType);
+        request.input('email', sql.NVarChar, email);
+        request.input('fullName', sql.NVarChar, fullName);
+        request.input('token', sql.NVarChar, fb_uuid);
+        request.input('phoneNumber', sql.NVarChar, phoneNumber);
+
+        const result = await request.execute('CreateAccount');
         logger.info('Account created successfully:', result);
         return true;
     } catch (error) {
@@ -124,8 +130,10 @@ async function getUserId(token) { // TODO: Gavin's attempt at making a user ID t
 async function deleteUser(id) {
     try {
         await sql.connect(config);
-        const query = `DELETE FROM users WHERE user_id = '${id}'`;
-        const result = await sql.query(query);
+        const request = new sql.Request();
+        request.input('id', sql.Int, id);
+
+        const result = await request.execute('RemoveUser');
         if (result.rowsAffected[0] > 0) {
             logger.info(`User with user_id ${id} deleted successfully.`);
             return true;
@@ -145,18 +153,15 @@ async function deleteUser(id) {
 async function updateUser(email, id, userType, password, fullName, phoneNumber) {
     try {
         await sql.connect(config);
-        const query = `
-        UPDATE [dbo].[users] 
-        SET 
-            [user_type] = '${userType}',
-            [password] = '${password}',
-            [email] = '${email}',
-            [full_name] = '${fullName}',
-            [phone_number] = '${phoneNumber}'
-        WHERE 
-            [user_id] = '${id}'
-    `;
-        const result = await sql.query(query);
+        const request = new sql.Request();
+        request.input('email', sql.NVarChar, email);
+        request.input('id', sql.Int, id);
+        request.input('userType', sql.NVarChar, userType);
+        request.input('password', sql.NVarChar, password);
+        request.input('fullName', sql.NVarChar, fullName);
+        request.input('phoneNumber', sql.NVarChar, phoneNumber);
+
+        const result = await request.execute('UpdateUser');
         if (result.rowsAffected[0] > 0) {
             logger.info(`User with user_id ${id} updated successfully.`);
             return true;
@@ -189,15 +194,20 @@ async function getUserAnnouncements(userId) {
     }
 }
 
-async function createAnnouncement(user_id, title, text, datetime) {
+async function createAnnouncement(userId, title, text, datetime) {
     try {
         await sql.connect(config);
-        const query = `INSERT INTO [dbo].[announcements] ([user_id],[title],[text],[datetime]) VALUES ('${user_id}', '${title}', '${text}', '${datetime}')`;
-        const result = await sql.query(query);
+        const request = new sql.Request();
+        request.input('userId', sql.Int, userId);
+        request.input('title', sql.NVarChar, title);
+        request.input('text', sql.NVarChar, text);
+        request.input('datetime', sql.NVarChar, datetime);
+
+        const result = await request.execute('CreateAnnouncement');
         logger.info('Announcements created successfully:', result);
         return result;
     } catch (error) {
-        logger.error(`Error creating announcement for user ${user_id}: ${error}`);
+        logger.error(`Error creating announcement for user ${userId}: ${error}`);
         throw error;
     } finally {
         await sql.close();
@@ -207,8 +217,10 @@ async function createAnnouncement(user_id, title, text, datetime) {
 async function deleteAnnouncement(announcementId) {
     try {
         await sql.connect(config);
-        const query = `DELETE FROM announcements WHERE announcement_id = '${announcementId}'`;
-        const result = await sql.query(query);
+        const request = new sql.Request();
+        request.input('announcementId', sql.Int, announcementId);
+
+        const result = await request.execute('RemoveAnnouncement');
         if (result.rowsAffected[0] > 0) {
             logger.info(`Announcement with announcement_id ${announcementId} deleted successfully.`);
             return true;
@@ -265,60 +277,59 @@ async function getProperties(user_id) {
     }
 }
 
-async function createProperty(user_id, title, address, description, units) {
+async function createProperty(userId, title, address, description, units) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
-        request.input('title', sql.NVarChar(255), title);
-        request.input('address', sql.NVarChar(255), address);
-        request.input('photo', sql.VarBinary(sql.MAX), null);
-        request.input('description', sql.NVarChar(255), description);
-        request.input('num_units', sql.Int, parseInt(units, 10));
-        request.input('user_id', sql.Int, user_id);
+        request.input('userId', sql.Int, userId);
+        request.input('title', sql.NVarChar, title);
+        request.input('address', sql.NVarChar, address);
+        request.input('description', sql.NVarChar, description);
+        request.input('numUnits', sql.Int, parseInt(units, 10));
 
-        const result = await request.execute('AddProperty');
+        const result = await request.execute('CreateProperty');
         logger.info('Property created successfully:', result);
         return result;
     } catch (error) {
-        logger.error(`Error creating Property for user ${user_id}: ${error}`);
+        logger.error(`Error creating Property for user ${userId}: ${error}`);
         throw error;
     } finally {
         await sql.close();
     }
 }
 
-async function updateProperty(user_id, propertyData, property_id) {
+async function updateProperty(userId, propertyData, propertyId) {
     try {
         await sql.connect(config);
-        const query = `
-        UPDATE [dbo].[properties] 
-        SET 
-            [user_id] = '${user_id}',
-            [property_data] = '${propertyData}',
-        WHERE 
-            [property_id] = '${property_id}'
-    `;
-        const result = await sql.query(query);
+        const request = new sql.Request();
+        request.input('userId', sql.Int, userId);
+        request.input('propertyData', sql.NVarChar, propertyData);
+        request.input('propertyId', sql.Int, propertyId);
+
+        const result = await request.execute('UpdateProperty');
         if (result.rowsAffected[0] > 0) {
-            logger.info(`Property with property_id ${property_id} updated successfully.`);
+            logger.info(`Property with property_id ${propertyId} updated successfully.`);
             return true;
         } else {
-            logger.warn(`No property found with property_id ${property_id} to update.`);
+            logger.warn(`No property found with property_id ${propertyId} to update.`);
             return false;
         }
     } catch (error) {
-        logger.error(`Error updating property with property_id ${property_id}: ${error}`);
+        logger.error(`Error updating property with property_id ${propertyId}: ${error}`);
         throw error;
     } finally {
         await sql.close();
     }
 }
 
-async function deleteProperty(user_id, propertyId) {
+async function deleteProperty(userId, propertyId) {
     try {
         await sql.connect(config);
-        const query = `DELETE FROM properties WHERE property_id = '${propertyId}'`;
-        const result = await sql.query(query);
+        const request = new sql.Request();
+        request.input('userId', sql.Int, userId);
+        request.input('propertyId', sql.Int, propertyId);
+
+        const result = await request.execute('RemoveProperty');
         if (result.rowsAffected[0] > 0) {
             logger.info(`Property with property_id ${propertyId} deleted successfully.`);
             return true;
@@ -371,33 +382,35 @@ async function getUnits(user_id, property_id) {
     }
 }
 
-async function createUnit(user_id, propertyId, unit, description) {
+async function createUnit(userId, propertyId, unit, description) {
     try {
         await sql.connect(config);
-        const query = `INSERT INTO [dbo].[units] ([unit],[property_id], [description]) VALUES ('${unit}', '${propertyId}', '${description}')`;
-        const result = await sql.query(query);
+        const request = new sql.Request();
+        request.input('userId', sql.Int, userId);
+        request.input('propertyId', sql.Int, propertyId);
+        request.input('unit', sql.NVarChar, unit);
+        request.input('description', sql.NVarChar, description);
+
+        const result = await request.execute('CreateUnit');
         logger.info('Unit created successfully:', result);
         return result;
     } catch (error) {
-        logger.error(`Error creating Unit for user ${user_id}: ${error}`);
+        logger.error(`Error creating Unit for user ${userId}: ${error}`);
         throw error;
     } finally {
         await sql.close();
     }
 }
 
-async function updateUnit(user_id, unitId, unitData) {
+async function updateUnit(userId, unitId, unitData) {
     try {
         await sql.connect(config);
-        const query = `
-        UPDATE [dbo].[units] 
-        SET 
-            [user_id] = '${user_id}',
-            [unit_data] = '${unitData}',
-        WHERE 
-            [unit_id] = '${unitId}'
-    `;
-        const result = await sql.query(query);
+        const request = new sql.Request();
+        request.input('userId', sql.Int, userId);
+        request.input('unitId', sql.Int, unitId);
+        request.input('unitData', sql.NVarChar, unitData);
+
+        const result = await request.execute('UpdateUnit');
         if (result.rowsAffected[0] > 0) {
             logger.info(`Unit with unit_id ${unitId} updated successfully.`);
             return true;
@@ -413,11 +426,14 @@ async function updateUnit(user_id, unitId, unitData) {
     }
 }
 
-async function deleteUnit(user_id, unitId) {
+async function deleteUnit(userId, unitId) {
     try {
         await sql.connect(config);
-        const query = `DELETE FROM units WHERE unit_id = '${unitId}'`;
-        const result = await sql.query(query);
+        const request = new sql.Request();
+        request.input('userId', sql.Int, userId);
+        request.input('unitId', sql.Int, unitId);
+
+        const result = await request.execute('RemoveUnit');
         if (result.rowsAffected[0] > 0) {
             logger.info(`Unit with unit_id ${unitId} deleted successfully.`);
             return true;
@@ -432,6 +448,82 @@ async function deleteUnit(user_id, unitId) {
         await sql.close();
     }
 }
+
+async function createTicket(unitId, userId, description) {
+    try {
+        await sql.connect(config);
+        const request = new sql.Request();
+        request.input('unitId', sql.Int, unitId);
+        request.input('userId', sql.Int, userId);
+        request.input('description', sql.NVarChar(sql.MAX), description);
+
+        const result = await request.execute('CreateTicket');
+        logger.info('Ticket created successfully:', result);
+        return result;
+    } catch (error) {
+        logger.error(`Error creating ticket for user ${userId}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+async function updateTicket(ticketId, unitId, userId, description) {
+    try {
+        await sql.connect(config);
+        const request = new sql.Request();
+        request.input('ticketId', sql.Int, ticketId);
+        request.input('unitId', sql.Int, unitId);
+        request.input('userId', sql.Int, userId);
+        request.input('description', sql.NVarChar(sql.MAX), description);
+
+        const result = await request.execute('UpdateTicket');
+        if (result.rowsAffected[0] > 0) {
+            logger.info(`Ticket with ticket_id ${ticketId} updated successfully.`);
+            return true;
+        } else {
+            logger.warn(`No Ticket found with ticket_id ${ticketId} to update.`);
+            return false;
+        }
+    } catch (error) {
+        logger.error(`Error updating Ticket with ticket_id ${ticketId}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+async function removeTicket(ticketId) {
+    try {
+        await sql.connect(config);
+        const request = new sql.Request();
+        request.input('ticketId', sql.Int, ticketId);
+
+        const result = await request.execute('RemoveTicket');
+        if (result.rowsAffected[0] > 0) {
+            logger.info(`Ticket with ticket_id ${ticketId} removed successfully.`);
+            return true;
+        } else {
+            logger.warn(`No Ticket found with ticket_id ${ticketId} to remove.`);
+            return false;
+        }
+    } catch (error) {
+        logger.error(`Error removing Ticket with ticket_id ${ticketId}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+// Modify other functions similarly
+
+module.exports = {
+    createTicket,
+    updateTicket,
+    removeTicket,
+    // Add other functions here
+};
+
 
 async function associateUnitWithUser(user_id, code) {
     try {
@@ -516,5 +608,8 @@ module.exports = {
     checkEmail,
     getUser,
     deleteUser,
-    updateUser
+    updateUser,
+    createTicket,
+    updateTicket,
+    removeTicket
 };
