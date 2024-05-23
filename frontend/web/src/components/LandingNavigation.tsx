@@ -3,14 +3,11 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Icons } from "@/components/icons";
 import {
   NavigationMenu,
-  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 
@@ -25,48 +22,47 @@ const components: { title: string; href: string; description: string }[] = [
 
 function LandingNavigation() {
   return (
-    <div className="relative flex items-center justify-between p-1 mt-1 mb-1">
-        <Link to="/" className="absolute left-4 mr-4">Dwellow</Link>
-        <div className="flex-1 flex justify-center">
-            <NavigationMenu>
-                <NavigationMenuList className="flex space-x-4">
-                <NavigationMenuItem>
-                    <Link to="">
-                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                        Home
-                    </NavigationMenuLink>
-                    </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                    <Link to="">
-                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                        About
-                    </NavigationMenuLink>
-                    </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                    <Link to="">
-                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                        Features
-                    </NavigationMenuLink>
-                    </Link>
-                </NavigationMenuItem>
-                <NavigationMenuItem>
-                    <Link to="">
-                    <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                        Contact
-                    </NavigationMenuLink>
-                    </Link>
-                </NavigationMenuItem>
-                </NavigationMenuList>
-            </NavigationMenu>
-        </div>
-        <div className="absolute right-0 flex space-x-4 mr-4">
-            <Link to="/login" className="mr-2">Log in</Link>
-            <Link to="/register" className="btn-primary">Get Started</Link>
-        </div>
+    <div className="relative flex items-center justify-between p-1 bg-dwellow-primary-300 bg-opacity-75">
+      <Link to="/" className="absolute left-4 text-2xl font-bold text-dwellow-white-100">Dwellow</Link>
+      <div className="flex-1 flex justify-center">
+        <NavigationMenu>
+          <NavigationMenuList className="flex space-x-4">
+            <NavigationMenuItem>
+              <Link to="">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Home
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link to="">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  About
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link to="">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Features
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link to="">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Contact
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu>
+      </div>
+      <div className="absolute right-0 flex space-x-4 mr-4">
+        <Link to="/login" className="mr-2">Log in</Link>
+        <Link to="/register" className="btn-primary">Get Started</Link>
+      </div>
     </div>
-    
   );
 }
 
@@ -83,7 +79,6 @@ const ListItem = React.forwardRef<
             "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
             className
           )}
-          style={{ padding: "10px" }}
           {...props}
         >
           <div className="text-sm font-medium leading-none">{title}</div>
