@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:mobile/components/button.dart';
 import 'package:mobile/components/textfield.dart';
 import 'package:mobile/components/wave_container.dart';
@@ -8,8 +7,7 @@ import 'package:mobile/helper/helper_functions.dart';
 import 'forgotPassword_page.dart';
 
 class LoginPage extends StatefulWidget {
-  void Function()? onTap;
-  LoginPage({super.key, required this.onTap});
+  const LoginPage({super.key});
   final String logo = 'images/logo.svg';
 
   @override
@@ -41,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       Navigator.pop(context);
-      // Navigate to another page if needed
+      Navigator.pushReplacementNamed(context, '/home'); // Navigate to home page
     } on FirebaseAuthException catch (e) {
       Navigator.pop(context);
       String errorMessage;
@@ -129,11 +127,8 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           GestureDetector(
                             onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => ForgotPasswordPage()),
-                              );
+                              Navigator.pushReplacementNamed(
+                                  context, '/forgot-password');
                             },
                             child: Text(
                               " Reset",
@@ -160,7 +155,10 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           GestureDetector(
-                            onTap: widget.onTap,
+                            onTap: () {
+                              Navigator.pushReplacementNamed(
+                                  context, '/register');
+                            },
                             child: Text(
                               "Register",
                               style: TextStyle(

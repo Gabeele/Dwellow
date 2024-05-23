@@ -6,9 +6,6 @@ import 'package:mobile/components/otp_input.dart';
 import 'package:mobile/helper/helper_functions.dart';
 
 class OTPVerificationPage extends StatefulWidget {
-  final String email;
-  OTPVerificationPage({required this.email});
-
   @override
   _OTPVerificationPageState createState() => _OTPVerificationPageState();
 }
@@ -75,7 +72,7 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
                       textAlign: TextAlign.center,
                     ),
                     Text(
-                      "Enter the 6-digit unit link code sent to ${widget.email}",
+                      "Enter the 6-digit unit link code sent to your email.",
                       style: TextStyle(fontSize: 18),
                       textAlign: TextAlign.center,
                     ),
