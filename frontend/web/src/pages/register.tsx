@@ -118,9 +118,9 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="flex justify-center flex-col items-center h-screen bg-dwellow-white">
-      <div className="bg-white p-8 rounded shadow items-center">
-        <h1 className="text-3xl font-bold mb-4 text-dwellow-primary flex justify-center items-center">
+    <div className="flex justify-center flex-col items-center h-screen bg-dwellow-white-200">
+      <div className="bg-dwellow-white-100 p-8 rounded shadow items-center">
+        <h1 className="text-3xl font-bold mb-4 text-dwellow-primary-300 flex justify-center items-center">
           Register for Dwellow
         </h1>
         {errorMessage && (
@@ -128,7 +128,7 @@ const Register: React.FC = () => {
         )}
         <div className="flex flex-row space-x-4">
           <div>
-            <p className="font-semibold text-dwellow-black w-40">
+            <p className="font-semibold text-dwellow-dark-200 w-40">
               I am a(n)...
             </p>
             <Select value={userType} onValueChange={(e) => setUserType(e)}>
@@ -143,7 +143,7 @@ const Register: React.FC = () => {
           </div>
           {/* INVITE CODE LOGIC IS HERE IDK IF IT SHOULD BE HERE OR ON THE NEXT PAGE */}
           <div>
-            <p className="font-semibold text-dwellow-black inline-flex">
+            <p className="font-semibold text-dwellow-dark-200 inline-flex">
               Invite Code
               <TooltipProvider>
                 <Tooltip>
@@ -180,7 +180,7 @@ const Register: React.FC = () => {
 
         <div className="flex flex-row space-x-5">
           <div>
-            <p className="font-semibold text-dwellow-black">First Name</p>
+            <p className="font-semibold text-dwellow-dark-200">First Name</p>
             <Input
               type="text"
               placeholder="First Name"
@@ -189,7 +189,7 @@ const Register: React.FC = () => {
             />
           </div>
           <div>
-            <p className="font-semibold text-dwellow-black">Last Name</p>
+            <p className="font-semibold text-dwellow-dark-200">Last Name</p>
             <Input
               type="text"
               placeholder="Last Name"
@@ -200,7 +200,7 @@ const Register: React.FC = () => {
         </div>
         <div className="h-4" />
 
-        <p className="font-semibold text-dwellow-black">Phone Number</p>
+        <p className="font-semibold text-dwellow-dark-200">Phone Number</p>
         <Input
           type="tel"
           placeholder="Phone Number"
@@ -209,7 +209,7 @@ const Register: React.FC = () => {
         />
         <div className="h-4" />
 
-        <p className="font-semibold text-dwellow-black">Email Address</p>
+        <p className="font-semibold text-dwellow-dark-200">Email Address</p>
         <Input
           type="text"
           placeholder="Email"
@@ -218,7 +218,7 @@ const Register: React.FC = () => {
         />
         <div className="h-4" />
 
-        <p className="font-semibold text-dwellow-black">Password</p>
+        <p className="font-semibold text-dwellow-dark-200">Password</p>
         <Input
           type="password"
           placeholder="Password"
@@ -227,7 +227,7 @@ const Register: React.FC = () => {
         />
         <div className="h-4" />
 
-        <p className="text-center text-dwellow-primary text-sm font-medium">
+        <p className="text-center text-dwellow-primary-300 text-sm font-medium">
           <Checkbox
             className="mr-1"
             onCheckedChange={(checked) => {
@@ -237,14 +237,14 @@ const Register: React.FC = () => {
             }}
           />
           I have read and understood the{" "}
-          <a href="" className="text-dwellow-primary font-medium underline">
+          <a href="" className="text-dwellow-primary-300 font-medium underline">
             Terms and Conditions
           </a>
         </p>
         <div className="h-4" />
         <div className="justify-center flex items-center">
           <Button
-            className="bg-dwellow-primary text-xl p-6 pt-4 pb-4"
+            className="bg-dwellow-primary-300 text-xl p-6 pt-4 pb-4"
             onClick={handleRegister}
           >
             Register
@@ -252,16 +252,16 @@ const Register: React.FC = () => {
         </div>
       </div>
 
-      <p className="text-center mt-4 text-dwellow-primary text-sm font-semibold">
+      <p className="text-center mt-4 text-dwellow-primary-300 text-sm font-semibold">
         Already have an account?{" "}
         <a
           href="/login"
-          className="text-dwellow-primary font-semibold hover:underline"
+          className="text-dwellow-primary-300 font-semibold hover:underline"
         >
           Login
         </a>
       </p>
-      <footer className="w-screen bg-dwellow-primary flex flex-row items-center space-x-7 justify-center text-white font-normal text-sm absolute bottom-0">
+      <footer className="w-full bg-dwellow-primary-300 flex flex-row items-center space-x-7 justify-center text-dwellow-white-100 font-normal text-sm absolute bottom-0">
         <a href="" className="hover:underline">
           Terms of Use
         </a>

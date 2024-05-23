@@ -28,15 +28,15 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="flex justify-center flex-col items-center h-screen bg-dwellow-white">
-      <div className="bg-white p-8 rounded shadow px-20 pt-8">
-        <h1 className="text-3xl font-bold mb-8 text-dwellow-primary flex justify-center items-center">
+    <div className="flex justify-center flex-col items-center h-screen bg-dwellow-white-200">
+      <div className="bg-dwellow-white-100 p-8 rounded shadow px-20 pt-8">
+        <h1 className="text-3xl font-bold mb-8 text-dwellow-primary-300 flex justify-center items-center">
           Log into Dwellow
         </h1>
         {errorMessage && (
           <div className="mb-4 text-center text-red-500">{errorMessage}</div>
         )}
-        <p className="font-semibold text-dwellow-black">Email Address</p>
+        <p className="font-semibold text-dwellow-dark-200">Email Address</p>
         <Input
           className="w-96"
           type="text"
@@ -46,7 +46,7 @@ const Login: React.FC = () => {
         />
         <div className="h-4" />
 
-        <p className="font-semibold text-dwellow-black">Password</p>
+        <p className="font-semibold text-dwellow-dark-200">Password</p>
         <Input
           type="password"
           placeholder="Password"
@@ -55,30 +55,30 @@ const Login: React.FC = () => {
         />
         <a
           href="/forgot-password"
-          className="text-dwellow-primary text-sm font-medium mt-2 hover:underline"
+          className="text-dwellow-primary-300 text-sm font-medium mt-2 hover:underline"
         >
           Forgot password?
         </a>
         <div className="h-4" />
         <div className="justify-center flex items-center">
           <Button
-            className="bg-dwellow-primary text-xl p-6 pt-4 pb-4"
+            className="bg-dwellow-primary-300 text-xl p-6 pt-4 pb-4"
             onClick={handleLogin}
           >
             Login
           </Button>
         </div>
       </div>
-      <p className="text-center mt-4 text-dwellow-primary text-sm font-semibold">
+      <p className="text-center mt-4 text-dwellow-primary-300 text-sm font-semibold">
         Don't have an account?{" "}
         <a
           href="/register"
-          className="text-dwellow-primary font-semibold hover:underline"
+          className="text-dwellow-primary-300 font-semibold hover:underline"
         >
           Create Account
         </a>
       </p>
-      <footer className="w-screen bg-dwellow-primary flex flex-row items-center space-x-7 justify-center text-white font-normal text-sm absolute bottom-0">
+      <footer className="w-full bg-dwellow-primary-300 flex flex-row items-center space-x-7 justify-center text-dwellow-white-100 font-normal text-sm absolute bottom-0">
         <a href="" className="hover:underline">
           Terms of Use
         </a>
