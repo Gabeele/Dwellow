@@ -9,11 +9,7 @@ import 'package:mobile/helper/helper_functions.dart';
 import 'package:mobile/pages/otp_verification_page.dart';
 
 class RegisterPage extends StatefulWidget {
-  final String logo;
-  final VoidCallback onTap;
-
-  const RegisterPage({required this.logo, required this.onTap, Key? key})
-      : super(key: key);
+  const RegisterPage({Key? key}) : super(key: key);
 
   @override
   _RegisterPageState createState() => _RegisterPageState();
@@ -32,42 +28,43 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
+    if (passwordController.text != confirmPasswordController.text) {
+      displayMessage("Passwords do not match", context);
+      return;
+    }
+
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => Center(
         child: CircularProgressIndicator(),
       ),
     );
 
-    if (passwordController.text != confirmPasswordController.text) {
+    bool fbResult = await handleUserRegistrationFirebase(
+        emailController.text, passwordController.text);
+
+    if (fbResult) {
+      bool dResult = await handleUserRegistrationDwellow(
+          fullNameController.text,
+          emailController.text,
+          phoneNumberController.text);
+
       Navigator.pop(context);
-      displayMessage("Passwords do not match", context);
-    } else {
-      bool fbResult = await handleUserRegistrationFirebase(
-          emailController.text, passwordController.text);
 
-      if (fbResult) {
-        bool dResult = await handleUserRegistrationDwellow(
-            fullNameController.text,
-            emailController.text,
-            phoneNumberController.text);
-
-        if (!dResult) {
-          await handleRemoveUserFirebase();
-          if (mounted) Navigator.pop(context);
-          displayMessage("Registration failed. Please try again.", context);
-        } else {
-          Navigator.pop(context);
-          // Navigate to OTP Verification Page
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  OTPVerificationPage(email: emailController.text),
-            ),
-          );
-        }
+      if (!dResult) {
+        await handleRemoveUserFirebase();
+        displayMessage("Registration failed. Please try again.", context);
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OTPVerificationPage(),
+          ),
+        );
       }
+    } else {
+      Navigator.pop(context);
     }
   }
 
@@ -104,13 +101,30 @@ class _RegisterPageState extends State<RegisterPage> {
   Future<bool> handleUserRegistrationDwellow(
       String fullName, String email, String phoneNumber) async {
     try {
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        // Handle the case where the user is not logged in
+        return false;
+      }
+
+      String? token = await user.getIdToken();
+      String? uid = user.uid;
+
+      if (token == null) {
+        // Handle the case where the token is null
+        return false;
+      }
+
       final response = await http.post(
-        Uri.parse('https://api.dwellow.ca/register'),
+        Uri.parse('https://192.168.1.69:23450/public/account'),
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
           'fullName': fullName,
+          'userType': 'tenant',
           'email': email,
           'phoneNumber': phoneNumber,
         }),
@@ -150,7 +164,7 @@ class _RegisterPageState extends State<RegisterPage> {
               children: [
                 WaveHeader(
                   height: MediaQuery.of(context).size.height * 0.4,
-                  logo: widget.logo,
+                  logo: 'images/logo.svg',
                   appName: "Dwellow",
                 ),
                 Padding(
@@ -249,7 +263,9 @@ class _RegisterPageState extends State<RegisterPage> {
                             ),
                           ),
                           GestureDetector(
-                            onTap: widget.onTap,
+                            onTap: () {
+                              Navigator.pushReplacementNamed(context, '/login');
+                            },
                             child: Text(
                               "Login here",
                               style: TextStyle(

@@ -27,6 +27,9 @@ class MyApp extends StatelessWidget {
         '/': (context) => AuthPage(),
         '/home': (context) => HomePage(),
         '/chat': (context) => ChatPage(),
+        '/login': (context) => LoginPage(),
+        '/register': (context) => RegisterPage(),
+        '/forgot-password': (context) => ForgotPasswordPage(),
       },
     );
   }
