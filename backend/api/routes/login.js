@@ -2,8 +2,8 @@ const express = require('express');
 const router = express.Router();
 const logger = require('../utils/logger');
 
-const { getUser } = require('../utils/connector.js');
-
+const { getUserId, getUser } = require('../utils/connector.js');
+const { decodeToken } = require('../utils/authenticate.js');
 /**
  * @swagger
  * /login:
@@ -46,8 +46,17 @@ const { getUser } = require('../utils/connector.js');
  *                   example: "No token provided. Provide a token in the header."
  */
 router.post('/', async (req, res) => {
+    //console.log('here');
     try {
-        const id = await getUserId(req.user_id);
+        const token = req.headers['authorization'].split(' ')[0];
+        const decodedToken = await decodeToken(token);
+        req.token = decodedToken;
+
+        //console.log(req.token);
+
+        const id = await getUserId(req.token.user_id);
+
+        const user = getUser(id);
 
         if (user != null) {
             logger.info(`User ${id} logged in successfully.`);

@@ -45,7 +45,7 @@ const { decodeToken } = require('../utils/authenticate');
  */
 
 router.post('/account', async (req, res) => {
-    const { email, userType, fullName, phoneNumber } = req.body;
+    const { email, user_type, full_name, phone_number } = req.body;
     const token = req.headers.authorization;
 
     const decoded = await decodeToken(token);
@@ -62,7 +62,7 @@ router.post('/account', async (req, res) => {
         }
 
         logger.info(`Create Account: New account being created with email ${email}, user type ${userType}, full name ${fullName}, and phone number ${phoneNumber}, and firebase uuid ${fb_uuid}`);
-        const result = await createAccount(email, userType, fullName, phoneNumber, fb_uuid);
+        const result = await createAccount(email, user_type, full_name, phone_number, fb_uuid);
 
         if (result) {
             logger.info(`Create Account: Account created successfully`);
