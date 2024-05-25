@@ -94,3 +94,16 @@ dist-ssr
 .packages
 .pub/
 build/
+frontend/mobile/pubspec.lock
+frontend/mobile/linux/
+frontend/mobile/windows/
+frontend/mobile/macos/
+frontend/mobile/ios/
+frontend/mobile/android/
+frontend/mobile/web/
+frontend/mobile/.dart_tool/
+frontend/mobile/.flutter-plugins
+frontend/mobile/.flutter-plugins-dependencies
+frontend/mobile/.packages
+frontend/mobile/build/
+frontend/mobile/pubspec.lock
