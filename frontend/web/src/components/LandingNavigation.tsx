@@ -10,6 +10,7 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
+import { Button } from "./ui/button";
 
 const components: { title: string; href: string; description: string }[] = [
   {
@@ -22,8 +23,8 @@ const components: { title: string; href: string; description: string }[] = [
 
 function LandingNavigation() {
   return (
-    <div className="relative flex items-center justify-between p-1 bg-dwellow-primary-300 bg-opacity-75">
-      <Link to="/" className="absolute left-4 text-2xl font-bold text-dwellow-white-100">Dwellow</Link>
+    <div className="sticky top-0 z-10 flex items-center justify-between p-3 bg-dwellow-primary-300">
+      <Link to="/" className="absolute left-4 text-2xl font-bold text-dwellow-white-200">Dwellow</Link>
       <div className="flex-1 flex justify-center">
         <NavigationMenu>
           <NavigationMenuList className="flex space-x-4">
@@ -59,8 +60,10 @@ function LandingNavigation() {
         </NavigationMenu>
       </div>
       <div className="absolute right-0 flex space-x-4 mr-4">
-        <Link to="/login" className="mr-2">Log in</Link>
-        <Link to="/register" className="btn-primary">Get Started</Link>
+        <Link to="/login" className="mr-2 mt-1 text-dwellow-white-200 font-medium">Log in</Link>
+        <Link to="/register"><Button variant="outline" 
+        className="text-dwellow-white-200 bg-dwellow-primary-300 hover:bg-dwellow-primary-400 hover:text-dwellow-white-200 font-medium">
+            Get Started</Button></Link>
       </div>
     </div>
   );

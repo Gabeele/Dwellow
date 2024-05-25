@@ -11,7 +11,7 @@ const Landing: React.FC = () => {
         className="relative flex flex-col items-center justify-center h-screen bg-cover bg-no-repeat"
         style={{ backgroundImage: "url('/public/landing_bg.png')" }}>
         <div className="absolute inset-0 bg-black/75"></div>
-        <div className="relative z-10 flex flex-col items-center justify-center">
+        <div className="relative flex flex-col items-center justify-center">
           <h1 className="text-3xl font-bold mb-4 text-dwellow-white-100">
             Property Management & Tenant Ticketing
           </h1>
@@ -28,13 +28,28 @@ const Landing: React.FC = () => {
               </Button>
             </a>
             <a href="#About">
-              <Button variant="outline">Learn More</Button>
+              <Button variant="outline" className="bg-dwellow-white-200 hover:bg-gray-300">Learn More</Button>
             </a>
           </div>
         </div>
       </div>
-      <div id="About" className="p-8">
-        <h1 className="text-3xl font-bold mb-4 text-dwellow-white-100">About</h1>
+      <div id="About" className="p-16">
+        <h1 className="text-3xl font-bold mb-4 text-dwellow-primary-300 flex justify-center">About Us</h1>
+        <p className="ml-52 mr-52 mt-6 mb-16">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+         Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure 
+         dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non 
+         proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+          sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco 
+          laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu 
+          fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        </p>
+      </div>
+      <div id="Features" className="p-16">
+        <h1 className="text-3xl font-bold mb-4 text-dwellow-primary-300 flex justify-center">Features</h1>
+      </div>
+      <div id="Contact" className="p-16">
+        <h1 className="text-3xl font-bold mb-4 text-dwellow-primary-300 flex justify-center">Contact Us</h1>
       </div>
       <footer className="w-full bg-dwellow-primary-300 flex flex-row items-center space-x-7 justify-center text-dwellow-white-100 font-normal text-sm absolute bottom left-0 right-0">
         <a href="" className="hover:underline">Terms of Use</a>
