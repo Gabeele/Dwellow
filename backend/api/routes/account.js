@@ -111,9 +111,10 @@ router.get('/', async (req, res) => {
  */
 router.put('/', async (req, res) => {
 
-    const { email, userType, fullName, phoneNumber } = req.body;
+    const { email, user_type, full_name, phone_number } = req.body;
     const id = req.user_id;
-
+    console.log(req.body);
+    console.log(user_type);
     try {
         // Validate user authorization (ensure the user is updating their own account or has admin privileges)
         const user = await getUser(id);
@@ -126,7 +127,7 @@ router.put('/', async (req, res) => {
         logger.info(`Update Account: User ${id} attempting update.`);
 
         // Update the account
-        const updated = await updateUser(email, id, userType, fullName, phoneNumber);
+        const updated = await updateUser(email, id, user_type, full_name, phone_number);
 
         if (updated) {
             logger.info(`Update Account: User ${id} account updated.`);

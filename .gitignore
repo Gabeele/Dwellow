@@ -86,3 +86,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Flutter specific files
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub/
+build/
