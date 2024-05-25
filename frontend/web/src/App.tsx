@@ -7,8 +7,8 @@ import Register from "./pages/register";
 import Landing from "./pages/landing";
 import Properties from "./pages/properties";
 import Property from "./pages/property";
-import RegisterAdmin from "./pages/register/admin"
-import RegisterTenant from "./pages/register/tenant"
+import RegisterAdmin from "./pages/admin"
+import RegisterTenant from "./pages/tenant"
 
 // Define your route configurations
 const publicRoutes = [
