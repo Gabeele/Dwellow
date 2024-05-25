@@ -7,12 +7,16 @@ import Register from "./pages/register";
 import Landing from "./pages/landing";
 import Properties from "./pages/properties";
 import Property from "./pages/property";
+import RegisterAdmin from "./pages/register/admin"
+import RegisterTenant from "./pages/register/tenant"
 
 // Define your route configurations
 const publicRoutes = [
   { path: "/login", component: Login },
   { path: "/", component: Landing },
   { path: "/register", component: Register },
+  { path: "/register/admin", component: RegisterAdmin },
+  { path: "/register/tenant", component: RegisterTenant },
 ];
 
 const protectedRoutes = [
