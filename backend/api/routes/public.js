@@ -1,6 +1,6 @@
 const express = require('express');
 const logger = require('../utils/logger');
-const { createAccount, checkEmail } = require('../utils/connector.js');
+const { createUser, checkEmail } = require('../utils/connector.js');
 const router = express.Router();
 const { decodeToken } = require('../utils/authenticate');
 
@@ -46,9 +46,15 @@ const { decodeToken } = require('../utils/authenticate');
 
 router.post('/account', async (req, res) => {
     const { email, user_type, full_name, phone_number } = req.body;
-    const token = req.headers.authorization;
+    let token = req.headers.authorization;
+
+    if (token.includes('bearer') || token.includes('Bearer')) {
+        token = token.split(' ')[1];
+
+    }
 
     const decoded = await decodeToken(token);
+
 
     const fb_uuid = decoded.user_id;
 
@@ -61,8 +67,8 @@ router.post('/account', async (req, res) => {
             return res.status(400).json({ message: 'Email already exists' });
         }
 
-        logger.info(`Create Account: New account being created with email ${email}, user type ${userType}, full name ${fullName}, and phone number ${phoneNumber}, and firebase uuid ${fb_uuid}`);
-        const result = await createAccount(email, user_type, full_name, phone_number, fb_uuid);
+        logger.info(`Create Account: New account being created with email ${email}, user type ${user_type}, full name ${full_name}, and phone number ${phone_number}, and firebase uuid ${fb_uuid}`);
+        const result = await createUser(email, user_type, full_name, phone_number, fb_uuid);
 
         if (result) {
             logger.info(`Create Account: Account created successfully`);
