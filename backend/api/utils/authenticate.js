@@ -17,7 +17,7 @@ const authenticate = async (req, res, next) => {
     try {
 
         let token = req.headers['authorization'];
-        if (token.includes('bearer') || token.inlcudes('Bearer')) {
+        if (token.includes('bearer') || token.includes('Bearer')) {
             token = token.split(' ')[1];
         }
 
