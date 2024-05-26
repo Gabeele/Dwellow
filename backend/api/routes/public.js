@@ -45,7 +45,7 @@ const { decodeToken } = require('../utils/authenticate');
  */
 
 router.post('/account', async (req, res) => {
-    const { email, user_type, full_name, phone_number } = req.body;
+    const { email, userType, fullName, phoneNumber } = req.body;
     let token = req.headers.authorization;
 
     if (token.includes('bearer') || token.includes('Bearer')) {
@@ -67,8 +67,8 @@ router.post('/account', async (req, res) => {
             return res.status(400).json({ message: 'Email already exists' });
         }
 
-        logger.info(`Create Account: New account being created with email ${email}, user type ${user_type}, full name ${full_name}, and phone number ${phone_number}, and firebase uuid ${fb_uuid}`);
-        const result = await createUser(email, user_type, full_name, phone_number, fb_uuid);
+        logger.info(`Create Account: New account being created with email ${email}, user type ${userType}, full name ${fullName}, and phone number ${phoneNumber}, and firebase uuid ${fb_uuid}`);
+        const result = await createUser(email, userType, fullName, phoneNumber, fb_uuid);
 
         if (result) {
             logger.info(`Create Account: Account created successfully`);

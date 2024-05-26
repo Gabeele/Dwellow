@@ -18,13 +18,21 @@ module.exports = {
     },
     extend: {
       colors: {
-        'dwellow': {
-          primary: '#368156',
-          secondary: '#8FC5A6',
-          tertiary: '#D3EDDE',
-          white: '#F5F5F5',
-          black: '#25272D',
-          grey: '#5B606D'
+        'dwellow-primary': {
+          100:'#ACD5AD',
+          200:'#78AA7D',
+          300:'#447F4C',
+          400:'#3D6945',
+          500:'#35533D',
+        },
+        'dwellow-white': {
+          100:'#FCFCFC',
+          200:'#F5F5F5',
+          300:'#ECECEC',          
+        },
+        'dwellow-dark': {
+          100:'#737782',
+          200:'#1C1C22',
         },
         fontFamily: {
           inter: ["Inter", "sans-serif"]
