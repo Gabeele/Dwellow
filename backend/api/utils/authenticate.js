@@ -15,8 +15,12 @@ admin.initializeApp({
 const authenticate = async (req, res, next) => {
     // Correctly extract the token from the Authorization header
     try {
-        //console.log('henlo')
-        const token = req.headers['authorization'].split(' ')[0];
+
+        let token = req.headers['authorization'];
+        if (token.includes('bearer') || token.inlcudes('Bearer')) {
+            token = token.split(' ')[1];
+        }
+
         if (!token) {
             logger.info('No token provided.');
             return res.status(401).send({ error: 'No token provided. Provide a token in the header.' });
@@ -29,7 +33,7 @@ const authenticate = async (req, res, next) => {
         req.user_id = await getUserId(req.token.user_id);  // assigned the dwellow user id to the request object
         req.role = await getRole(req.user_id);   // Adds a role to the request object
 
-       // console.log(req);
+        // console.log(req);
 
         logger.info(`User ${req.user_id} ${req.role} authenticated.`);
         next();

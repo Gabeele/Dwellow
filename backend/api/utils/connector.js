@@ -32,7 +32,7 @@ async function executeQuery(query) {
 }
 
 
-async function createAccount(email, userType, fullName, phoneNumber, fb_uuid) {
+async function createUser(email, userType, fullName, phoneNumber, fb_uuid) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
@@ -42,7 +42,7 @@ async function createAccount(email, userType, fullName, phoneNumber, fb_uuid) {
         request.input('token', sql.NVarChar, fb_uuid);
         request.input('phone_number', sql.NVarChar, phoneNumber);
 
-        const result = await request.execute('CreateAccount');
+        const result = await request.execute('CreateUser');
         logger.info('Account created successfully:', result);
         return true;
     } catch (error) {
@@ -640,7 +640,7 @@ module.exports = {
     getAnnouncementById,
     getRole,
     executeQuery,
-    createAccount,
+    createUser,
     checkEmail,
     getUser,
     deleteUser,

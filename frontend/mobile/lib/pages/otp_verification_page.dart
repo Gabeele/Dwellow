@@ -14,6 +14,7 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
   void verifyOTP(String otp) async {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => Center(
         child: CircularProgressIndicator(),
       ),
@@ -25,9 +26,11 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
 
     if (otpVerified) {
       displayMessage("OTP Verified", context);
-      // Navigate to another page if needed
+      Navigator.pushReplacementNamed(context, '/home');
     } else {
-      displayMessage("OTP Verification Failed", context);
+      displayMessage(
+          "OTP Verification Failed. Contact the property administrator.",
+          context);
     }
   }
 
@@ -81,13 +84,6 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
                       length: 6,
                       onCompleted: (otp) {
                         verifyOTP(otp);
-                      },
-                    ),
-                    const SizedBox(height: 25),
-                    MyButton(
-                      text: "Link to Unit",
-                      onTap: () {
-                        // Optionally, you can call verifyOTP here if you have the complete OTP in a different way
                       },
                     ),
                   ],
