@@ -33,6 +33,8 @@ const Register: React.FC = () => {
         );
         const user = userCredential.user;
 
+        console.log(userType);
+
         API.post(`/public/account`, { email, userType, fullName, phoneNumber })
           .then((response) => {
             console.log(response);
@@ -83,7 +85,7 @@ const Register: React.FC = () => {
       <div className="absolute top-0 flex justify-center flex-col items-center h-screen w-full bg-dwellow-white-200">
         <div className="bg-dwellow-white-100 p-8 rounded shadow items-center">
           <h1 className="text-3xl font-bold mb-4 text-dwellow-primary-300 flex justify-center items-center">
-            Register for Dwellow
+            Admin Register for Dwellow
           </h1>
           {errorMessage && (
             <div className="mb-4 text-center text-red-500">{errorMessage}</div>

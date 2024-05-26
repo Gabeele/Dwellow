@@ -113,12 +113,12 @@ const Register: React.FC = () => {
       <div className="absolute top-0 flex justify-center flex-col items-center h-screen w-full bg-dwellow-white-200">
         <div className="bg-dwellow-white-100 p-8 rounded shadow items-center">
           <h1 className="text-3xl font-bold mb-4 text-dwellow-primary-300 flex justify-center items-center">
-            Register for Dwellow
+            Tenant Register for Dwellow
           </h1>
           {errorMessage && (
             <div className="mb-4 text-center text-red-500">{errorMessage}</div>
           )}
-          <div className="flex flex-row space-x-4">
+          <div className="flex justify-center">
             {/* INVITE CODE LOGIC IS HERE IDK IF IT SHOULD BE HERE OR ON THE NEXT PAGE */}
             <div>
               <p className="font-semibold text-dwellow-dark-200 inline-flex">

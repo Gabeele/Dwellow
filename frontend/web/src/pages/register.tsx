@@ -1,17 +1,23 @@
 import LandingNavigation from "@/components/LandingNavigation";
+import { Button } from "@/components/ui/button";
 
 const Register: React.FC = () => {
   return (
     <div>
       <LandingNavigation/>
       <div className="absolute top-0 flex justify-center flex-col items-center h-screen w-full bg-dwellow-white-200">
-        <h1 className="text-3xl font-bold mb-4 text-dwellow-primary-300 flex justify-center items-center">
-          I am registering as a(n)...
+        <h1 className="text-3xl font-bold mb-3 text-dwellow-primary-300 flex justify-center items-center">
+          I am Registering as a(n)...
         </h1>
-        <a href="/register/admin" className="hover:underline">Admin</a>
-        <a href="/register/tenant" className="hover:underline">Tenant</a>
-
-        <a className="text-center mt-4 text-dwellow-primary-300 text-sm font-semibold hover:underline"
+        <div className="space-x-16 mt-12">
+          <a href="/register/admin">
+            <Button className="p-9 text-lg text-dwellow-dark-200 stroke-dwellow-primary-300 bg-dwellow-white-100 hover:bg-dwellow-dark-100 hover:text-dwellow-white-200">
+              Admin</Button></a>
+          <a href="/register/tenant">
+            <Button className="p-9 text-lg text-dwellow-dark-200 stroke-dwellow-primary-300 bg-dwellow-white-100 hover:bg-dwellow-dark-100 hover:text-dwellow-white-200">
+              Tenant</Button></a>
+        </div>
+        <a className="text-center mt-9 text-dwellow-primary-300 text-sm font-semibold hover:underline"
         href="/">
           Go Back
         </a>

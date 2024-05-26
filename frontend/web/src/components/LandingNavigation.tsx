@@ -12,46 +12,37 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Button } from "./ui/button";
 
-const components: { title: string; href: string; description: string }[] = [
-  {
-    title: "Units and Properties",
-    href: "/properties",
-    description:
-      "Manage your properties and units with ease. Add, edit, delete, and view all your properties and units in one place.",
-  },
-];
-
 function LandingNavigation() {
   return (
     <div className="sticky top-0 z-10 flex items-center justify-between p-3 bg-dwellow-primary-300">
       <Link to="/" className="absolute left-4 text-2xl font-bold text-dwellow-white-200">Dwellow</Link>
       <div className="flex-1 flex justify-center">
         <NavigationMenu>
-          <NavigationMenuList className="flex space-x-4">
+          <NavigationMenuList className="flex space-x-14">
             <NavigationMenuItem>
               <Link to="/">
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                <NavigationMenuLink className="text-dwellow-white-200 font-medium">
                   Home
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
               <Link to="">
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                <NavigationMenuLink className="text-dwellow-white-200 font-medium">
                   About
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
               <Link to="">
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                <NavigationMenuLink className="text-dwellow-white-200 font-medium">
                   Features
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
               <Link to="">
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                <NavigationMenuLink className="text-dwellow-white-200 font-medium">
                   Contact
                 </NavigationMenuLink>
               </Link>
