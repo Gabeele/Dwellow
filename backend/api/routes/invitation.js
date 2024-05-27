@@ -1,31 +1,40 @@
-// app.get('/invitation/:id', (req, res) => {
-//     console.log("Getting invitation information");
-//     const { id } = req.params;
-//     // const { token } = req.headers;
-//     const token = 1;
-//     const user = getUser(token);
+const express = require('express');
+const router = express.Router();
+const logger = require('../utils/logger');
+const { generateCode, sendCodeByEmail } = require('../utils/helper');
+const {
+    associateUnitWithUser,
+    createCode,
+    deleteInviteCode, 
+    getUser} = require('../utils/connector');
 
-//     if (user.id !== Number(id)) {
-//         res.status(401).send("Unauthorized");
-//     }
-//     else {
-//         // TODO make the assosication with the code and user in the database
-//         res.send("Invitation information");
-//     }
-// });
+router.get('/:id', async  (req, res) => {
+    console.log("Getting invitation information");
+    const { id } = req.params;
+    const { token } = req.headers;
+    const user = getUser(token);
 
-// app.post('/invitation', (req, res) => {
-//     // const { email, token } = req.body;
-//     // const user = getUser(token);
+    if (user.id !== Number(id)) {
+        res.status(401).send("Unauthorized");
+    }
+    else {
+        // TODO make the assosication with the code and user in the database
+        res.send("Invitation information");
+    }
+});
 
-//     const email = "abeee.s.gavin@icloud.com";
+router.post('/', async (req, res) => {
+    const { email, unit_id, property_id } = req.body;
+    const user = getUser(req.user_id);
 
-//     const code = generateCode();
+    //const email = "abeee.s.gavin@icloud.com";
+    const code = generateCode();
+    // TODO make association with code and user in the database
+    createCode(email, unit_id, property_id, code);
 
-//     sendCodeByEmail(email, code);
+    sendCodeByEmail(email, code);
 
-//     // TODO make association with code and user in the database
-//     // Email the code to the user
+    res.send("Invitation sent", email, code);
+});
 
-//     res.send("Invitation sent", email, code);
-// });
+//accept invite

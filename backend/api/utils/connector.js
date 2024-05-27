@@ -593,16 +593,17 @@ async function associateUnitWithUser(user_id, code) {
 }
 
 
-async function createCode(propertyId, unitId, email) {
+async function createCode(propertyId, unitId, email, code) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
 
-        request.input('Email', sql.NVarChar, email);
-        request.input('PropertyID', sql.Int, propertyId);
-        request.input('UnitID', sql.Int, unitId);
+        request.input('email', sql.NVarChar, email);
+        request.input('property_id', sql.Int, propertyId);
+        request.input('unit_id', sql.Int, unitId);
+        request.input('code', sql.Int, code);
 
-        const result = await request.execute('InsertInviteCode');
+        const result = await request.execute('CreateInviteCode');
 
         const code = result.recordset[0].InviteCode;
 
@@ -616,9 +617,27 @@ async function createCode(propertyId, unitId, email) {
     }
 }
 
+async function getCode(email)
+{
+    try {
+        await sql.connect(config);
+        const query = `SELECT * FROM invite_codes WHERE email = '${email}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching ticket  ${email}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
 async function deleteInviteCode(user_id, propertyId, unitId, code) {
 
 }
+
 
 
 module.exports = {
