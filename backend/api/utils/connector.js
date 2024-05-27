@@ -252,7 +252,7 @@ async function getAnnouncementById(announcementId) {
     }
 }
 
-async function getProperties(user_id) {
+async function getProperties(team_id) {
     try {
         await sql.connect(config);
         const query = `
@@ -262,14 +262,14 @@ async function getProperties(user_id) {
         FROM
             properties p
         WHERE
-            p.user_id = '${user_id}'`;
+            p.team_id = '${team_id}'`;
         const result = await sql.query(query);
         if (result.recordset.length === 0) {
             return null;
         }
         return result.recordset;
     } catch (error) {
-        logger.error(`Error fetching properties with user_id ${user_id}: ${error}`);
+        logger.error(`Error fetching properties with team_id ${team_id}: ${error}`);
         throw error;
     } finally {
         await sql.close();
@@ -384,12 +384,12 @@ async function getUnits(user_id, property_id) {
     }
 }
 
-async function createUnit(userId, propertyId, unit, description) {
+async function createUnit(userId, tenant_id, propertyId, unit, description) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
-        request.input('userId', sql.Int, userId);
-        request.input('propertyId', sql.Int, propertyId);
+        request.input('tenant_id', sql.Int, tenant_id);
+        request.input('property_id', sql.Int, propertyId);
         request.input('unit', sql.NVarChar, unit);
         request.input('description', sql.NVarChar, description);
 
