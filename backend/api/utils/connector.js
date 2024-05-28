@@ -564,13 +564,13 @@ async function getOneTicket(id) { // gets tickets where it matches the user id
 async function associateUnitWithUser(user_id, code) {
     try {
 
-        console.log('user_id:', user_id);
-        console.log('code:', code);
+        console.log('UserID:', user_id);
+        console.log('Code:', code);
         await sql.connect(config);
         const request = new sql.Request();
 
-        request.input('UserID', sql.Int, user_id);
-        request.input('Code', sql.NVarChar, code);
+        request.input('user_id', sql.Int, user_id);
+        request.input('code', sql.NVarChar, code);
 
         const result = await request.execute('AssociateUnitWithUser');
 
@@ -592,25 +592,52 @@ async function associateUnitWithUser(user_id, code) {
     }
 }
 
-
-async function createCode(propertyId, unitId, email, code) {
+async function associateUserWithInviteCode(user_id, code) {
     try {
+        console.log('UserID:', user_id);
+        console.log('Code:', code);
+        
         await sql.connect(config);
         const request = new sql.Request();
 
+        request.input('user_id', sql.Int, user_id);
+        request.input('code', sql.NVarChar(6), code);
+
+        const result = await request.execute('AssociateUserWithInviteCode');
+
+        if (result.rowsAffected[0] > 0) {
+            logger.info(`Invite code ${code} associated with user ${user_id}.`);
+            return { success: true };
+        } else {
+            logger.error(`Failed to associate invite code with user ${user_id}. Code might be invalid, already used, or deleted.`);
+            return { success: false, message: 'Code might be invalid, already used, or deleted.' };
+        }
+
+    } catch (error) {
+        logger.error(`Error in associateUserWithInviteCode: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+async function createCode(property_id, unit_id, email, code) {
+    try {
+        await sql.connect(config);
+        const request = new sql.Request();  
+        console.log(email);
+        
+        request.input('code', sql.NVarChar, code);
         request.input('email', sql.NVarChar, email);
-        request.input('property_id', sql.Int, propertyId);
-        request.input('unit_id', sql.Int, unitId);
-        request.input('code', sql.Int, code);
+        request.input('property_id', sql.Int, property_id);
+        request.input('unit_id', sql.Int, unit_id);
 
         const result = await request.execute('CreateInviteCode');
 
-        const code = result.recordset[0].InviteCode;
-
-        logger.info(`Code ${code} created and associated with property ID ${propertyId} and unit ID ${unitId}.`);
-        return code;
+        logger.info('Code created successfully:', result);
+        return result;
     } catch (error) {
-        logger.error(`Error creating code for property ID ${propertyId}, unit ID ${unitId}: ${error}`);
+        logger.error(`Error creating code ${code}: ${error}`);
         throw error;
     } finally {
         await sql.close();
@@ -669,4 +696,5 @@ module.exports = {
     removeTicket,
     getTickets,
     getOneTicket,
+    associateUserWithInviteCode
 };
