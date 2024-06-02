@@ -38,13 +38,15 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
     try {
       User? user = FirebaseAuth.instance.currentUser;
       String? token = await user?.getIdToken();
-      final response = await http.post(
-        Uri.parse('https://api.dwellow.ca/inventatio/$otp'),
+      print(otp);
+      final response = await http.get(
+        Uri.parse('https://api.dwellow.ca/invitation/$otp'),
         headers: {
-          'Authorization': 'Bearer $token',
+          'Authorization': 'bearer $token',
         },
       );
 
+      print(response.statusCode);
       if (response.statusCode == 200) {
         return true;
       } else {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:mobile/auth/auth.dart';
+import 'package:mobile/pages/account_page.dart';
 import 'package:mobile/pages/chat_page.dart';
 import 'package:mobile/pages/forgotPassword_page.dart';
 import 'package:mobile/pages/home_page.dart';
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/': (context) => AuthPage(),
         '/home': (context) => HomePage(),
+        '/account': (context) => UpdateAccountPage(),
         '/chat': (context) => ChatPage(),
         '/login': (context) => LoginPage(),
         '/register': (context) => RegisterPage(),
