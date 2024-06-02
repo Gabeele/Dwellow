@@ -591,12 +591,11 @@ async function associateUnitWithUser(user_id, code) {
 
     }
 }
-
 async function associateUserWithInviteCode(user_id, code) {
     try {
         console.log('UserID:', user_id);
         console.log('Code:', code);
-        
+
         await sql.connect(config);
         const request = new sql.Request();
 
@@ -604,14 +603,6 @@ async function associateUserWithInviteCode(user_id, code) {
         request.input('code', sql.NVarChar(6), code);
 
         const result = await request.execute('AssociateUserWithInviteCode');
-
-        if (result.rowsAffected[0] > 0) {
-            logger.info(`Invite code ${code} associated with user ${user_id}.`);
-            return { success: true };
-        } else {
-            logger.error(`Failed to associate invite code with user ${user_id}. Code might be invalid, already used, or deleted.`);
-            return { success: false, message: 'Code might be invalid, already used, or deleted.' };
-        }
 
     } catch (error) {
         logger.error(`Error in associateUserWithInviteCode: ${error}`);
@@ -624,9 +615,9 @@ async function associateUserWithInviteCode(user_id, code) {
 async function createCode(property_id, unit_id, email, code) {
     try {
         await sql.connect(config);
-        const request = new sql.Request();  
+        const request = new sql.Request();
         console.log(email);
-        
+
         request.input('code', sql.NVarChar, code);
         request.input('email', sql.NVarChar, email);
         request.input('property_id', sql.Int, property_id);
@@ -644,8 +635,7 @@ async function createCode(property_id, unit_id, email, code) {
     }
 }
 
-async function getCode(email)
-{
+async function getCode(email) {
     try {
         await sql.connect(config);
         const query = `SELECT * FROM invite_codes WHERE email = '${email}'`;
