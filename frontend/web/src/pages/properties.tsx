@@ -109,129 +109,132 @@ function Properties() {
 
   return (
     <>
-      <Button onClick={handleAddProperty}>
-        <PlusIcon className="" />
-        Add New Property
-      </Button>
-      <Drawer open={isDrawerOpen} onClose={closeDrawer}>
-        <DrawerContent>
-          <div className="mx-auto w-full max-w-md">
-            <DrawerHeader>
-              <DrawerTitle>Add New Property</DrawerTitle>
-              <DrawerClose />
-            </DrawerHeader>
-            <div className="p-4">
-              <form>
-                <div className="mb-4">
-                  <label
-                    htmlFor="title"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Title:
-                  </label>
-                  <Input
-                    id="title"
-                    name="title"
-                    type="text"
-                    placeholder="Enter title"
-                    value={newProperty.title}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="address"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Address:
-                  </label>
-                  <Input
-                    id="address"
-                    name="address"
-                    type="text"
-                    placeholder="Enter address"
-                    value={newProperty.address}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="description"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Description:
-                  </label>
-                  <Input
-                    id="description"
-                    name="description"
-                    type="text"
-                    placeholder="Enter description"
-                    value={newProperty.description}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="photo"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Upload Photo:
-                  </label>
-                  <Input
-                    id="photo"
-                    name="photo"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="units"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Number of Units:
-                  </label>
-                  <Input
-                    id="units"
-                    name="units"
-                    type="number"
-                    placeholder="Enter number of units"
-                    value={newProperty.units}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <Button className="mr-2" onClick={handleSaveProperty}>
-                  Save
-                </Button>
-                <DrawerClose asChild>
-                  <Button variant="outline" onClick={closeDrawer}>
-                    Cancel
+      <main className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold text-dwellow-dark-200">Properties</h1>
+        <Button className="mt-4" onClick={handleAddProperty}>
+          <PlusIcon/>
+          Add New Property
+        </Button>
+        <Drawer open={isDrawerOpen} onClose={closeDrawer}>
+          <DrawerContent>
+            <div className="mx-auto w-full max-w-md">
+              <DrawerHeader>
+                <DrawerTitle>Add New Property</DrawerTitle>
+                <DrawerClose />
+              </DrawerHeader>
+              <div className="p-4">
+                <form>
+                  <div className="mb-4">
+                    <label
+                      htmlFor="title"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Title:
+                    </label>
+                    <Input
+                      id="title"
+                      name="title"
+                      type="text"
+                      placeholder="Enter title"
+                      value={newProperty.title}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label
+                      htmlFor="address"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Address:
+                    </label>
+                    <Input
+                      id="address"
+                      name="address"
+                      type="text"
+                      placeholder="Enter address"
+                      value={newProperty.address}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label
+                      htmlFor="description"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Description:
+                    </label>
+                    <Input
+                      id="description"
+                      name="description"
+                      type="text"
+                      placeholder="Enter description"
+                      value={newProperty.description}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label
+                      htmlFor="photo"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Upload Photo:
+                    </label>
+                    <Input
+                      id="photo"
+                      name="photo"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label
+                      htmlFor="units"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Number of Units:
+                    </label>
+                    <Input
+                      id="units"
+                      name="units"
+                      type="number"
+                      placeholder="Enter number of units"
+                      value={newProperty.units}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <Button className="mr-2" onClick={handleSaveProperty}>
+                    Save
                   </Button>
-                </DrawerClose>
-              </form>
+                  <DrawerClose asChild>
+                    <Button variant="outline" onClick={closeDrawer}>
+                      Cancel
+                    </Button>
+                  </DrawerClose>
+                </form>
+              </div>
             </div>
-          </div>
-        </DrawerContent>
-      </Drawer>
-      <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-4 p-4">
-        {properties.map(({ id, title, address, units, photo, description }) => (
-          <Link key={id} to={`/property/${id}`} className="max-w-xs">
-            {" "}
-            <Card>
-              <CardHeader>
-                <CardTitle>{title}</CardTitle>
-                <CardDescription>{address}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <img className="w-full" src={photo} alt={`Property ${id}`} />
-                <p className="mt-4">{units} Units</p>
-              </CardContent>
-              <CardFooter>{description}</CardFooter>
-            </Card>
-          </Link>
-        ))}
-      </div>
+          </DrawerContent>
+        </Drawer>
+        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-4 p-4">
+          {properties.map(({ id, title, address, units, photo, description }) => (
+            <Link key={id} to={`/property/${id}`} className="max-w-xs">
+              {" "}
+              <Card>
+                <CardHeader>
+                  <CardTitle>{title}</CardTitle>
+                  <CardDescription>{address}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <img className="w-full" src={photo} alt={`Property ${id}`} />
+                  <p className="mt-4">{units} Units</p>
+                </CardContent>
+                <CardFooter>{description}</CardFooter>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </main>
     </>
   );
 }

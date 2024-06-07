@@ -24,19 +24,19 @@ function Navigation() {
           <Link to="/tickets" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
             Tickets
           </Link>
-          <Link to="" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
+          <Link to="/analytics" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
             Analytics
           </Link>
-          <Link to="" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
+          <Link to="/contracts" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
             Contracts
           </Link>
-          <Link to="" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
+          <Link to="/manage" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
             Manage team
           </Link>
-          <Link to="" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
+          <Link to="/invitations" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
             Invitations
           </Link>
-          <Link to="" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
+          <Link to="/resources" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
             Resources
           </Link>
         </div>
