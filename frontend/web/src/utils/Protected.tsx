@@ -26,7 +26,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
   return user ? (
     <>
-      <div className="flex h-screen">
+      <div className="flex h-screen bg-dwellow-white-200">
         <Navigation />
         <div className="flex-1 p-4 overflow-auto">
           {children}

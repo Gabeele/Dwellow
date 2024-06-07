@@ -21,7 +21,7 @@ function Navigation() {
           <Link to="/properties" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
             Properties
           </Link>
-          <Link to="" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
+          <Link to="/tickets" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
             Tickets
           </Link>
           <Link to="" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">

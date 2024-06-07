@@ -7,8 +7,9 @@ import Register from "./pages/register";
 import Landing from "./pages/landing";
 import Properties from "./pages/properties";
 import Property from "./pages/property";
-import RegisterAdmin from "./pages/admin"
-import RegisterTenant from "./pages/tenant"
+import RegisterAdmin from "./pages/admin";
+import RegisterTenant from "./pages/tenant";
+import Tickets from "./pages/tickets";
 
 // Define your route configurations
 const publicRoutes = [
@@ -23,6 +24,7 @@ const protectedRoutes = [
   { path: "/dashboard", component: Dashboard },
   { path: "/properties", component: Properties },
   { path: "/property/:id", component: Property },
+  { path: "/tickets", component: Tickets },
 ];
 
 const App: React.FC = () => {
