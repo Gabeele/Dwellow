@@ -13,7 +13,8 @@ const { getProperties,
     deleteUnit,
     associateUnitWithUser,
     createCode,
-    deleteInviteCode } = require('../utils/connector');
+    deleteInviteCode, 
+    getUser} = require('../utils/connector');
 
 /**
  * @swagger
@@ -60,8 +61,10 @@ const isAdmin = (req, res, next) => {
 
 router.get('/', isAdmin, async (req, res) => {
     try {
-        const userId = req.user_id;
-        const properties = await getProperties(userId);
+        const user = await getUser(req.user_id);
+        console.log (user.team_id);
+        const properties = await getProperties(user.team_id);
+
         logger.info('Fetched all properties');
 
         res.json({
@@ -368,9 +371,9 @@ router.post('/:propertyId/units', isAdmin, async (req, res) => {
     try {
 
         const property_id = req.params.propertyId;
-        const { unit, description } = req.body;
+        const { unit, description, tenant_id } = req.body;
 
-        const newUnit = await createUnit(req.user_id, property_id, unit, description);
+        const newUnit = await createUnit(req.user_id, tenant_id, property_id, unit, description);
         if (newUnit) {
             logger.info(`Admin with ID: ${req.user_id} created a unit with ID: ${newUnit.id} for property ID: ${req.params.propertyId}`);
             res.status(201).json(newUnit);

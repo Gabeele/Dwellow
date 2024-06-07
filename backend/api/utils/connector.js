@@ -252,7 +252,7 @@ async function getAnnouncementById(announcementId) {
     }
 }
 
-async function getProperties(user_id) {
+async function getProperties(team_id) {
     try {
         await sql.connect(config);
         const query = `
@@ -262,14 +262,14 @@ async function getProperties(user_id) {
         FROM
             properties p
         WHERE
-            p.user_id = '${user_id}'`;
+            p.team_id = '${team_id}'`;
         const result = await sql.query(query);
         if (result.recordset.length === 0) {
             return null;
         }
         return result.recordset;
     } catch (error) {
-        logger.error(`Error fetching properties with user_id ${user_id}: ${error}`);
+        logger.error(`Error fetching properties with team_id ${team_id}: ${error}`);
         throw error;
     } finally {
         await sql.close();
@@ -384,12 +384,12 @@ async function getUnits(user_id, property_id) {
     }
 }
 
-async function createUnit(userId, propertyId, unit, description) {
+async function createUnit(userId, tenant_id, propertyId, unit, description) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
-        request.input('userId', sql.Int, userId);
-        request.input('propertyId', sql.Int, propertyId);
+        request.input('tenant_id', sql.Int, tenant_id);
+        request.input('property_id', sql.Int, propertyId);
         request.input('unit', sql.NVarChar, unit);
         request.input('description', sql.NVarChar, description);
 
@@ -564,13 +564,13 @@ async function getOneTicket(id) { // gets tickets where it matches the user id
 async function associateUnitWithUser(user_id, code) {
     try {
 
-        console.log('user_id:', user_id);
-        console.log('code:', code);
+        console.log('UserID:', user_id);
+        console.log('Code:', code);
         await sql.connect(config);
         const request = new sql.Request();
 
-        request.input('UserID', sql.Int, user_id);
-        request.input('Code', sql.NVarChar, code);
+        request.input('user_id', sql.Int, user_id);
+        request.input('code', sql.NVarChar, code);
 
         const result = await request.execute('AssociateUnitWithUser');
 
@@ -591,34 +591,70 @@ async function associateUnitWithUser(user_id, code) {
 
     }
 }
-
-
-async function createCode(propertyId, unitId, email) {
+async function associateUserWithInviteCode(user_id, code) {
     try {
+        console.log('UserID:', user_id);
+        console.log('Code:', code);
+
         await sql.connect(config);
         const request = new sql.Request();
 
-        request.input('Email', sql.NVarChar, email);
-        request.input('PropertyID', sql.Int, propertyId);
-        request.input('UnitID', sql.Int, unitId);
+        request.input('user_id', sql.Int, user_id);
+        request.input('code', sql.NVarChar(6), code);
 
-        const result = await request.execute('InsertInviteCode');
+        const result = await request.execute('AssociateUserWithInviteCode');
 
-        const code = result.recordset[0].InviteCode;
-
-        logger.info(`Code ${code} created and associated with property ID ${propertyId} and unit ID ${unitId}.`);
-        return code;
     } catch (error) {
-        logger.error(`Error creating code for property ID ${propertyId}, unit ID ${unitId}: ${error}`);
+        logger.error(`Error in associateUserWithInviteCode: ${error}`);
         throw error;
     } finally {
         await sql.close();
     }
 }
 
+async function createCode(property_id, unit_id, email, code) {
+    try {
+        await sql.connect(config);
+        const request = new sql.Request();
+        console.log(email);
+
+        request.input('code', sql.NVarChar, code);
+        request.input('email', sql.NVarChar, email);
+        request.input('property_id', sql.Int, property_id);
+        request.input('unit_id', sql.Int, unit_id);
+
+        const result = await request.execute('CreateInviteCode');
+
+        logger.info('Code created successfully:', result);
+        return result;
+    } catch (error) {
+        logger.error(`Error creating code ${code}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+async function getCode(email) {
+    try {
+        await sql.connect(config);
+        const query = `SELECT * FROM invite_codes WHERE email = '${email}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching ticket  ${email}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
 async function deleteInviteCode(user_id, propertyId, unitId, code) {
 
 }
+
 
 
 module.exports = {
@@ -650,4 +686,5 @@ module.exports = {
     removeTicket,
     getTickets,
     getOneTicket,
+    associateUserWithInviteCode
 };

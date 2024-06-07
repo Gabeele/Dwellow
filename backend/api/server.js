@@ -8,6 +8,7 @@ const loginRoutes = require('./routes/login');
 const announcementRoutes = require('./routes/announcement');
 const propertyRoutes = require('./routes/property');
 const ticketRoutes = require('./routes/ticket');
+const invitationRoutes = require('./routes/invitation');
 const { authenticate } = require('./utils/authenticate');
 const logger = require('./utils/logger');
 const publicRoutes = require('./routes/public');
@@ -96,6 +97,7 @@ app.use('/login', authenticate, loginRoutes);
 app.use('/announcements', authenticate, announcementRoutes);
 app.use('/properties', authenticate, propertyRoutes);
 app.use('/ticket', authenticate, ticketRoutes);
+app.use('/invitation', authenticate, invitationRoutes);
 
 // Error handling middleware
 
