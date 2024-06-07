@@ -1,9 +1,14 @@
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+  } from "@/components/ui/card"
 
 function DefaultCard(){
     const nav = useNavigate();
-    const handleOnClick = () => nav("/tickets");
+    const handleOnClick = () => nav("/properties");
     return(
         <Card className="w-56 h-48 rounded-lg hover:bg-dwellow-white-200 hover:cursor-pointer" onClick={handleOnClick}>
             <CardHeader className="p-4">

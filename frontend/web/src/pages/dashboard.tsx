@@ -1,5 +1,6 @@
 
 import DefaultCard from "@/components/DefaultCard";
+import DefaultTicket from "@/components/DefaultTicket";
 import { Link } from "react-router-dom";
 
 function Home() {
@@ -26,8 +27,20 @@ function Home() {
         </div>
         <div className="mt-9">
           <h1 className="text-xl font-bold text-dwellow-dark-200">Open Tickets</h1>
-          <div className="bg-dwellow-white-0 mt-4 p-10 pb-20 rounded-lg">
-            <Link to="/tickets" className="text-dwellow-dark-100 hover:underline">See All Tickets</Link>
+          <div className="flex flex-col bg-dwellow-white-0 mt-4 p-4 rounded-lg">
+            <div className="inline-flex space-x-5">
+              <DefaultTicket/>
+              <DefaultTicket/>
+              <DefaultTicket/>
+            </div>
+            <div className="inline-flex space-x-5 mt-5">
+              <DefaultTicket/>
+              <DefaultTicket/>
+              <DefaultTicket/>
+            </div>
+            <div className="pt-4 ml-auto mr-0">
+              <Link to="/tickets" className="text-dwellow-dark-100 hover:underline">See All Tickets</Link>
+            </div>
           </div>
         </div>
       </main>
