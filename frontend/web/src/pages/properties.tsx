@@ -1,3 +1,4 @@
+// Properties.js
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API from "../utils/Api";
@@ -30,6 +31,37 @@ interface Property {
   photo: string;
 }
 
+export const fetchProperties = async () => {
+  try {
+    const response = await API.get("/properties");
+    if (response.status === 200) {
+      const jsonData = await response.data;
+      if (jsonData.success && Array.isArray(jsonData.data)) {
+        const formattedProperties = jsonData.data.map((property: any) => ({
+          id: property.id,
+          title: property.title,
+          address: property.address,
+          units: property.unit_count || 0,
+          description: property.description || "No description provided",
+          photo: property.photo || "apartment-building.jpg",
+        }));
+        // Cache properties
+        localStorage.setItem("properties", JSON.stringify(formattedProperties));
+        return formattedProperties;
+      } else {
+        console.error("No properties found or invalid data structure");
+        return [];
+      }
+    } else {
+      console.error("Failed to fetch properties, status code:", response.status);
+      return [];
+    }
+  } catch (error: any) {
+    console.error("Failed to fetch properties:", error.message);
+    return [];
+  }
+};
+
 function Properties() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -41,41 +73,18 @@ function Properties() {
     description: "",
   });
 
-  useEffect(() => {
-    fetchProperties();
-  }, []);
-
-  const fetchProperties = async () => {
-    try {
-      const response = await API.get("/properties");
-      if (response.status === 200) {
-        const jsonData = await response.data;
-        if (jsonData.success && Array.isArray(jsonData.data)) {
-          const formattedProperties = jsonData.data.map((property: any) => ({
-            id: property.id,
-            title: property.title,
-            address: property.address,
-            units: property.unit_count || 0,
-            description: property.description || "No description provided",
-            photo: property.photo || "apartment-building.jpg",
-          }));
-          setProperties(formattedProperties);
-        } else {
-          console.error("No properties found or invalid data structure");
-          setProperties([]);
-        }
-      } else {
-        console.error(
-          "Failed to fetch properties, status code:",
-          response.status
-        );
-        setProperties([]);
-      }
-    } catch (error: any) {
-      console.error("Failed to fetch properties:", error.message);
-      setProperties([]);
-    }
+  const clearCache = () => {
+    localStorage.clear();
   };
+
+  useEffect(() => {
+    const cachedProperties = localStorage.getItem("properties");
+    if (cachedProperties) {
+      setProperties(JSON.parse(cachedProperties));
+    } else {
+      fetchProperties().then(setProperties);
+    }
+  }, []);
 
   const handleAddProperty = () => {
     setIsDrawerOpen(true);
@@ -86,7 +95,8 @@ function Properties() {
     API.post("/properties", newProperty)
       .then((response) => {
         console.log("Property saved successfully:", response);
-        fetchProperties();
+        clearCache();
+        fetchProperties().then(setProperties);
         setIsDrawerOpen(false);
         setNewProperty({});
       })
@@ -112,7 +122,7 @@ function Properties() {
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-dwellow-dark-200">Properties</h1>
         <Button className="mt-4" onClick={handleAddProperty}>
-          <PlusIcon/>
+          <PlusIcon />
           Add New Property
         </Button>
         <Drawer open={isDrawerOpen} onClose={closeDrawer}>
@@ -216,10 +226,9 @@ function Properties() {
             </div>
           </DrawerContent>
         </Drawer>
-        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-4 p-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 pl-0 gap-4 p-4">
           {properties.map(({ id, title, address, units, photo, description }) => (
             <Link key={id} to={`/property/${id}`} className="max-w-xs">
-              {" "}
               <Card>
                 <CardHeader>
                   <CardTitle>{title}</CardTitle>

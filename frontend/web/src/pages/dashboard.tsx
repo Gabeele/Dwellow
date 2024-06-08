@@ -3,6 +3,7 @@ import DefaultTicket from "@/components/DefaultTicket";
 import { Link } from "react-router-dom";
 import API from "../utils/Api";
 import { useEffect, useState } from "react";
+import { fetchProperties } from "./properties";
 
 interface User {
   email: string;
@@ -10,9 +11,19 @@ interface User {
   phoneNumber: string;
 }
 
+interface Property {
+  id: string;
+  title: string;
+  address: string;
+  units: number;
+  photo: string;
+  description: string;
+}
+
 function Home() {
   const [user, setUser] = useState<User[]>([]);
   const [name, setName] = useState("");
+  const [properties, setProperties] = useState<Property[]>([]);
 
   useEffect(() => {
     // Check if user data is cached
@@ -31,6 +42,15 @@ function Home() {
     }
   }, [user]);
 
+  useEffect(() => {
+    const cachedProperties = localStorage.getItem("properties");
+    if (cachedProperties) {
+      setProperties(JSON.parse(cachedProperties));
+    } else {
+      fetchProperties().then(setProperties);
+    }
+  }, []);
+
   const getUser = async () => {
     try {
       const response = await API.get("/account");
@@ -41,7 +61,7 @@ function Home() {
             fullName: user.full_name || "Test",
             email: user.email,
             phoneNumber: user.phone_number,
-          }))
+          }));
           setUser(retrievedUser);
         }
       } else {
@@ -56,10 +76,6 @@ function Home() {
     }
   };
 
-  const getProperties = async () => {
-    
-  }
-
   return (
     <div className="">
       <main className="container mx-auto px-4 py-8">
@@ -69,12 +85,18 @@ function Home() {
           <h1 className="text-xl font-bold text-dwellow-dark-200">Properties</h1>
           <div className="flex flex-col bg-dwellow-white-0 mt-4 p-4 rounded-lg">
             <div className="inline-flex space-x-4">
-              <DefaultCard/>
-              <DefaultCard/>
-              <DefaultCard/>
-              <DefaultCard/>
-              <DefaultCard/>
-              <DefaultCard/>
+              {properties.map((property) => (
+                <Link key={property.id} to={`/property/${property.id}`} className="max-w-xs">
+                  <DefaultCard
+                    id={property.id}
+                    title={property.title}
+                    address={property.address}
+                    units={property.units}
+                    photo={property.photo}
+                    description={property.description}
+                  />
+                </Link>
+              ))}
             </div>
             <div className="pt-4 ml-auto mr-0">
               <Link to="/properties" className="text-dwellow-dark-100 hover:underline">See All Properties</Link>

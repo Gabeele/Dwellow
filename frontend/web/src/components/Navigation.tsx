@@ -17,11 +17,17 @@ function Navigation() {
     try {
       await signOut(auth);
       console.log("Logout successful");
+      clearCache();
       navigate("/");
     } catch (error: any) {
       console.error("Logout error:", error.message);
     }
   };
+
+  const clearCache = () => {
+    localStorage.clear();
+  };
+  
   return (
     <div className="flex flex-col h-full w-64 bg-dwellow-dark-200">
       <div className="flex flex-col items-center flex-grow">
@@ -61,6 +67,9 @@ function Navigation() {
             </Link>
           </div>
         </div>
+        <Button onClick={clearCache}>
+          Clear Cache
+        </Button>
       </div>
       <div className="flex items-center mb-6 ml-12 -mt-6">
         <Avatar className="">

@@ -224,11 +224,11 @@ router.get('/:propertyId/units/:unitId', isAdmin, async (req, res) => {
  */
 router.post('/', isAdmin, async (req, res) => {
     try {
-
+        const user = await getUser(req.user_id);
         const {title, address, description, photo_url, team_id } = req.body;
         console.log(req.body);
 
-        const newProperty = await createProperty(title, address, description, photo_url, team_id);
+        const newProperty = await createProperty(title, address, description, photo_url, user.recordset[0].team_id);
         if (newProperty) {
             logger.info(`Admin with ID: ${req.user_id} created a new property with ID: ${newProperty.id}`);
             res.status(201).json(newProperty);
@@ -277,7 +277,7 @@ router.post('/', isAdmin, async (req, res) => {
 router.put('/:propertyId', isAdmin, async (req, res) => {
     try {
         const property_id = req.params.propertyId;
-        const {title, address, description, photo_url, team_id } = req.body;
+        const {title, address, description, photo_url, team_id=user.recordset[0].team_id } = req.body;
         console.log(req.body);
         console.log(property_id);
 
