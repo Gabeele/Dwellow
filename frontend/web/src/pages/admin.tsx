@@ -138,21 +138,21 @@ const Register: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
           />
           <div className="h-4" />
-
-          <p className="text-center text-dwellow-primary-300 text-sm font-medium">
+          <div className="flex justify-center items-center space-x-2">
             <Checkbox
-              className="mr-1"
               onCheckedChange={(checked) => {
                 if (checked === "indeterminate") accepted == true;
                 else if (checked === true) accepted = true;
                 else accepted = false;
               }}
             />
-            I have read and understood the{" "}
-            <a href="" className="text-dwellow-primary-300 font-medium underline">
-              Terms and Conditions
-            </a>
-          </p>
+            <p className="text-dwellow-primary-300 text-sm font-medium">
+              I have read and understood the{" "}
+              <a href="" className="text-dwellow-primary-300 font-medium underline">
+                Terms and Conditions
+              </a>
+            </p>
+          </div>
           <div className="h-4" />
           <div className="justify-center flex items-center">
             <Button

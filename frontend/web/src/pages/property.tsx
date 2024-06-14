@@ -5,7 +5,6 @@ import API from "../utils/Api";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -31,7 +30,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { CopyIcon } from "@radix-ui/react-icons";
 import {
   Select,
   SelectContent,
@@ -64,7 +62,6 @@ function Property() {
   const [property, setProperty] = useState<Property | null>(null);
   const [units, setUnits] = useState<Unit[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [selectedUnit, setSelectedUnit] = useState("");
   const [newUnit, setNewUnit] = useState<Partial<Unit>>({
@@ -73,7 +70,17 @@ function Property() {
   });
 
   useEffect(() => {
-    fetchData(id);
+    const cachedProperty = localStorage.getItem(`property-${id}`);
+    const cachedUnits = localStorage.getItem(`units-${id}`);
+
+    console.log(cachedUnits)
+
+    if (cachedProperty && cachedUnits) {
+      setProperty(JSON.parse(cachedProperty));
+      setUnits(JSON.parse(cachedUnits));
+    } else {
+      fetchData(id);
+    }
   }, [id]);
 
   const fetchData = async (id: any) => {
@@ -83,7 +90,10 @@ function Property() {
         const jsonData = await response.data;
         console.log("Property data:", jsonData);
         setProperty(jsonData.property);
-        setUnits(jsonData.units);
+        setUnits(jsonData.units || []);
+
+        localStorage.setItem(`property-${id}`, JSON.stringify(jsonData.property));
+        localStorage.setItem(`units-${id}`, JSON.stringify(jsonData.units || []));
       } else {
         console.error("No data found");
       }
@@ -109,6 +119,7 @@ function Property() {
       fetchData(id);
 
       setNewUnit({});
+      setIsDrawerOpen(false); // Close the drawer after saving
     } catch (error) {
       console.error("Error during save or refresh units:", error);
     }
@@ -141,8 +152,8 @@ function Property() {
     console.log(unitId);
     try {
       const response = await API.post(
-        `/properties/${id}/units/${unitId}/invite`,
-        { email }
+        `/invitation`,
+        { email, unitId, id }
       );
       console.log("Invite sent successfully:", response);
     } catch (error) {
@@ -159,100 +170,109 @@ function Property() {
           <p>{property.description}</p>
         </div>
       )}
-      <Button onClick={handleAddUnit}>
-        <PlusIcon className="" />
-        Add New Unit
-      </Button>
-      <Drawer open={isDrawerOpen} onClose={closeDrawer}>
-        <DrawerContent>
-          <DrawerHeader>
-            <DrawerTitle>Add New Unit</DrawerTitle>
-            <DrawerClose />
-          </DrawerHeader>
-          <form onSubmit={handleSaveUnit}>
-            <div className="p-4">
-              <div className="mb-4">
-                <label
-                  htmlFor="unit"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Unit:
-                </label>
-                <Input
-                  id="unit"
-                  name="unit"
-                  type="text"
-                  placeholder="Enter unit"
-                  value={newUnit.unit}
-                  onChange={handleInputChange}
-                />
+      <div className="my-5 space-x-5">
+        <Button onClick={handleAddUnit}>
+          <PlusIcon className="" />
+          Add New Unit
+        </Button>
+        <Drawer open={isDrawerOpen} onClose={closeDrawer}>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>Add New Unit</DrawerTitle>
+              <DrawerClose />
+            </DrawerHeader>
+            <form onSubmit={handleSaveUnit}>
+              <div className="p-4">
+                <div className="mb-4">
+                  <label
+                    htmlFor="unit"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Unit:
+                  </label>
+                  <Input
+                    id="unit"
+                    name="unit"
+                    type="text"
+                    placeholder="Enter unit"
+                    value={newUnit.unit || ""}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="mb-4">
+                  <label
+                    htmlFor="description"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Description:
+                  </label>
+                  <Input
+                    id="description"
+                    name="description"
+                    type="text"
+                    placeholder="Enter description"
+                    value={newUnit.description || ""}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <Button type="submit" className="mr-2">
+                  Save
+                </Button>
+                <Button variant="outline" onClick={closeDrawer}>
+                  Cancel
+                </Button>
               </div>
-              <div className="mb-4">
-                <label
-                  htmlFor="description"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Description:
-                </label>
-                <Input
-                  id="description"
-                  name="description"
-                  type="text"
-                  placeholder="Enter description"
-                  value={newUnit.description}
-                  onChange={handleInputChange}
-                />
-              </div>
-              <Button type="submit" className="mr-2">
-                Save
-              </Button>
-              <Button variant="outline" onClick={closeDrawer}>
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </DrawerContent>
-      </Drawer>
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button>
-            <PlusIcon />
-            Invite a Tenant
-          </Button>
-        </DialogTrigger>
+            </form>
+          </DrawerContent>
+        </Drawer>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>
+              <PlusIcon />
+              Invite a Tenant
+            </Button>
+          </DialogTrigger>
 
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Invite a Tenant</DialogTitle>
-            <DialogDescription>
-              Enter the tenant's email and select the unit to send the invite.
-            </DialogDescription>
-          </DialogHeader>
-          <Input
-            placeholder="Tenant's email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <Select onValueChange={setSelectedUnit}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select Unit" />
-            </SelectTrigger>
-            <SelectContent>
-              {units.map((unit) => (
-                <SelectItem key={unit.id} value={unit.unit}>
-                  {unit.unit}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <DialogFooter>
-            <Button onClick={handleSendInvite}>Send Invite</Button>
-            <DialogClose asChild>
-              <Button variant="secondary">Close</Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Invite a Tenant</DialogTitle>
+              <DialogDescription>
+                Enter the tenant's email and select the unit to send the invite.
+              </DialogDescription>
+            </DialogHeader>
+            <Input
+              placeholder="Tenant's email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <Select onValueChange={setSelectedUnit}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select Unit" />
+              </SelectTrigger>
+              <SelectContent>
+                {units.length > 0 ? (
+                  units.map((unit) => (
+                    <SelectItem key={unit.id} value={unit.unit}>
+                      {unit.unit}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem key="no-units" value="no-units" disabled>
+                  No units available
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+            <DialogFooter>
+              <Button onClick={handleSendInvite}>Send Invite</Button>
+              <DialogClose asChild>
+                <Button variant="secondary">Close</Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+      
       <Table>
         <TableHeader>
           <TableRow>
@@ -264,15 +284,21 @@ function Property() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {units.map((unit) => (
-            <TableRow key={unit.id}>
-              <TableCell>{unit.unit}</TableCell>
-              <TableCell>{unit.description}</TableCell>
-              <TableCell>{unit.full_name}</TableCell>
-              <TableCell>{unit.email}</TableCell>
-              <TableCell>{unit.phone_number}</TableCell>
+          {units.length > 0 ? (
+            units.map((unit) => (
+              <TableRow key={unit.id}>
+                <TableCell>{unit.unit}</TableCell>
+                <TableCell>{unit.description}</TableCell>
+                <TableCell>{unit.full_name}</TableCell>
+                <TableCell>{unit.email}</TableCell>
+                <TableCell>{unit.phone_number}</TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={5}>No units available</TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
     </>
