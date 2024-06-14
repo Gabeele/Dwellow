@@ -1,3 +1,4 @@
+// Properties.js
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import API from "../utils/Api";
@@ -30,6 +31,37 @@ interface Property {
   photo: string;
 }
 
+export const fetchProperties = async () => {
+  try {
+    const response = await API.get("/properties");
+    if (response.status === 200) {
+      const jsonData = await response.data;
+      if (jsonData.success && Array.isArray(jsonData.data)) {
+        const formattedProperties = jsonData.data.map((property: any) => ({
+          id: property.id,
+          title: property.title,
+          address: property.address,
+          units: property.unit_count || 0,
+          description: property.description || "No description provided",
+          photo: property.photo || "apartment-building.jpg",
+        }));
+        // Cache properties
+        localStorage.setItem("properties", JSON.stringify(formattedProperties));
+        return formattedProperties;
+      } else {
+        console.error("No properties found or invalid data structure");
+        return [];
+      }
+    } else {
+      console.error("Failed to fetch properties, status code:", response.status);
+      return [];
+    }
+  } catch (error: any) {
+    console.error("Failed to fetch properties:", error.message);
+    return [];
+  }
+};
+
 function Properties() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -41,41 +73,18 @@ function Properties() {
     description: "",
   });
 
-  useEffect(() => {
-    fetchProperties();
-  }, []);
-
-  const fetchProperties = async () => {
-    try {
-      const response = await API.get("/properties");
-      if (response.status === 200) {
-        const jsonData = await response.data;
-        if (jsonData.success && Array.isArray(jsonData.data)) {
-          const formattedProperties = jsonData.data.map((property: any) => ({
-            id: property.id,
-            title: property.title,
-            address: property.address,
-            units: property.unit_count || 0,
-            description: property.description || "No description provided",
-            photo: property.photo || "apartment-building.jpg",
-          }));
-          setProperties(formattedProperties);
-        } else {
-          console.error("No properties found or invalid data structure");
-          setProperties([]);
-        }
-      } else {
-        console.error(
-          "Failed to fetch properties, status code:",
-          response.status
-        );
-        setProperties([]);
-      }
-    } catch (error: any) {
-      console.error("Failed to fetch properties:", error.message);
-      setProperties([]);
-    }
+  const clearCache = () => {
+    localStorage.clear();
   };
+
+  useEffect(() => {
+    const cachedProperties = localStorage.getItem("properties");
+    if (cachedProperties) {
+      setProperties(JSON.parse(cachedProperties));
+    } else {
+      fetchProperties().then(setProperties);
+    }
+  }, []);
 
   const handleAddProperty = () => {
     setIsDrawerOpen(true);
@@ -86,7 +95,8 @@ function Properties() {
     API.post("/properties", newProperty)
       .then((response) => {
         console.log("Property saved successfully:", response);
-        fetchProperties();
+        clearCache();
+        fetchProperties().then(setProperties);
         setIsDrawerOpen(false);
         setNewProperty({});
       })
@@ -109,129 +119,131 @@ function Properties() {
 
   return (
     <>
-      <Button onClick={handleAddProperty}>
-        <PlusIcon className="" />
-        Add New Property
-      </Button>
-      <Drawer open={isDrawerOpen} onClose={closeDrawer}>
-        <DrawerContent>
-          <div className="mx-auto w-full max-w-md">
-            <DrawerHeader>
-              <DrawerTitle>Add New Property</DrawerTitle>
-              <DrawerClose />
-            </DrawerHeader>
-            <div className="p-4">
-              <form>
-                <div className="mb-4">
-                  <label
-                    htmlFor="title"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Title:
-                  </label>
-                  <Input
-                    id="title"
-                    name="title"
-                    type="text"
-                    placeholder="Enter title"
-                    value={newProperty.title}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="address"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Address:
-                  </label>
-                  <Input
-                    id="address"
-                    name="address"
-                    type="text"
-                    placeholder="Enter address"
-                    value={newProperty.address}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="description"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Description:
-                  </label>
-                  <Input
-                    id="description"
-                    name="description"
-                    type="text"
-                    placeholder="Enter description"
-                    value={newProperty.description}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="photo"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Upload Photo:
-                  </label>
-                  <Input
-                    id="photo"
-                    name="photo"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="units"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Number of Units:
-                  </label>
-                  <Input
-                    id="units"
-                    name="units"
-                    type="number"
-                    placeholder="Enter number of units"
-                    value={newProperty.units}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <Button className="mr-2" onClick={handleSaveProperty}>
-                  Save
-                </Button>
-                <DrawerClose asChild>
-                  <Button variant="outline" onClick={closeDrawer}>
-                    Cancel
+      <main className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold text-dwellow-dark-200">Properties</h1>
+        <Button className="mt-4" onClick={handleAddProperty}>
+          <PlusIcon />
+          Add New Property
+        </Button>
+        <Drawer open={isDrawerOpen} onClose={closeDrawer}>
+          <DrawerContent>
+            <div className="mx-auto w-full max-w-md">
+              <DrawerHeader>
+                <DrawerTitle>Add New Property</DrawerTitle>
+                <DrawerClose />
+              </DrawerHeader>
+              <div className="p-4">
+                <form>
+                  <div className="mb-4">
+                    <label
+                      htmlFor="title"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Title:
+                    </label>
+                    <Input
+                      id="title"
+                      name="title"
+                      type="text"
+                      placeholder="Enter title"
+                      value={newProperty.title}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label
+                      htmlFor="address"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Address:
+                    </label>
+                    <Input
+                      id="address"
+                      name="address"
+                      type="text"
+                      placeholder="Enter address"
+                      value={newProperty.address}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label
+                      htmlFor="description"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Description:
+                    </label>
+                    <Input
+                      id="description"
+                      name="description"
+                      type="text"
+                      placeholder="Enter description"
+                      value={newProperty.description}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label
+                      htmlFor="photo"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Upload Photo:
+                    </label>
+                    <Input
+                      id="photo"
+                      name="photo"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label
+                      htmlFor="units"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Number of Units:
+                    </label>
+                    <Input
+                      id="units"
+                      name="units"
+                      type="number"
+                      placeholder="Enter number of units"
+                      value={newProperty.units}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <Button className="mr-2" onClick={handleSaveProperty}>
+                    Save
                   </Button>
-                </DrawerClose>
-              </form>
+                  <DrawerClose asChild>
+                    <Button variant="outline" onClick={closeDrawer}>
+                      Cancel
+                    </Button>
+                  </DrawerClose>
+                </form>
+              </div>
             </div>
-          </div>
-        </DrawerContent>
-      </Drawer>
-      <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-4 p-4">
-        {properties.map(({ id, title, address, units, photo, description }) => (
-          <Link key={id} to={`/property/${id}`} className="max-w-xs">
-            {" "}
-            <Card>
-              <CardHeader>
-                <CardTitle>{title}</CardTitle>
-                <CardDescription>{address}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <img className="w-full" src={photo} alt={`Property ${id}`} />
-                <p className="mt-4">{units} Units</p>
-              </CardContent>
-              <CardFooter>{description}</CardFooter>
-            </Card>
-          </Link>
-        ))}
-      </div>
+          </DrawerContent>
+        </Drawer>
+        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 pl-0 gap-4 p-4">
+          {properties.map(({ id, title, address, units, photo, description }) => (
+            <Link key={id} to={`/property/${id}`} className="max-w-xs">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{title}</CardTitle>
+                  <CardDescription>{address}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <img className="w-full" src={photo} alt={`Property ${id}`} />
+                  <p className="mt-4">{units} Units</p>
+                </CardContent>
+                <CardFooter>{description}</CardFooter>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </main>
     </>
   );
 }

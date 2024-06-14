@@ -26,6 +26,7 @@ module.exports = {
           500:'#35533D',
         },
         'dwellow-white': {
+          0:'#FFFFFF',
           100:'#FCFCFC',
           200:'#F5F5F5',
           300:'#ECECEC',          
