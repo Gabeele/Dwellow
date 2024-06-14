@@ -1,6 +1,6 @@
 const express = require('express');
 const logger = require('../utils/logger');
-const { getTickets, getOneTicket, updateTicket, createTicket, deleteTicket } = require('../utils/connector.js');
+const { getTickets, getOneTicket, updateTicket, createTicket, deleteTicket, getOneComment, createComment, getComments } = require('../utils/connector.js');
 const router = express.Router();
 /**
  * @swagger
@@ -251,5 +251,75 @@ router.post('/', async (req, res) => {
         res.status(500).send('Error creating ticket');
     }
 });
+
+
+router.post('/:ticket_id/comments', async (req, res) => {
+    try {
+
+        const {description} = req.body;
+        
+        const ticket_id = req.params.ticket_id;
+        const user_id = req.user_id;
+
+        console.log(req.body);
+        console.log(req.user_id);
+
+        const newcomment = await createComment(ticket_id, user_id, description);
+        if (newcomment) {
+            logger.info(`User with ID: ${req.user_id} created a new comment with ID: ${newcomment.comment_id}`);
+            res.status(201).json(newcomment);
+        } else {
+            logger.warn(`comment creation failed by user ${req.user_id}`);
+            res.status(400).send('Failed to create comment');
+        }
+    } catch (error) {
+        logger.error(`Error creating comment by admin ${req.user_id}: ${error}`);
+        res.status(500).send('Error creating comment');
+    }
+});
+
+
+router.get('/:ticket_id/comments/:comment_id', async (req, res) => { // can change to delete
+
+    try {
+        const id = req.params.comment_id;
+        console.log(id);
+        const ticket = await getOneComment(id);
+
+        if (!ticket) {
+            logger.warn(`Delete Ticket: No ticket found with id ${id}`);
+            return res.status(400).json({ message: `No ticket found with id ${id}` });
+        }
+
+        // TODO: Add a soft delete feature instead of hard delete
+
+        logger.info(`Delete Ticket: ticket ${id} Ticket deleted.`);
+        res.status(200).json({ message: 'Ticket deleted successfully' });
+    } catch (error) {
+        logger.error(`Error deleting Ticket for ticket ${id}: ${error.message}`);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+router.get('/:ticket_id/comments', async (req, res) => {
+    //console.log("hello")
+        try {
+            const id = req.params.ticket_id;
+    
+            const ticket = await getComments(id);
+    
+            if (!ticket) {
+                logger.warn(`Get Comment: No ticket found with id ${id}`);
+                return res.status(400).json({ message: `No Comment found with id ${id}` });
+            }
+    
+            logger.info(`Get Comment: ticket ${id} information accessed.`); // TODO: We should return the ticket infromation here as json or somehting. IDK what is returned back. (Also update the comments)
+            res.status(200).json(ticket.recordset);
+        } catch (error) {
+            logger.error(`Error getting Comment information for ticket ${id}: ${error.message}`);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    });
+
 
 module.exports = router;
