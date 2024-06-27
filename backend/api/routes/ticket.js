@@ -1,6 +1,6 @@
 const express = require('express');
 const logger = require('../utils/logger');
-const { getTickets, getOneTicket, updateTicket, createTicket, deleteTicket, getOneComment, createComment, getComments } = require('../utils/connector.js');
+const { getTickets, getOneTicket, updateTicket, createTicket, deleteTicket, getOneComment, createComment, getComments, getTicketsStatus } = require('../utils/connector.js');
 const router = express.Router();
 /**
  * @swagger
@@ -130,7 +130,7 @@ router.get('/:ticket_id', async (req, res) => {
  */
 router.put('/:ticket_id', async (req, res) => {
 
-    const {unit_id, user_id, description, length, priority, issue_area, photo_url, special_instructions } = req.body;
+    const {unit_id, user_id, description, length, priority, issue_area, photo_url, special_instructions, status } = req.body;
     const ticket_id = req.params.ticket_id;
 
     try {
@@ -145,7 +145,7 @@ router.put('/:ticket_id', async (req, res) => {
         logger.info(`Update Ticket: ticket ${ticket_id} attempting update.`);
 
         // Update the Ticket
-        const updated = await updateTicket( ticket_id, unit_id, user_id, description, length, priority, issue_area, photo_url, special_instructions);
+        const updated = await updateTicket( ticket_id, unit_id, user_id, description, length, priority, issue_area, photo_url, special_instructions, status);
 
         if (updated) {
             logger.info(`Update Ticket: ticket ${ticket_id} Ticket updated.`);
@@ -320,6 +320,26 @@ router.get('/:ticket_id/comments', async (req, res) => {
             res.status(500).json({ error: 'Internal Server Error' });
         }
     });
+
+    router.get('/status/:status', async (req, res) => {
+        //console.log("hello")
+            try {
+                const status = req.params.status;
+        
+                const ticket = await getTicketsStatus(status);
+        
+                if (!ticket) {
+                    logger.warn(`Get Ticket: No ticket found`);
+                    return res.status(400).json({ message: `No Ticket found` });
+                }
+        
+                logger.info(`Get Ticket: information accessed.`); // TODO: We should return the ticket infromation here as json or somehting. IDK what is returned back. (Also update the comments)
+                res.status(200).json(ticket.recordset);
+            } catch (error) {
+                logger.error(`Error getting Ticket information for Ticket: ${error.message}`);
+                res.status(500).json({ error: 'Internal Server Error' });
+            }
+        });
 
 
 module.exports = router;

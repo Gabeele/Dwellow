@@ -475,7 +475,7 @@ async function createTicket(unitId, userId, description, length, priority, issue
     }
 }
 
-async function updateTicket(ticketId, unitId, userId, description, length, priority, issue, photo, speacial) {
+async function updateTicket(ticketId, unitId, userId, description, length, priority, issue, photo, speacial, status) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
@@ -488,6 +488,7 @@ async function updateTicket(ticketId, unitId, userId, description, length, prior
         request.input('issue_area', sql.NVarChar(sql.MAX), issue);
         request.input('photo_url', sql.NVarChar(sql.MAX), photo);
         request.input('special_instructions', sql.NVarChar(sql.MAX), speacial);
+        request.input('status', sql.NVarChar(sql.MAX), status);
 
         const result = await request.execute('UpdateTicket');
         if (result.rowsAffected[0] > 0) {
@@ -709,6 +710,23 @@ async function getComments(id) { // gets tickets where it matches the user id
     }
 }
 
+async function getTicketsStatus(status) { // gets tickets where it matches the status
+    try {
+        await sql.connect(config);
+        const query = `SELECT * FROM tickets WHERE status = '${status}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching tickets: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
 module.exports = {
     getUserId,
     deleteInviteCode,
@@ -741,6 +759,7 @@ module.exports = {
     associateUserWithInviteCode,
     createComment,
     getOneComment,
-    getComments
+    getComments,
+    getTicketsStatus
 
 };
