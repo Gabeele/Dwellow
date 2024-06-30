@@ -475,7 +475,7 @@ async function createTicket(unitId, userId, description, length, priority, issue
     }
 }
 
-async function updateTicket(ticketId, unitId, userId, description, length, priority, issue, photo, speacial) {
+async function updateTicket(ticketId, unitId, userId, description, length, priority, issue, photo, speacial, status) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
@@ -488,6 +488,7 @@ async function updateTicket(ticketId, unitId, userId, description, length, prior
         request.input('issue_area', sql.NVarChar(sql.MAX), issue);
         request.input('photo_url', sql.NVarChar(sql.MAX), photo);
         request.input('special_instructions', sql.NVarChar(sql.MAX), speacial);
+        request.input('status', sql.NVarChar(sql.MAX), status);
 
         const result = await request.execute('UpdateTicket');
         if (result.rowsAffected[0] > 0) {
@@ -655,7 +656,76 @@ async function deleteInviteCode(user_id, propertyId, unitId, code) {
 
 }
 
+async function createComment(ticketId, userId, description) {
+    try {
+        await sql.connect(config);
+        const request = new sql.Request();
+        request.input('ticket_id', sql.Int, ticketId);
+        request.input('user_id', sql.Int, userId);
+        request.input('description', sql.NVarChar(sql.MAX), description);
 
+
+        const result = await request.execute('AddComment');
+        logger.info('Comment created successfully:', result);
+        return result;
+    } catch (error) {
+        logger.error(`Error creating Comment for user ${userId}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+async function getOneComment(id) { // gets tickets where it matches the user id
+    try {
+        await sql.connect(config);
+        const query = `SELECT * FROM comments WHERE comment_id = '${id}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching comment  ${id}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+async function getComments(id) { // gets tickets where it matches the user id
+    try {
+        await sql.connect(config);
+        const query = `SELECT * FROM comments WHERE ticket_id = '${id}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching ticket associated with user ${id}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+async function getTicketsStatus(status) { // gets tickets where it matches the status
+    try {
+        await sql.connect(config);
+        const query = `SELECT * FROM tickets WHERE status = '${status}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching tickets: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
 
 module.exports = {
     getUserId,
@@ -686,5 +756,10 @@ module.exports = {
     removeTicket,
     getTickets,
     getOneTicket,
-    associateUserWithInviteCode
+    associateUserWithInviteCode,
+    createComment,
+    getOneComment,
+    getComments,
+    getTicketsStatus
+
 };
