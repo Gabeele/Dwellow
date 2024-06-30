@@ -117,7 +117,7 @@ class _RegisterPageState extends State<RegisterPage> {
       }
 
       final response = await http.post(
-        Uri.parse('https://192.168.1.69:23450/public/account'),
+        Uri.parse('localhost:23450/public/account'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

@@ -3,21 +3,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 ThemeData lightMode = ThemeData(
   brightness: Brightness.light,
-  colorScheme: ColorScheme.light(
-    background: Color.fromRGBO(229, 229, 229, 1),
-    primary: Color.fromRGBO(67, 123, 58, 1),
-    secondary: Colors.grey.shade700,
-    onPrimary: Colors.white,
-    onSecondary: Colors.black,
-    error: Colors.red,
-    onError: Colors.white,
-    surface: Colors.white,
-    onSurface: Colors.black,
-  ),
   primaryColor: Color.fromRGBO(67, 123, 58, 1),
   hintColor: Colors.grey.shade700,
   scaffoldBackgroundColor: Color.fromRGBO(229, 229, 229, 1),
-  backgroundColor: Color.fromRGBO(229, 229, 229, 1),
   appBarTheme: AppBarTheme(
     color: Color.fromRGBO(67, 123, 58, 1),
     iconTheme: IconThemeData(color: Colors.white),
@@ -129,4 +117,15 @@ ThemeData lightMode = ThemeData(
     selectedLabelStyle: GoogleFonts.comfortaa(fontSize: 12),
     unselectedLabelStyle: GoogleFonts.comfortaa(fontSize: 12),
   ),
+  colorScheme: ColorScheme.light(
+    background: Color.fromRGBO(229, 229, 229, 1),
+    primary: Color.fromRGBO(67, 123, 58, 1),
+    secondary: Colors.grey.shade700,
+    onPrimary: Colors.white,
+    onSecondary: Colors.black,
+    error: Colors.red,
+    onError: Colors.white,
+    surface: Colors.white,
+    onSurface: Colors.black,
+  ).copyWith(background: Color.fromRGBO(229, 229, 229, 1)),
 );
