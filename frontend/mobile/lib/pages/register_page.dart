@@ -117,20 +117,22 @@ class _RegisterPageState extends State<RegisterPage> {
       }
 
       final response = await http.post(
-        Uri.parse('localhost:23450/public/account'),
+        Uri.parse('https://api.dwellow.ca/public/account'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
+          'Authorization': '$token',
         },
         body: jsonEncode({
-          'fullName': fullName,
-          'userType': 'tenant',
+          'full_name': fullName,
+          'user_type': 'tenant',
           'email': email,
-          'phoneNumber': phoneNumber,
+          'phone_number': phoneNumber,
         }),
       );
 
-      if (response.statusCode == 201) {
+      print(response.statusCode);
+
+      if (response.statusCode == 200) {
         return true;
       } else {
         return false;

@@ -13,7 +13,8 @@ const { getProperties,
     deleteUnit,
     associateUnitWithUser,
     createCode,
-    deleteInviteCode } = require('../utils/connector');
+    deleteInviteCode, 
+    getUser} = require('../utils/connector');
 
 /**
  * @swagger
@@ -60,8 +61,10 @@ const isAdmin = (req, res, next) => {
 
 router.get('/', isAdmin, async (req, res) => {
     try {
-        const userId = req.user_id;
-        const properties = await getProperties(userId);
+        const user = await getUser(req.user_id);
+        console.log (user.team_id);
+        const properties = await getProperties(user.recordset[0].team_id);
+
         logger.info('Fetched all properties');
 
         res.json({
@@ -117,7 +120,7 @@ router.get('/', isAdmin, async (req, res) => {
 
 router.get('/:propertyId/units', isAdmin, async (req, res) => {
     try {
-
+        console.log('here');
         const property_id = req.params.propertyId;
         const property = await getProperty(req.user_id, property_id)
         const units = await getUnits(req.user_id, req.params.propertyId);
@@ -221,12 +224,11 @@ router.get('/:propertyId/units/:unitId', isAdmin, async (req, res) => {
  */
 router.post('/', isAdmin, async (req, res) => {
     try {
-
-        const { title, address, description, photo, units } = req.body;
+        const user = await getUser(req.user_id);
+        const {title, address, description, photo_url, team_id } = req.body;
         console.log(req.body);
-        console.log(title, address, description, photo, units)
 
-        const newProperty = await createProperty(req.user_id, title, address, description, units);
+        const newProperty = await createProperty(title, address, description, photo_url, user.recordset[0].team_id);
         if (newProperty) {
             logger.info(`Admin with ID: ${req.user_id} created a new property with ID: ${newProperty.id}`);
             res.status(201).json(newProperty);
@@ -274,7 +276,12 @@ router.post('/', isAdmin, async (req, res) => {
  */
 router.put('/:propertyId', isAdmin, async (req, res) => {
     try {
-        const updatedProperty = await updateProperty(req.user_id, req.params.propertyId, req.body);
+        const property_id = req.params.propertyId;
+        const {title, address, description, photo_url, team_id=user.recordset[0].team_id } = req.body;
+        console.log(req.body);
+        console.log(property_id);
+
+        const updatedProperty = await updateProperty(property_id, title, address, description, photo_url, team_id);
         if (updatedProperty) {
             logger.info(`Admin with ID: ${req.user_id} updated property ID: ${req.params.propertyId}`);
             res.json(updatedProperty);
@@ -314,7 +321,7 @@ router.put('/:propertyId', isAdmin, async (req, res) => {
  */
 router.delete('/:propertyId', isAdmin, async (req, res) => {
     try {
-        const result = await deleteProperty(req.user_id, req.params.propertyId);
+        const result = await deleteProperty(req.params.propertyId);
         if (result) {
             logger.info(`Admin with ID: ${req.user_id} deleted property ID: ${req.params.propertyId}`);
             res.send('Property deleted successfully');
@@ -364,9 +371,9 @@ router.post('/:propertyId/units', isAdmin, async (req, res) => {
     try {
 
         const property_id = req.params.propertyId;
-        const { unit, description } = req.body;
+        const { unit, description, tenant_id } = req.body;
 
-        const newUnit = await createUnit(req.user_id, property_id, unit, description);
+        const newUnit = await createUnit(req.user_id, tenant_id, property_id, unit, description);
         if (newUnit) {
             logger.info(`Admin with ID: ${req.user_id} created a unit with ID: ${newUnit.id} for property ID: ${req.params.propertyId}`);
             res.status(201).json(newUnit);

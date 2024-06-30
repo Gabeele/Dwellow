@@ -1,6 +1,6 @@
 const express = require('express');
 const logger = require('../utils/logger');
-const { createAccount, checkEmail } = require('../utils/connector.js');
+const { createUser, checkEmail } = require('../utils/connector.js');
 const router = express.Router();
 const { decodeToken } = require('../utils/authenticate');
 
@@ -46,9 +46,15 @@ const { decodeToken } = require('../utils/authenticate');
 
 router.post('/account', async (req, res) => {
     const { email, userType, fullName, phoneNumber } = req.body;
-    const token = req.headers.authorization;
+    let token = req.headers.authorization;
+
+    if (token.includes('bearer') || token.includes('Bearer')) {
+        token = token.split(' ')[1];
+
+    }
 
     const decoded = await decodeToken(token);
+
 
     const fb_uuid = decoded.user_id;
 
@@ -62,7 +68,7 @@ router.post('/account', async (req, res) => {
         }
 
         logger.info(`Create Account: New account being created with email ${email}, user type ${userType}, full name ${fullName}, and phone number ${phoneNumber}, and firebase uuid ${fb_uuid}`);
-        const result = await createAccount(email, userType, fullName, phoneNumber, fb_uuid);
+        const result = await createUser(email, userType, fullName, phoneNumber, fb_uuid);
 
         if (result) {
             logger.info(`Create Account: Account created successfully`);

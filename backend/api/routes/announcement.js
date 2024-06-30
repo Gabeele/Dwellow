@@ -82,7 +82,9 @@ router.post('/', async (req, res) => {
             return res.status(403).send('Unauthorized');
         }
         logger.info('Creating announcement');
-        await createAnnouncement(req.body);
+        const {user_id, title, text, announcement_date} = req.body;
+        console.log(req.body);
+        await createAnnouncement(user_id, title, text, announcement_date);
         res.send('Announcement created successfully');
     } catch (error) {
         logger.error(`Error creating announcement: ${error}`);

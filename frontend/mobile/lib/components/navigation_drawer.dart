@@ -42,13 +42,6 @@ class NavDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            leading: Icon(Icons.swap_horiz),
-            title: Text('Switch Unit'),
-            onTap: () {
-              Navigator.pushNamed(context, '/switch-unit');
-            },
-          ),
-          ListTile(
             leading: Icon(Icons.logout),
             title: Text('Logout'),
             onTap: () async {

@@ -32,17 +32,17 @@ async function executeQuery(query) {
 }
 
 
-async function createAccount(email, userType, fullName, phoneNumber, fb_uuid) {
+async function createUser(email, userType, fullName, phoneNumber, fb_uuid) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
-        request.input('userType', sql.NVarChar, userType);
+        request.input('user_type', sql.NVarChar, userType);
         request.input('email', sql.NVarChar, email);
-        request.input('fullName', sql.NVarChar, fullName);
+        request.input('full_name', sql.NVarChar, fullName);
         request.input('token', sql.NVarChar, fb_uuid);
-        request.input('phoneNumber', sql.NVarChar, phoneNumber);
+        request.input('phone_number', sql.NVarChar, phoneNumber);
 
-        const result = await request.execute('CreateAccount');
+        const result = await request.execute('CreateUser');
         logger.info('Account created successfully:', result);
         return true;
     } catch (error) {
@@ -150,16 +150,15 @@ async function deleteUser(id) {
 }
 
 
-async function updateUser(email, id, userType, password, fullName, phoneNumber) {
+async function updateUser(email, id, userType, fullName, phoneNumber) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
         request.input('email', sql.NVarChar, email);
-        request.input('id', sql.Int, id);
-        request.input('userType', sql.NVarChar, userType);
-        request.input('password', sql.NVarChar, password);
-        request.input('fullName', sql.NVarChar, fullName);
-        request.input('phoneNumber', sql.NVarChar, phoneNumber);
+        request.input('user_id', sql.Int, id);
+        request.input('user_type', sql.NVarChar, userType);
+        request.input('full_name', sql.NVarChar, fullName);
+        request.input('phone_number', sql.NVarChar, phoneNumber);
 
         const result = await request.execute('UpdateUser');
         if (result.rowsAffected[0] > 0) {
@@ -177,7 +176,7 @@ async function updateUser(email, id, userType, password, fullName, phoneNumber) 
     }
 }
 
-async function getUserAnnouncements(userId) {
+async function getUserAnnouncements(id) {
     try {
         await sql.connect(config);
         const query = `SELECT * FROM announcements WHERE user_id = '${id}'`;
@@ -198,10 +197,10 @@ async function createAnnouncement(userId, title, text, datetime) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
-        request.input('userId', sql.Int, userId);
+        request.input('user_id', sql.Int, userId);
         request.input('title', sql.NVarChar, title);
         request.input('text', sql.NVarChar, text);
-        request.input('datetime', sql.NVarChar, datetime);
+        request.input('announcement_date', sql.NVarChar, datetime);
 
         const result = await request.execute('CreateAnnouncement');
         logger.info('Announcements created successfully:', result);
@@ -218,7 +217,7 @@ async function deleteAnnouncement(announcementId) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
-        request.input('announcementId', sql.Int, announcementId);
+        request.input('announcement_id', sql.Int, announcementId);
 
         const result = await request.execute('RemoveAnnouncement');
         if (result.rowsAffected[0] > 0) {
@@ -253,7 +252,7 @@ async function getAnnouncementById(announcementId) {
     }
 }
 
-async function getProperties(user_id) {
+async function getProperties(team_id) {
     try {
         await sql.connect(config);
         const query = `
@@ -263,29 +262,29 @@ async function getProperties(user_id) {
         FROM
             properties p
         WHERE
-            p.user_id = '${user_id}'`;
+            p.team_id = '${team_id}'`;
         const result = await sql.query(query);
         if (result.recordset.length === 0) {
             return null;
         }
         return result.recordset;
     } catch (error) {
-        logger.error(`Error fetching properties with user_id ${user_id}: ${error}`);
+        logger.error(`Error fetching properties with team_id ${team_id}: ${error}`);
         throw error;
     } finally {
         await sql.close();
     }
 }
 
-async function createProperty(userId, title, address, description, units) {
+async function createProperty(title, address, description, photo_url, team_id) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
-        request.input('userId', sql.Int, userId);
         request.input('title', sql.NVarChar, title);
         request.input('address', sql.NVarChar, address);
         request.input('description', sql.NVarChar, description);
-        request.input('numUnits', sql.Int, parseInt(units, 10));
+        request.input('photo_url', sql.NVarChar, photo_url);
+        request.input('team_id', sql.Int, team_id);
 
         const result = await request.execute('CreateProperty');
         logger.info('Property created successfully:', result);
@@ -298,36 +297,39 @@ async function createProperty(userId, title, address, description, units) {
     }
 }
 
-async function updateProperty(userId, propertyData, propertyId) {
+async function updateProperty(property_id, title, address, description, photo_url, team_id) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
-        request.input('userId', sql.Int, userId);
-        request.input('propertyData', sql.NVarChar, propertyData);
-        request.input('propertyId', sql.Int, propertyId);
+        request.input('id', sql.Int, property_id);
+        request.input('title', sql.NVarChar, title);
+        request.input('address', sql.NVarChar, address);
+        request.input('description', sql.NVarChar, description);
+        request.input('photo_url', sql.NVarChar, photo_url);
+        request.input('team_id', sql.Int, team_id);
 
         const result = await request.execute('UpdateProperty');
         if (result.rowsAffected[0] > 0) {
-            logger.info(`Property with property_id ${propertyId} updated successfully.`);
+            logger.info(`Property with property_id ${property_id} updated successfully.`);
             return true;
         } else {
-            logger.warn(`No property found with property_id ${propertyId} to update.`);
+            logger.warn(`No property found with property_id ${property_id} to update.`);
             return false;
         }
     } catch (error) {
-        logger.error(`Error updating property with property_id ${propertyId}: ${error}`);
+        logger.error(`Error updating property with property_id ${property_id}: ${error}`);
         throw error;
     } finally {
         await sql.close();
     }
 }
 
-async function deleteProperty(userId, propertyId) {
+async function deleteProperty(propertyId) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
-        request.input('userId', sql.Int, userId);
-        request.input('propertyId', sql.Int, propertyId);
+        //request.input('userId', sql.Int, userId);
+        request.input('id', sql.Int, propertyId);
 
         const result = await request.execute('RemoveProperty');
         if (result.rowsAffected[0] > 0) {
@@ -382,12 +384,12 @@ async function getUnits(user_id, property_id) {
     }
 }
 
-async function createUnit(userId, propertyId, unit, description) {
+async function createUnit(userId, tenant_id, propertyId, unit, description) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
-        request.input('userId', sql.Int, userId);
-        request.input('propertyId', sql.Int, propertyId);
+        request.input('tenant_id', sql.Int, tenant_id);
+        request.input('property_id', sql.Int, propertyId);
         request.input('unit', sql.NVarChar, unit);
         request.input('description', sql.NVarChar, description);
 
@@ -449,13 +451,18 @@ async function deleteUnit(userId, unitId) {
     }
 }
 
-async function createTicket(unitId, userId, description) {
+async function createTicket(unitId, userId, description, length, priority, issue, photo, special) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
-        request.input('unitId', sql.Int, unitId);
-        request.input('userId', sql.Int, userId);
+        request.input('unit_id', sql.Int, unitId);
+        request.input('user_id', sql.Int, userId);
         request.input('description', sql.NVarChar(sql.MAX), description);
+        request.input('length', sql.NVarChar(sql.MAX), length);
+        request.input('priority', sql.NVarChar(sql.MAX), priority);
+        request.input('issue_area', sql.NVarChar(sql.MAX), issue);
+        request.input('photo_url', sql.NVarChar(sql.MAX), photo);
+        request.input('special_instructions', sql.NVarChar(sql.MAX), special);
 
         const result = await request.execute('CreateTicket');
         logger.info('Ticket created successfully:', result);
@@ -468,14 +475,20 @@ async function createTicket(unitId, userId, description) {
     }
 }
 
-async function updateTicket(ticketId, unitId, userId, description) {
+async function updateTicket(ticketId, unitId, userId, description, length, priority, issue, photo, speacial, status) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
-        request.input('ticketId', sql.Int, ticketId);
-        request.input('unitId', sql.Int, unitId);
-        request.input('userId', sql.Int, userId);
+        request.input('ticket_id', sql.Int, ticketId);
+        request.input('unit_id', sql.Int, unitId);
+        request.input('user_id', sql.Int, userId);
         request.input('description', sql.NVarChar(sql.MAX), description);
+        request.input('length', sql.NVarChar(sql.MAX), length);
+        request.input('priority', sql.NVarChar(sql.MAX), priority);
+        request.input('issue_area', sql.NVarChar(sql.MAX), issue);
+        request.input('photo_url', sql.NVarChar(sql.MAX), photo);
+        request.input('special_instructions', sql.NVarChar(sql.MAX), speacial);
+        request.input('status', sql.NVarChar(sql.MAX), status);
 
         const result = await request.execute('UpdateTicket');
         if (result.rowsAffected[0] > 0) {
@@ -515,26 +528,50 @@ async function removeTicket(ticketId) {
     }
 }
 
-// Modify other functions similarly
+async function getTickets(id) { // gets tickets where it matches the user id
+    try {
+        await sql.connect(config);
+        const query = `SELECT * FROM tickets WHERE user_id = '${id}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching ticket associated with user ${id}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
 
-module.exports = {
-    createTicket,
-    updateTicket,
-    removeTicket,
-    // Add other functions here
-};
-
+async function getOneTicket(id) { // gets tickets where it matches the user id
+    try {
+        await sql.connect(config);
+        const query = `SELECT * FROM tickets WHERE ticket_id = '${id}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching ticket  ${id}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
 
 async function associateUnitWithUser(user_id, code) {
     try {
 
-        console.log('user_id:', user_id);
-        console.log('code:', code);
+        console.log('UserID:', user_id);
+        console.log('Code:', code);
         await sql.connect(config);
         const request = new sql.Request();
 
-        request.input('UserID', sql.Int, user_id);
-        request.input('Code', sql.NVarChar, code);
+        request.input('user_id', sql.Int, user_id);
+        request.input('code', sql.NVarChar, code);
 
         const result = await request.execute('AssociateUnitWithUser');
 
@@ -555,35 +592,140 @@ async function associateUnitWithUser(user_id, code) {
 
     }
 }
-
-
-async function createCode(propertyId, unitId, email) {
+async function associateUserWithInviteCode(user_id, code) {
     try {
+        console.log('UserID:', user_id);
+        console.log('Code:', code);
+
         await sql.connect(config);
         const request = new sql.Request();
 
-        request.input('Email', sql.NVarChar, email);
-        request.input('PropertyID', sql.Int, propertyId);
-        request.input('UnitID', sql.Int, unitId);
+        request.input('user_id', sql.Int, user_id);
+        request.input('code', sql.NVarChar(6), code);
 
-        const result = await request.execute('InsertInviteCode');
+        const result = await request.execute('AssociateUserWithInviteCode');
 
-        const code = result.recordset[0].InviteCode;
-
-        logger.info(`Code ${code} created and associated with property ID ${propertyId} and unit ID ${unitId}.`);
-        return code;
     } catch (error) {
-        logger.error(`Error creating code for property ID ${propertyId}, unit ID ${unitId}: ${error}`);
+        logger.error(`Error in associateUserWithInviteCode: ${error}`);
         throw error;
     } finally {
         await sql.close();
     }
 }
 
+async function createCode(property_id, unit_id, email, code) {
+    try {
+        await sql.connect(config);
+        const request = new sql.Request();
+        console.log(email);
+
+        request.input('code', sql.NVarChar, code);
+        request.input('email', sql.NVarChar, email);
+        request.input('property_id', sql.Int, property_id);
+        request.input('unit_id', sql.Int, unit_id);
+
+        const result = await request.execute('CreateInviteCode');
+
+        logger.info('Code created successfully:', result);
+        return result;
+    } catch (error) {
+        logger.error(`Error creating code ${code}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+async function getCode(email) {
+    try {
+        await sql.connect(config);
+        const query = `SELECT * FROM invite_codes WHERE email = '${email}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching ticket  ${email}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
 async function deleteInviteCode(user_id, propertyId, unitId, code) {
 
 }
 
+async function createComment(ticketId, userId, description) {
+    try {
+        await sql.connect(config);
+        const request = new sql.Request();
+        request.input('ticket_id', sql.Int, ticketId);
+        request.input('user_id', sql.Int, userId);
+        request.input('description', sql.NVarChar(sql.MAX), description);
+
+
+        const result = await request.execute('AddComment');
+        logger.info('Comment created successfully:', result);
+        return result;
+    } catch (error) {
+        logger.error(`Error creating Comment for user ${userId}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+async function getOneComment(id) { // gets tickets where it matches the user id
+    try {
+        await sql.connect(config);
+        const query = `SELECT * FROM comments WHERE comment_id = '${id}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching comment  ${id}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+async function getComments(id) { // gets tickets where it matches the user id
+    try {
+        await sql.connect(config);
+        const query = `SELECT * FROM comments WHERE ticket_id = '${id}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching ticket associated with user ${id}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+async function getTicketsStatus(status) { // gets tickets where it matches the status
+    try {
+        await sql.connect(config);
+        const query = `SELECT * FROM tickets WHERE status = '${status}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching tickets: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
 
 module.exports = {
     getUserId,
@@ -604,12 +746,20 @@ module.exports = {
     getAnnouncementById,
     getRole,
     executeQuery,
-    createAccount,
+    createUser,
     checkEmail,
     getUser,
     deleteUser,
     updateUser,
     createTicket,
     updateTicket,
-    removeTicket
+    removeTicket,
+    getTickets,
+    getOneTicket,
+    associateUserWithInviteCode,
+    createComment,
+    getOneComment,
+    getComments,
+    getTicketsStatus
+
 };
