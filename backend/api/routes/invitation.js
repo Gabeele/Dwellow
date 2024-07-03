@@ -17,15 +17,15 @@ router.get('/:code', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-    const { email, unit_id, property_id } = req.body;
+    const { email, unitId, id } = req.body;
 
     const code = generateCode();
     console.log(req.body);
-    createCode(property_id, unit_id, email, code);
+    createCode(id, unitId, email, code);
 
     sendCodeByEmail(email, code);
 
-    res.send("Invitation sent", email, code);
+    res.status(201).json({ message: "Invitation sent", email: email, code: code });
 });
 
 

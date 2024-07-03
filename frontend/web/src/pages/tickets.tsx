@@ -21,14 +21,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-  } from "@/components/ui/card";
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import API from "@/utils/Api";
+import CharacterCount from "@/components/CharacterCount";
 
 interface Property {
   id: number;
@@ -62,16 +63,25 @@ interface Ticket {
 function Tickets() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
+  let [userId] = useState("");
+
   const [newTicketTitle, setNewTicketTitle] = useState("");
+  const [newTicketDesc, setNewTicketDesc] = useState("");
   const [selectedProperty, setSelectedProperty] = useState("");
   const [units, setUnits] = useState<Unit[]>([]);
   const [selectedUnit, setSelectedUnit] = useState<string>("");
   const [selectedPropertyId, setSelectedPropertyId] = useState<number | null>(null);
+  const [newTicketPriority, setNewTicketPriority] = useState("");
+  const [newTicketLength, setNewTicketLength] = useState("");
+  const [newTicketIssueArea, setNewTicketIssueArea] = useState("");
+  const [newTicketPhotoURL, setNewTicketPhotoURL] = useState("");
+
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     const cachedTickets = localStorage.getItem("tickets");
     if (cachedTickets) {
-      setProperties(JSON.parse(cachedTickets));
+      setTickets(JSON.parse(cachedTickets));
     } else {
       fetchTickets();
     }
@@ -120,9 +130,18 @@ function Tickets() {
       if (response.status === 200) {
         const jsonData = await response.data;
         if (jsonData.success && Array.isArray(jsonData.data)) {
-          const formattedTickets = jsonData.data.map((tickets: any) => ({
-            id: tickets.id,
+          const formattedTickets = jsonData.data.map((ticket: any) => ({
+            id: ticket.id,
+            description: ticket.description,
+            unit_id: ticket.unit_id,
+            user_id: ticket.user_id,
+            length: ticket.length,
+            issue_area: ticket.issue_area,
+            photo_url: ticket.photo_url,
+            special_instructions: ticket.special_instructions,
+            priority: ticket.priority,
           }));
+          setTickets(formattedTickets);
           localStorage.setItem("tickets", JSON.stringify(formattedTickets));
           return formattedTickets;
         } else {
@@ -142,94 +161,189 @@ function Tickets() {
   const handlePropertyChange = (propertyId: string) => {
     const property = properties.find(p => p.id.toString() === propertyId);
     if (property) {
-      console.log(property.id)
       setSelectedProperty(property.title);
       setSelectedPropertyId(property.id);
       setSelectedUnit("");
-      console.log(selectedPropertyId)
     }
   };
+
+  const handleCreateTicket = async () => {
+    try{
+      const res = await API.get("/account");
+      if (res.status === 200) {
+        const jsonData = await res.data;
+        if (jsonData != null) {
+          userId = jsonData[0].user_id;
+          console.log(`User ID: ${userId}`);
+        }
+      }
+
+      const response = await API.post(
+        `/ticket`,
+        { unit_id: selectedUnit, user_id: userId, description: newTicketTitle, length: newTicketLength, priority: newTicketPriority, 
+          issue_area: newTicketIssueArea, photo_url: newTicketPhotoURL, special_instructions: newTicketDesc }
+      );
+      console.log("Ticket created successfully:", response);
+
+    } catch (error) {
+      console.error("Failed to create ticket:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (!dialogOpen) {
+      setSelectedProperty("");
+      setSelectedPropertyId(null);
+      setSelectedUnit("");
+      setNewTicketTitle("");
+      setNewTicketDesc("");
+      setNewTicketPriority("");
+      setNewTicketLength("");
+    }
+  }, [dialogOpen]);
 
   return (
     <div className="">
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-dwellow-dark-200">Tickets</h1>
-        <Dialog>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button className="mt-4">
               <PlusIcon />
               Create Ticket
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-3xl">
             <DialogHeader>
-              <DialogTitle>Create Ticket</DialogTitle>
+              <DialogTitle className="text-xl">Create Ticket</DialogTitle>
               <DialogDescription>Manually create a ticket.</DialogDescription>
             </DialogHeader>
+            <div className="relative">
+              <Input
+                placeholder="Ticket Title"
+                value={newTicketTitle}
+                onChange={(e) => setNewTicketTitle(e.target.value)}
+                maxLength={50}
+              />
+              <CharacterCount currentCount={newTicketTitle.length} maxCount={50} />
+            </div>
 
-            <Input
-              placeholder="Ticket Title"
-              value={newTicketTitle}
-              onChange={(e) => setNewTicketTitle(e.target.value)}/>
-            <p className="text-base font-semibold">Add Attachments</p>
-            <Input type="file"/>
+            <div className="grid grid-cols-3 gap-x-4">
+              <div className="col-span-2">
+                <p className="text-base font-semibold mb-2">Ticket Description</p>
+                <div className="relative">
+                  <textarea
+                    className="w-full h-[225px] p-2 border text-sm rounded-md resize-none
+                    shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    placeholder="Ticket Description"
+                    value={newTicketDesc}
+                    onChange={(e) => setNewTicketDesc(e.target.value)}
+                    maxLength={250}
+                    rows={5}
+                  />
+                  <div className="relative bottom-2">
+                    <CharacterCount currentCount={newTicketDesc.length} maxCount={250} />
+                  </div>
+                  <p className="text-base font-semibold mb-1">Add Attachments</p>
+                  <Input type="file" />
+                </div>
+              </div>
 
-            <Select onValueChange={handlePropertyChange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select Property" />
-              </SelectTrigger>
-              <SelectContent>
-                {properties.length > 0 ? (
-                  properties.map((property) => (
-                    <SelectItem key={property.id} value={property.id.toString()}>
-                      {property.title}
-                    </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem key="no-properties" value="no-properties" disabled>
-                    No Properties Available
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
-            {selectedProperty && (
-              <Select onValueChange={setSelectedUnit}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Unit">
-                    {selectedUnit || "Select Unit"}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {units.length > 0 ? (
-                    units.map((unit) => (
-                      <SelectItem key={unit.id} value={unit.unit}>
-                        {unit.unit}
+              <div className="col-span-1">
+                <p className="text-base font-semibold mb-1">Property</p>
+                <Select onValueChange={handlePropertyChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Property" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {properties.length > 0 ? (
+                      properties.map((property) => (
+                        <SelectItem key={property.id} value={property.id.toString()}>
+                          {property.title}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem key="no-properties" value="no-properties" disabled>
+                        No Properties Available
                       </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem key="no-units" value="no-units" disabled>
-                      No Units Available
-                    </SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-            )}
+                    )}
+                  </SelectContent>
+                </Select>
+                {selectedProperty && (
+                  <Select onValueChange={setSelectedUnit}>
+                    <SelectTrigger className="mt-2">
+                      <SelectValue placeholder="Select Unit">
+                        {selectedUnit || "Select Unit"}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {units.length > 0 ? (
+                        units.map((unit) => (
+                          <SelectItem key={unit.id} value={unit.unit}>
+                            {unit.unit}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem key="no-units" value="no-units" disabled>
+                          No Units Available
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                )}
+                <p className="text-base font-semibold mt-2 mb-1">Ticket Priority</p>
+                <Select value={newTicketPriority} onValueChange={(e) => setNewTicketPriority(e)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-base font-semibold mt-2 mb-1">Ticket Length</p>
+                <div className="relative">
+                  <Input
+                  className="text-sm"
+                  placeholder="Ticket Length"
+                  value={newTicketLength}
+                  onChange={(e) => setNewTicketLength(e.target.value)}
+                  maxLength={25}
+                  />
+                  <CharacterCount currentCount={newTicketLength.length} maxCount={25} />
+                </div>
+                <p className="text-base font-semibold mt-2 mb-1">Issue Area</p>
+                <div className="relative">
+                  <Input
+                  className="text-sm"
+                  placeholder="Issue Area"
+                  value={newTicketIssueArea}
+                  onChange={(e) => setNewTicketIssueArea(e.target.value)}
+                  maxLength={25}
+                  />
+                  <CharacterCount currentCount={newTicketLength.length} maxCount={25} />
+                </div>
+              </div>
+            </div>
 
             <DialogFooter>
-              <Button>Create</Button>
+              <Button onClick={handleCreateTicket}>Create</Button>
               <DialogClose asChild>
                 <Button variant="secondary">Close</Button>
               </DialogClose>
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+
         <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 pl-0 gap-4 p-4">
           {tickets.map(({ id, description, unit_id, user_id, length, issue_area, photo_url, special_instructions, priority }) => (
-            <Card>
+            <Card key={id}>
               <CardHeader>
                 <CardTitle>{description}</CardTitle>
-                  <CardDescription>{special_instructions}</CardDescription>
-                </CardHeader>
+                <CardDescription>{special_instructions}</CardDescription>
+              </CardHeader>
               <CardContent>
                 <p className="mt-4">{issue_area} Units</p>
               </CardContent>
