@@ -1,5 +1,4 @@
-
-version: '3'
+version: "3"
 
 services:
   nginx:
@@ -17,9 +16,9 @@ services:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: database
     volumes:
-    - ./backend/database:/app  
+      - ./backend/database:/app
     env_file:
-      - .env  
+      - .env
     environment:
       ACCEPT_EULA: Y
       MSSQL_TCP_PORT: 1433
@@ -32,7 +31,7 @@ services:
     image: node:alpine
     container_name: api
     volumes:
-      - ./backend/api:/app  
+      - ./backend/api:/app
     ports:
       - "23450:8080"
     restart: always
@@ -48,3 +47,13 @@ services:
     restart: always
     working_dir: /app
     command: sh -c "npm install && npm run dev -- --host"
+
+  chatbot:
+    build: ./backend/chatbot
+    container_name: chatbot
+    volumes:
+      - ./backend/chatbot:/app
+    working_dir: /app
+    restart: always
+    depends_on:
+      - database
