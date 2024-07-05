@@ -1,2 +1,4 @@
 crewai
 pyodbc
+firebase-admin
+python-dotenv

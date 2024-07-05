@@ -9,8 +9,11 @@ class Sock:
 
     def send(self, data):
         try:
+            # Check if data is string and encode it if necessary
+            if isinstance(data, str):
+                data = data.encode('utf-8')
             print(f"Sending data: {data}")
-            self.sock.sendall(data.encode('utf-8'))
+            self.sock.sendall(data)
         except Exception as e:
             print(f"An error occurred while sending data: {e}")
             self.close()

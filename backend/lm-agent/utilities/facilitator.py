@@ -1,5 +1,5 @@
 from agents.intent_classifier import IntentClassifier
-import agents.response_generator as response_generator
+import agents.response_generator as ResponseGenerator
 from agents.maintenance_request_agent import MaintenanceRequestAgent
 from utilities.db import create_ticket
 from agents.humanize_agent import Humanize
@@ -11,7 +11,9 @@ class Facilitator:
         self.maintenance_agent = MaintenanceRequestAgent()
         self.humanizer = Humanize()
         self.intent_classifier = IntentClassifier()
+        self.response_generator = ResponseGenerator.ResponseGenerator()
         self.setup_logging()
+        self.is_new_session = True
 
     def setup_logging(self):
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -19,24 +21,21 @@ class Facilitator:
 
     def run(self):
         try:
-            newSession = True
-            done = False
-            while not done:
-                if newSession:
-                    self.send_message("Hello! How can I help you today?")
-                    newSession = False
+            while True:
+                if self.is_new_session:
+                    self.send_message("Hello there! What can I do for you? (Facilitator)")
+                    self.is_new_session = False
                 else:
-                    self.send_message("Is there anything else I can help you with?")
+                    user_input = self.receive_message()
+                    if user_input is None:
+                        break
 
-                user_input = self.receive_message()
-                if user_input is None:
-                    done = True
-                    continue
-
-                intent = self.get_intent(user_input)
-                response, done = self.process_intent(intent, user_input)
-                if response:
-                    self.send_message(response)
+                    intent = self.get_intent(user_input)
+                    response, done = self.process_intent(intent, user_input)
+                    if response:
+                        self.send_message(response)
+                    if done:
+                        break
         except Exception as e:
             self.logger.error(f"An error occurred during the session: {e}")
             self.send_message("An error occurred. Please try again later.")
@@ -72,7 +71,7 @@ class Facilitator:
 
     def create_ticket_in_db(self, ticket_data):
         try:
-            unit_id = self.session.user_id  # For now, the unit_id is the same as the user_id
+            unit_id = self.session.user_id 
             user_id = self.session.user_id
             description = ticket_data.get("issue_detail")
             length = ticket_data.get("duration")
@@ -110,16 +109,17 @@ class Facilitator:
         done = False
         try:
             if intent == "unknown":
-                response = response_generator.generate_response("unknown")
+                response = self.response_generator.generate_response("unknown")
             elif intent == "greet":
-                response = response_generator.generate_response("greet")
+                response = self.response_generator.generate_response("greet")
             elif intent == "farewell":
-                response = response_generator.generate_response("farewell")
+                response = self.response_generator.generate_response("farewell")
                 done = True
             elif intent == "maintenance request":
                 self.maintenance_request_process()
+                done = True  # Assuming maintenance request processing ends the current session
             else:
-                response = response_generator.generate_response(intent)
+                response = self.response_generator.generate_response(intent)
         except Exception as e:
             self.logger.error(f"An error occurred while processing intent: {e}")
             response = "An error occurred while processing your request. Please try again."

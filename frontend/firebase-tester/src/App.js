@@ -33,7 +33,7 @@ const App = () => {
                 // We would also have a verification email sent to the user here
 
                 // API call to our backend to create a user in our database
-                fetch('http://localhost:23450/api/account', {
+                fetch('https://api.dwellow.ca/account', {
 
                     method: 'POST',
                     headers: {

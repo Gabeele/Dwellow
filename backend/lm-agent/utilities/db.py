@@ -44,4 +44,55 @@ def create_ticket(unit_id, user_id, description, length, priority, issue_area, p
         if conn:
             conn.close()
 
-# Can add more functions here to interact with the database
+def get_unit_id_for_user(user_id):
+    conn = None
+    cursor = None
+    try:
+        conn = pyodbc.connect(conn_str)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT units.id
+            FROM units
+            WHERE units.tenant_id = ?
+        """, (user_id,))
+        
+        unit_id = cursor.fetchone()
+        if unit_id:
+            return unit_id[0]
+        else:
+            raise Exception("No unit found for the user")
+    except Exception as e:
+        raise Exception(f"Error retrieving unit: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+def get_user_id_from_token(token):
+    conn = None
+    cursor = None
+    try:
+        conn = pyodbc.connect(conn_str)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT user_id
+            FROM users
+            WHERE token = ?
+        """, (token,))
+        
+    
+        user_id = cursor.fetchone()
+        if user_id:
+            return user_id[0]
+        else:
+            raise Exception("No user found for the token")
+    except Exception as e:
+        raise Exception(f"Error retrieving user: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
