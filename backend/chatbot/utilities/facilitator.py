@@ -108,7 +108,10 @@ class Facilitator:
         response = None
         done = False
         try:
-            if intent == "unknown":
+            if intent == "":
+                response = "Disconnected"
+                done = True
+            elif intent == "unknown":
                 response = self.response_generator.generate_response("unknown")
             elif intent == "greet":
                 response = self.response_generator.generate_response("greet")

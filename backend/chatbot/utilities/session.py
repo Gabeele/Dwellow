@@ -58,10 +58,11 @@ class Session:
             print(f"An error occurred while closing the socket: {e}")
 
     def run(self):
+        self.socket.send(b'ACK')                
         if self.establish_user():
             try:
                 # Send acknowledgment to client
-                self.socket.send(b'ACK')                
+                self.socket.send(b'connected')
                 # Run the facilitator logic
                 self.facilitator.run()
             except Exception as e:
