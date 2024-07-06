@@ -7,11 +7,12 @@ async def run_client():
     
     uri = "wss://chat.dwellow.ca"
 
-    async with websockets.connect(uri) as websocket:
-        # Send token data
-        token_data = json.dumps({"jwt": TOKEN})
-        print(f"Sending token data: {token_data}")
-        await websocket.send(token_data)
+    headers = {
+        "Authorization": f"Bearer {TOKEN}"
+    }
+
+    async with websockets.connect(uri, extra_headers=headers) as websocket:
+        print("Connected to server")
 
         # Wait for acknowledgment from the server
         response = await websocket.recv()

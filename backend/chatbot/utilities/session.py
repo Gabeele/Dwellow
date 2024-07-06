@@ -14,14 +14,18 @@ class Session:
 
     def establish_user(self):
         try:
-            # Receive JSON data from the socket
-            jwt_data = self.socket.receive(json_data=True)
-            if jwt_data is None:
+            # Receive headers from the socket
+            headers = self.socket.receive_headers()
+            if headers is None:
                 return False
 
-            jwt = jwt_data.get("jwt")
-            if not jwt:
+            # Get the Authorization header
+            auth_header = headers.get("Authorization")
+            if not auth_header or not auth_header.startswith("Bearer "):
                 return False
+
+            # Extract the JWT token from the Authorization header
+            jwt = auth_header.split(" ")[1]
 
             # Verify JWT and get token
             self.token = verify_jwt_and_get_token(jwt)

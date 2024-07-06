@@ -18,6 +18,30 @@ class Sock:
             print(f"An error occurred while sending data: {e}")
             self.close()
 
+    def receive_headers(self):
+        headers = {}
+        try:
+            print("Waiting to receive headers...")
+            buffer = b""
+            while True:
+                data = self.sock.recv(1024)
+                if not data:
+                    break
+                buffer += data
+                if b"\r\n\r\n" in buffer:
+                    break
+            header_data = buffer.split(b"\r\n\r\n")[0].decode('utf-8')
+            header_lines = header_data.split("\r\n")
+            for line in header_lines[1:]:  # Skip the first line
+                key, value = line.split(":", 1)
+                headers[key.strip()] = value.strip()
+            print(f"Received headers: {headers}")
+            return headers
+        except Exception as e:
+            print(f"An error occurred while receiving headers: {e}")
+            self.close()
+            return None
+
     def receive(self, json_data=False):
         try:
             print("Waiting to receive data...")
