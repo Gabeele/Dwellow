@@ -21,8 +21,8 @@ const Landing: React.FC = () => {
           <div className="flex flex-row space-x-10">
             <a href="/register">
               <Button
-                variant="default"
-                className="bg-dwellow-dark-200 hover:bg-dwellow-dark-100"
+                variant="outline"
+                className="text-dwellow-white-200 bg-dwellow-dark-200 hover:bg-dwellow-dark-100 hover:text-dwellow-white-200"
               >
                 Get Started
               </Button>
