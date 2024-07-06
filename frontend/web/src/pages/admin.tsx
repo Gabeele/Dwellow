@@ -84,8 +84,8 @@ const Register: React.FC = () => {
       <LandingNavigation/>
       <div className="absolute top-0 flex justify-center flex-col items-center h-screen w-full bg-dwellow-white-200">
         <div className="bg-dwellow-white-100 p-8 rounded shadow items-center">
-          <h1 className="text-3xl font-bold mb-4 text-dwellow-primary-300 flex justify-center items-center">
-            Admin Register for Dwellow
+          <h1 className="text-3xl font-bold mb-4 text-dwellow-dark-200 flex justify-center items-center">
+            Admin Register
           </h1>
           {errorMessage && (
             <div className="mb-4 text-center text-red-500">{errorMessage}</div>
@@ -146,9 +146,9 @@ const Register: React.FC = () => {
                 else accepted = false;
               }}
             />
-            <p className="text-dwellow-primary-300 text-sm font-medium">
+            <p className="text-dwellow-dark-200 text-sm font-medium">
               I have read and understood the{" "}
-              <a href="" className="text-dwellow-primary-300 font-medium underline">
+              <a href="" className="text-dwellow-dark-200 font-medium underline">
                 Terms and Conditions
               </a>
             </p>
@@ -156,7 +156,7 @@ const Register: React.FC = () => {
           <div className="h-4" />
           <div className="justify-center flex items-center">
             <Button
-              className="bg-dwellow-primary-300 text-xl p-6 pt-4 pb-4"
+              className="bg-dwellow-dark-200 text-xl p-6 pt-4 pb-4"
               onClick={handleRegister}
             >
               Register
@@ -164,16 +164,16 @@ const Register: React.FC = () => {
           </div>
         </div>
 
-        <p className="text-center mt-4 text-dwellow-primary-300 text-sm font-semibold">
+        <p className="text-center mt-4 text-dwellow-dark-200 text-sm font-semibold">
           Already have an account?{" "}
           <a
             href="/login"
-            className="text-dwellow-primary-300 font-semibold hover:underline"
+            className="text-dwellow-dark-200 font-semibold hover:underline"
           >
             Login
           </a>
         </p>
-        <footer className="w-full bg-dwellow-primary-300 flex flex-row items-center space-x-7 justify-center text-dwellow-white-100 font-normal text-sm absolute bottom-0">
+        <footer className="w-full bg-dwellow-dark-200 flex flex-row items-center space-x-7 justify-center text-dwellow-white-100 font-normal text-sm absolute bottom-0">
           <a href="" className="hover:underline">
             Terms of Use
           </a>

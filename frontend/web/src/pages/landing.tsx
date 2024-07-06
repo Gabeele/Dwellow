@@ -22,7 +22,7 @@ const Landing: React.FC = () => {
             <a href="/register">
               <Button
                 variant="default"
-                className="bg-dwellow-primary-300 hover:bg-dwellow-primary-500"
+                className="bg-dwellow-dark-200 hover:bg-dwellow-dark-100"
               >
                 Get Started
               </Button>
@@ -34,7 +34,7 @@ const Landing: React.FC = () => {
         </div>
       </div>
       <div id="About" className="pt-16">
-        <h1 className="text-3xl font-bold mb-4 text-dwellow-primary-300 flex justify-center">About Us</h1>
+        <h1 className="text-3xl font-bold mb-4 text-dwellow-dark-200 flex justify-center">About Us</h1>
         <p className="ml-56 mr-56 mt-6">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
          Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure 
@@ -46,12 +46,12 @@ const Landing: React.FC = () => {
         </p>
       </div>
       <div id="Features" className="pt-16">
-        <h1 className="text-3xl font-bold mb-4 text-dwellow-primary-300 flex justify-center">Features</h1>
+        <h1 className="text-3xl font-bold mb-4 text-dwellow-dark-200 flex justify-center">Features</h1>
       </div>
       <div id="Contact" className="pt-16 mb-16">
-        <h1 className="text-3xl font-bold mb-4 text-dwellow-primary-300 flex justify-center">Contact Us</h1>
+        <h1 className="text-3xl font-bold mb-4 text-dwellow-dark-200 flex justify-center">Contact Us</h1>
       </div>
-      <footer className="w-full bg-dwellow-primary-300 flex flex-row items-center space-x-7 justify-center text-dwellow-white-100 font-normal text-sm absolute bottom left-0 right-0">
+      <footer className="w-full bg-dwellow-dark-200 flex flex-row items-center space-x-7 justify-center text-dwellow-white-100 font-normal text-sm absolute bottom left-0 right-0">
         <a href="" className="hover:underline">Terms of Use</a>
         <p>Dwellow © 2024</p>
         <a href="" className="hover:underline">Privacy Policy</a>
