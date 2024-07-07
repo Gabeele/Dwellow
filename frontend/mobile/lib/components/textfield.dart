@@ -16,31 +16,31 @@ class MyTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final Color customGray = Color(0xFF737782); // Custom gray color
+    final Color textColor = Colors.black; // Black text color
+
     return TextFormField(
       controller: controller,
-      style: TextStyle(color: theme.colorScheme.onSurface),
+      style: TextStyle(color: textColor),
       decoration: InputDecoration(
         filled: true,
-        fillColor: theme.colorScheme.surface,
+        fillColor: Colors.white, // Background color
         labelText: hintText,
-        labelStyle:
-            TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+        labelStyle: TextStyle(color: customGray.withOpacity(0.8)),
         floatingLabelBehavior: FloatingLabelBehavior.auto,
-        hintStyle:
-            TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.5)),
+        hintStyle: TextStyle(color: customGray.withOpacity(0.8)),
         contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: theme.colorScheme.surface),
+          borderRadius: BorderRadius.circular(5),
+          borderSide: BorderSide(color: customGray),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: theme.colorScheme.surface),
+          borderRadius: BorderRadius.circular(5),
+          borderSide: BorderSide(color: customGray),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: theme.colorScheme.primary),
+          borderRadius: BorderRadius.circular(5),
+          borderSide: BorderSide(color: customGray),
         ),
       ),
       obscureText: obscureText,

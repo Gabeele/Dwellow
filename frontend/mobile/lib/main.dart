@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/services.dart';
 import 'package:mobile/auth/auth.dart';
 import 'package:mobile/pages/account_page.dart';
 import 'package:mobile/pages/chat_page.dart';
@@ -13,6 +14,10 @@ import 'package:mobile/theme/light_mode.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky,
+      overlays: []);
+
   runApp(MyApp());
 }
 
@@ -20,6 +25,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Dwellow',
       theme: lightMode,
       darkTheme: darkMode,

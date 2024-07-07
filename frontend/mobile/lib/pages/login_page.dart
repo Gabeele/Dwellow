@@ -66,7 +66,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
+      backgroundColor: Theme.of(context).colorScheme.primary,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Form(
@@ -142,7 +142,10 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 25),
                       // Login button
-                      MyButton(text: "Login", onTap: login),
+                      MyButton(
+                        text: "Login",
+                        onTap: login,
+                      ),
                       const SizedBox(height: 10),
                       // Don't have an account? Register
                       Row(
@@ -151,7 +154,7 @@ class _LoginPageState extends State<LoginPage> {
                           Text(
                             "Don't have an account? ",
                             style: TextStyle(
-                              color: Theme.of(context).colorScheme.secondary,
+                              color: Colors.black,
                             ),
                           ),
                           GestureDetector(
@@ -162,7 +165,7 @@ class _LoginPageState extends State<LoginPage> {
                             child: Text(
                               "Register",
                               style: TextStyle(
-                                color: Theme.of(context).colorScheme.primary,
+                                color: Color.fromARGB(255, 44, 78, 50),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),

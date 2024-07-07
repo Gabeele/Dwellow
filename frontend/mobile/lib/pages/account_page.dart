@@ -108,6 +108,7 @@ class _UpdateAccountPageState extends State<UpdateAccountPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Update Account'),
+        backgroundColor: Color(0xFF1C1C22), // dwellow dark
       ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
@@ -117,7 +118,12 @@ class _UpdateAccountPageState extends State<UpdateAccountPage> {
             children: [
               TextFormField(
                 controller: _nameController,
-                decoration: InputDecoration(labelText: 'Name'),
+                decoration: InputDecoration(
+                  labelText: 'Name',
+                  border: OutlineInputBorder(),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                ),
                 validator: (value) {
                   if (value!.isEmpty) {
                     return 'Please enter your name';
@@ -125,9 +131,15 @@ class _UpdateAccountPageState extends State<UpdateAccountPage> {
                   return null;
                 },
               ),
+              SizedBox(height: 16),
               TextFormField(
                 controller: _emailController,
-                decoration: InputDecoration(labelText: 'Email'),
+                decoration: InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                ),
                 validator: (value) {
                   if (value!.isEmpty) {
                     return 'Please enter your email';
@@ -135,9 +147,15 @@ class _UpdateAccountPageState extends State<UpdateAccountPage> {
                   return null;
                 },
               ),
+              SizedBox(height: 16),
               TextFormField(
                 controller: _phoneController,
-                decoration: InputDecoration(labelText: 'Phone'),
+                decoration: InputDecoration(
+                  labelText: 'Phone',
+                  border: OutlineInputBorder(),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                ),
                 validator: (value) {
                   if (value!.isEmpty) {
                     return 'Please enter your phone number';
@@ -145,9 +163,15 @@ class _UpdateAccountPageState extends State<UpdateAccountPage> {
                   return null;
                 },
               ),
+              SizedBox(height: 16),
               TextFormField(
                 controller: _passwordController,
-                decoration: InputDecoration(labelText: 'Password'),
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                ),
                 obscureText: true,
                 validator: (value) {
                   if (value!.isNotEmpty && value.length < 6) {
@@ -160,11 +184,23 @@ class _UpdateAccountPageState extends State<UpdateAccountPage> {
               ElevatedButton(
                 onPressed: _updateAccount,
                 child: Text('Update Account'),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Color(0xFF1C1C22),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  textStyle: TextStyle(fontSize: 16),
+                ),
               ),
+              SizedBox(height: 10),
               ElevatedButton(
                 onPressed: _deleteAccount,
                 child: Text('Delete Account'),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.red,
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  textStyle: TextStyle(fontSize: 16),
+                ),
               ),
             ],
           ),

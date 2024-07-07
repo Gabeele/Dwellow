@@ -33,15 +33,16 @@ class WaveHeader extends StatelessWidget {
                   logo,
                   semanticsLabel: 'Dwellow Logo',
                   height: 100.0,
+                  color: Colors.white,
                 ),
                 const SizedBox(height: 10),
                 Text(
                   appName,
                   style: TextStyle(
                     fontSize: 40,
-                    fontFamily: GoogleFonts.comfortaa().fontFamily,
+                    fontFamily: GoogleFonts.inter().fontFamily,
                     fontWeight: FontWeight.w500,
-                    color: Theme.of(context).textTheme.bodyLarge!.color,
+                    color: Colors.white,
                   ),
                 ),
               ],
@@ -57,7 +58,7 @@ class _WavePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Color.fromRGBO(159, 189, 155, 1)
+      ..color = Color.fromARGB(255, 16, 16, 17) // Set the color to 0x737782
       ..style = PaintingStyle.fill;
 
     final path = Path()

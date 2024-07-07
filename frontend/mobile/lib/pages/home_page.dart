@@ -1,10 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mobile/components/navigation_drawer.dart';
 import 'package:mobile/models/announcement_model.dart';
 import 'package:mobile/models/ticket_model.dart';
-import 'package:mobile/pages/chat_page.dart';
 import 'package:mobile/pages/ticket_detail_page.dart';
+import 'package:mobile/helper/helper_functions.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -38,37 +38,25 @@ class _HomePageState extends State<HomePage> {
         final response = await http.get(
           Uri.parse('https://api.dwellow.ca/ticket'),
           headers: {
-            'Authorization': 'bearer $token',
+            'Authorization': 'Bearer $token',
           },
         );
-
-        print("Response status: ${response.statusCode}");
-        print("Response body: ${response.body}");
 
         if (response.statusCode == 200) {
           List<dynamic> data = jsonDecode(response.body);
           setState(() {
             tickets.clear();
             for (var ticket in data) {
-              tickets.add(MaintenanceTicket(
-                ticket_id: ticket['ticket_id'],
-                title: ticket['issue_area'],
-                description: ticket['description'],
-                priority: ticket['priority'],
-                // date: DateTime.parse(ticket['date']),
-              ));
+              tickets.add(MaintenanceTicket.fromJson(ticket));
             }
           });
-          print("Tickets fetched: ${tickets.length}");
         } else {
-          // Handle the error
           print('Failed to fetch tickets: ${response.reasonPhrase}');
         }
       } else {
         print('User not authenticated');
       }
     } catch (e) {
-      // Handle the error
       print('Error fetching tickets: $e');
     } finally {
       setState(() {
@@ -89,35 +77,31 @@ class _HomePageState extends State<HomePage> {
         final response = await http.get(
           Uri.parse('https://api.dwellow.ca/announcements'),
           headers: {
-            'Authorization': 'bearer $token',
+            'Authorization': 'Bearer $token',
           },
         );
 
-        print("Response status: ${response.statusCode}");
-        print("Response body: ${response.body}");
-
         if (response.statusCode == 200) {
-          List<dynamic> data = jsonDecode(response.body);
+          List<dynamic>? data = jsonDecode(response.body);
           setState(() {
             notifications.clear();
-            for (var announcement in data) {
-              notifications.add(Announcement(
-                title: announcement['title'],
-                description: announcement['description'],
-                date: announcement['date'], // assuming date is a string
-              ));
+            if (data != null) {
+              for (var announcement in data) {
+                notifications.add(Announcement(
+                  title: announcement['title'] ?? '',
+                  description: announcement['description'] ?? '',
+                  date: announcement['date'], // assuming date is a string
+                ));
+              }
             }
           });
-          print("Announcements fetched: ${notifications.length}");
         } else {
-          // Handle the error
           print('Failed to fetch announcements: ${response.reasonPhrase}');
         }
       } else {
         print('User not authenticated');
       }
     } catch (e) {
-      // Handle the error
       print('Error fetching announcements: $e');
     } finally {
       setState(() {
@@ -130,70 +114,109 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home Page'),
+        title: Text('Dashboard'),
       ),
       drawer: NavDrawer(),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'Recent Announcements',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Container(
-            height: 100,
-            child: isLoadingAnnouncements
-                ? Center(child: CircularProgressIndicator())
-                : notifications.isEmpty
-                    ? Center(child: Text('No announcements available'))
-                    : ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: notifications.length,
-                        itemBuilder: (context, index) {
-                          final announcement = notifications[index];
-                          return Container(
-                            width: 200,
-                            margin: EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 20),
-                            padding: EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .primaryColor
-                                  .withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(15),
+      body: isLoadingTickets || isLoadingAnnouncements
+          ? Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: double
+                          .infinity, // Make the container span the full width
+                      color: Colors.white, // Set the background color to white
+                      padding: EdgeInsets.all(20), // Add some padding
+                      child: Text(
+                        'Announcements',
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
                             ),
-                            child: Center(
-                              child: Text(
-                                announcement.title,
-                                style: TextStyle(
-                                  color: Theme.of(context).primaryColor,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          );
-                        },
                       ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              'Recent Tickets',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-          ),
-          Expanded(
-            child: isLoadingTickets
-                ? Center(child: CircularProgressIndicator())
-                : tickets.isEmpty
-                    ? Center(child: Text('No tickets available'))
-                    : ListView.builder(
-                        itemCount: tickets.length,
-                        itemBuilder: (context, index) {
-                          final ticket = tickets[index];
+                    ),
+                    Container(
+                      color: Colors.white, // Set the background color to white
+                      padding: EdgeInsets.all(10), // Add padding to the list
+                      child: Container(
+                        height: 100,
+                        child: notifications.isEmpty
+                            ? Center(
+                                child: Text('No announcements available',
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium))
+                            : ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: notifications.length,
+                                itemBuilder: (context, index) {
+                                  final announcement = notifications[index];
+                                  return Container(
+                                    width: 250,
+                                    margin:
+                                        EdgeInsets.symmetric(horizontal: 10),
+                                    padding: EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).cardTheme.color,
+                                      border: Border.all(
+                                          color: Colors.grey.shade300),
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          announcement.title,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleLarge
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                          textAlign: TextAlign.left,
+                                        ),
+                                        SizedBox(height: 5),
+                                        Text(
+                                          announcement.description,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium,
+                                          textAlign: TextAlign.left,
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
+                      ),
+                    ),
+                    Container(
+                      width: double
+                          .infinity, // Make the container span the full width
+                      color: Colors.white, // Set the background color to white
+                      padding: EdgeInsets.all(20), // Add some padding
+                      child: Text(
+                        'Tickets',
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                    ),
+                    Container(
+                      color: Colors.white, // Set the background color to white
+                      padding: EdgeInsets.all(10), // Add padding to the list
+                      child: Column(
+                        children: tickets.map((ticket) {
                           return GestureDetector(
                             onTap: () {
                               Navigator.push(
@@ -204,63 +227,106 @@ class _HomePageState extends State<HomePage> {
                                 ),
                               );
                             },
-                            child: Card(
-                              margin: EdgeInsets.all(10.0),
-                              child: Padding(
-                                padding: const EdgeInsets.all(15.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      ticket.title,
-                                      style: TextStyle(
-                                        fontSize: 20.0,
-                                        fontWeight: FontWeight.bold,
+                            child: Container(
+                              margin: EdgeInsets.symmetric(vertical: 5),
+                              padding: EdgeInsets.all(15),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).cardTheme.color,
+                                border: Border.all(color: Colors.grey.shade300),
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    ticket.issueArea.toCapitalized(),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge
+                                        ?.copyWith(
+                                          fontSize: 18.0,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                  ),
+                                  SizedBox(height: 5.0),
+                                  Text(
+                                    ticket.description,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          fontSize: 16.0,
+                                          color: Colors.black54,
+                                        ),
+                                  ),
+                                  SizedBox(height: 5.0),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Container(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 2),
+                                            decoration: BoxDecoration(
+                                              color: ticket.priority == 'High'
+                                                  ? Colors.red.withOpacity(0.1)
+                                                  : ticket.priority == 'Medium'
+                                                      ? Colors.orange
+                                                          .withOpacity(0.1)
+                                                      : Colors.green
+                                                          .withOpacity(0.1),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                            ),
+                                            child: Text(
+                                              ticket.priority,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.copyWith(
+                                                    fontSize: 14.0,
+                                                    fontWeight:
+                                                        FontWeight.normal,
+                                                    color: ticket.priority ==
+                                                            'High'
+                                                        ? Colors.red
+                                                        : ticket.priority ==
+                                                                'Medium'
+                                                            ? Colors.orange
+                                                            : Colors.green,
+                                                  ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                    SizedBox(height: 10.0),
-                                    Text(
-                                      ticket.description,
-                                      style: TextStyle(
-                                        fontSize: 16.0,
-                                      ),
-                                    ),
-                                    SizedBox(height: 10.0),
-                                    Text(
-                                      'Priority: ${ticket.priority}',
-                                      style: TextStyle(
-                                        fontSize: 16.0,
-                                        fontWeight: FontWeight.bold,
-                                        color: ticket.priority == 'High'
-                                            ? Colors.red
-                                            : Colors.black,
-                                      ),
-                                    ),
-                                    // Uncomment the following line if the date field is added back
-                                    // SizedBox(height: 10.0),
-                                    // Text(
-                                    //   'Date: ${ticket.date.toLocal()}'.split(' ')[0],
-                                    //   style: TextStyle(
-                                    //     fontSize: 14.0,
-                                    //     fontStyle: FontStyle.italic,
-                                    //   ),
-                                    // ),
-                                  ],
-                                ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
                           );
-                        },
+                        }).toList(),
                       ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
+                    ),
+                  ],
+                ),
+              ),
+            ),
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.pushNamed(context, '/chat');
         },
-        child: Icon(Icons.chat),
-        tooltip: 'Chat',
+        backgroundColor:
+            Color(0xFF1C1C22), // Set the background color to dwellow-dark
+        icon: Icon(Icons.chat, color: Colors.white),
+        label: Text(
+          'Chat with Kiwi',
+          style: TextStyle(color: Colors.white),
+        ),
       ),
     );
   }

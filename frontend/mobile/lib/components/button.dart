@@ -47,26 +47,27 @@ class _MyButtonState extends State<MyButton> {
         curve: Curves.easeInOut,
         decoration: BoxDecoration(
           color: _isPressed
-              ? Theme.of(context).colorScheme.primary.withOpacity(0.8)
-              : Theme.of(context).colorScheme.primary,
-          borderRadius: BorderRadius.circular(8),
+              ? Color.fromARGB(179, 28, 28, 34)
+              : const Color(0xFF1C1C22),
+          borderRadius: BorderRadius.circular(5),
           boxShadow: _isPressed
               ? []
               : [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.2),
-                    offset: Offset(0, 4),
+                    offset: const Offset(0, 4),
                     blurRadius: 4,
                   ),
                 ],
         ),
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
         child: Center(
           child: Text(
             widget.text,
             style: TextStyle(
               color: Theme.of(context).colorScheme.onPrimary,
-              fontSize: 24,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),

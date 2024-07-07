@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/models/ticket_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:mobile/helper/helper_functions.dart'; // import extension file
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart'; // for date formatting
 
 class TicketDetailPage extends StatefulWidget {
   final MaintenanceTicket ticket;
@@ -17,11 +19,13 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
   List<Comment> comments = [];
   bool isLoading = false;
   final TextEditingController _commentController = TextEditingController();
+  User? currentUser;
 
   @override
   void initState() {
     super.initState();
     fetchTicketDetails();
+    currentUser = FirebaseAuth.instance.currentUser;
   }
 
   Future<void> fetchTicketDetails() async {
@@ -34,7 +38,7 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
         String? token = await user.getIdToken();
 
         final response = await http.get(
-          Uri.parse('https://api.dwellow.ca/ticket/${widget.ticket.ticket_id}'),
+          Uri.parse('https://api.dwellow.ca/ticket/${widget.ticket.ticketId}'),
           headers: {
             'Authorization': 'bearer $token',
           },
@@ -71,13 +75,13 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
 
         final response = await http.post(
           Uri.parse(
-              'https://api.dwellow.ca/ticket/${widget.ticket.ticket_id}/comment'),
+              'https://api.dwellow.ca/ticket/${widget.ticket.ticketId}/comment'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',
           },
           body: jsonEncode({
-            'comment': commentText,
+            'description': commentText,
             'user_id': user.uid,
           }),
         );
@@ -97,70 +101,130 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
     }
   }
 
+  String formatDate(DateTime date) {
+    return DateFormat('MMMM d, y').format(date);
+  }
+
   @override
   Widget build(BuildContext context) {
+    String reporter = 'Added by you';
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Ticket Details'),
+        title: Text('Details'),
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      resizeToAvoidBottomInset: true,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  widget.ticket.issueArea.toCapitalized(),
+                                  style: TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: widget.ticket.priority == 'High'
+                                      ? Colors.red.withOpacity(0.1)
+                                      : widget.ticket.priority == 'Medium'
+                                          ? Colors.orange.withOpacity(0.1)
+                                          : Colors.green.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  widget.ticket.priority,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: widget.ticket.priority == 'High'
+                                        ? Colors.red
+                                        : widget.ticket.priority == 'Medium'
+                                            ? Colors.orange
+                                            : Colors.green,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                              Text(
+                                '#${widget.ticket.ticketId}',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            '$reporter on ${formatDate(widget.ticket.date)}',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.black54,
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            widget.ticket.description,
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Comments',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 8),
+                          Expanded(
+                            child: ListView.builder(
+                              itemCount: comments.length,
+                              itemBuilder: (context, index) {
+                                final comment = comments[index];
+                                return ListTile(
+                                  title: Text(comment.text),
+                                  subtitle: Text('User ID: ${comment.userId}'),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
                 children: [
-                  Text(
-                    widget.ticket.title,
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Description:',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    widget.ticket.description,
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Priority: ${widget.ticket.priority}',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: widget.ticket.priority == 'High'
-                          ? Colors.red
-                          : Colors.black,
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Comments:',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 8),
                   Expanded(
-                    child: ListView.builder(
-                      itemCount: comments.length,
-                      itemBuilder: (context, index) {
-                        final comment = comments[index];
-                        return ListTile(
-                          title: Text(comment.text),
-                          subtitle: Text('User ID: ${comment.userId}'),
-                        );
-                      },
+                    child: Container(
+                      height: 40,
+                      child: TextField(
+                        controller: _commentController,
+                        decoration: InputDecoration(
+                          labelText: 'Write a comment...',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
                     ),
                   ),
-                  TextField(
-                    controller: _commentController,
-                    decoration: InputDecoration(
-                      labelText: 'Add a comment',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  SizedBox(height: 8),
+                  SizedBox(width: 8),
                   ElevatedButton(
                     onPressed: () {
                       if (_commentController.text.isNotEmpty) {
@@ -168,11 +232,17 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
                         _commentController.clear();
                       }
                     },
-                    child: Text('Add Comment'),
+                    child: Text('Submit'),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: Size(100, 40), // Set the size of the button
+                    ),
                   ),
                 ],
               ),
             ),
+          ],
+        ),
+      ),
     );
   }
 }
