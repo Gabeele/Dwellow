@@ -31,7 +31,7 @@ router.get('/all', async (req, res) => {
         res.json(announcements);
     } catch (error) {
         logger.error(`Error fetching announcements: ${error}`);
-        res.status(500).send('Error fetching announcements');
+        res.status(404).send('Error fetching announcements');
     }
 });
 
@@ -88,7 +88,7 @@ router.post('/', async (req, res) => {
         res.send('Announcement created successfully');
     } catch (error) {
         logger.error(`Error creating announcement: ${error}`);
-        res.status(500).send('Error creating announcement');
+        res.status(404).send('Error creating announcement');
     }
 });
 
@@ -124,7 +124,7 @@ router.delete('/:id', async (req, res) => {
         res.send('Announcement deleted successfully');
     } catch (error) {
         logger.error(`Error deleting announcement: ${error}`);
-        res.status(500).send('Error deleting announcement');
+        res.status(404).send('Error deleting announcement');
     }
 });
 
@@ -154,7 +154,7 @@ router.get('/:id', async (req, res) => {
         res.status(200).json(announcement.recordset);
     } catch (error) {
         logger.error(`Error fetching the announcement: ${error}`);
-        res.status(500).send('Error fetching the announcement');
+        res.status(404).send('Error fetching the announcement');
     }
 });
 
@@ -165,7 +165,7 @@ router.get('/', async (req, res) => {
         res.status(200).json(announcement.recordset);
     } catch (error) {
         logger.error(`Error fetching the announcement: ${error}`);
-        res.status(500).send('Error fetching the announcement');
+        res.status(404).send('Error fetching the announcement');
     }
 });
 
