@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const logger = require('../utils/logger');
-const { getUserAnnouncements, createAnnouncement, deleteAnnouncement, getAnnouncementById } = require('../utils/connector');
+const { getUserAnnouncements, createAnnouncement, deleteAnnouncement, getAnnouncementById, getAnnouncementByProperty } = require('../utils/connector');
 
 /**
  * @swagger
@@ -23,7 +23,7 @@ const { getUserAnnouncements, createAnnouncement, deleteAnnouncement, getAnnounc
  *       500:
  *         description: Error message
  */
-router.get('/', async (req, res) => {
+router.get('/all', async (req, res) => {
     try {
         const id = req.user_id;
         logger.info(`Fetching announcements for user ${id}`);
@@ -82,9 +82,9 @@ router.post('/', async (req, res) => {
             return res.status(403).send('Unauthorized');
         }
         logger.info('Creating announcement');
-        const {user_id, title, text, announcement_date} = req.body;
+        const {user_id, title, text, property_id} = req.body;
         console.log(req.body);
-        await createAnnouncement(user_id, title, text, announcement_date);
+        await createAnnouncement(user_id, title, text, property_id);
         res.send('Announcement created successfully');
     } catch (error) {
         logger.error(`Error creating announcement: ${error}`);
@@ -151,6 +151,17 @@ router.get('/:id', async (req, res) => {
     try {
         logger.info(`Fetching announcement with ID ${req.params.id}`);
         const announcement = await getAnnouncementById(req.params.id);
+        res.json(announcement);
+    } catch (error) {
+        logger.error(`Error fetching the announcement: ${error}`);
+        res.status(500).send('Error fetching the announcement');
+    }
+});
+
+router.get('/', async (req, res) => {
+    try {
+        logger.info(`Fetching announcement with user ID ${req.user_id}`);
+        const announcement = await getAnnouncementByProperty(req.user_id);
         res.json(announcement);
     } catch (error) {
         logger.error(`Error fetching the announcement: ${error}`);

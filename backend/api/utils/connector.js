@@ -193,14 +193,15 @@ async function getUserAnnouncements(id) {
     }
 }
 
-async function createAnnouncement(userId, title, text, datetime) {
+async function createAnnouncement(userId, title, text, property_id) {
+    //console.log(userId, title, text, property_id);
     try {
         await sql.connect(config);
         const request = new sql.Request();
         request.input('user_id', sql.Int, userId);
         request.input('title', sql.NVarChar, title);
         request.input('text', sql.NVarChar, text);
-        request.input('announcement_date', sql.NVarChar, datetime);
+        request.input('property_id', sql.Int, property_id);
 
         const result = await request.execute('CreateAnnouncement');
         logger.info('Announcements created successfully:', result);
@@ -245,7 +246,26 @@ async function getAnnouncementById(announcementId) {
         }
         return result;
     } catch (error) {
-        logger.error(`Error fetching announcements with announcement_id ${id}: ${error}`);
+        logger.error(`Error fetching announcements with announcement_id ${announcementId}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+async function getAnnouncementByProperty(userId) {
+    try {
+        await sql.connect(config);
+        //console.log(userId);
+        const query = `SELECT a.* from announcements a JOIN (SELECT property_id from units where tenant_id = '${userId}') u ON a.property_id = u.property_id`;
+        const result = await sql.query(query);
+        //console.log(result);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching announcements with property_id ${propertyId}: ${error}`);
         throw error;
     } finally {
         await sql.close();
@@ -760,6 +780,7 @@ module.exports = {
     createComment,
     getOneComment,
     getComments,
-    getTicketsStatus
+    getTicketsStatus,
+    getAnnouncementByProperty
 
 };
