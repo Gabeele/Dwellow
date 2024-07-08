@@ -259,7 +259,7 @@ async function getAnnouncementByProperty(userId) {
         //console.log(userId);
         const query = `SELECT a.* from announcements a JOIN (SELECT property_id from units where tenant_id = '${userId}') u ON a.property_id = u.property_id`;
         const result = await sql.query(query);
-        //console.log(result);
+        console.log(result);
         if (result.recordset.length === 0) {
             return null;
         }

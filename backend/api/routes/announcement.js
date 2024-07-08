@@ -151,7 +151,7 @@ router.get('/:id', async (req, res) => {
     try {
         logger.info(`Fetching announcement with ID ${req.params.id}`);
         const announcement = await getAnnouncementById(req.params.id);
-        res.json(announcement);
+        res.status(200).json(announcement.recordset);
     } catch (error) {
         logger.error(`Error fetching the announcement: ${error}`);
         res.status(500).send('Error fetching the announcement');
@@ -162,7 +162,7 @@ router.get('/', async (req, res) => {
     try {
         logger.info(`Fetching announcement with user ID ${req.user_id}`);
         const announcement = await getAnnouncementByProperty(req.user_id);
-        res.json(announcement);
+        res.status(200).json(announcement.recordset);
     } catch (error) {
         logger.error(`Error fetching the announcement: ${error}`);
         res.status(500).send('Error fetching the announcement');
