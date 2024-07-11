@@ -438,8 +438,7 @@ async function deleteUnit(userId, unitId) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
-        request.input('userId', sql.Int, userId);
-        request.input('unitId', sql.Int, unitId);
+        request.input('id', sql.Int, unitId);
 
         const result = await request.execute('RemoveUnit');
         if (result.rowsAffected[0] > 0) {
