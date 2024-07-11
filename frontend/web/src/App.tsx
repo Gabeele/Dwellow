@@ -19,9 +19,7 @@ import Network from "./pages/network";
 const publicRoutes = [
   { path: "/login", component: Login },
   { path: "/", component: Landing },
-  { path: "/register", component: Register },
   { path: "/register/admin", component: RegisterAdmin },
-  { path: "/register/tenant", component: RegisterTenant },
 ];
 
 const protectedRoutes = [

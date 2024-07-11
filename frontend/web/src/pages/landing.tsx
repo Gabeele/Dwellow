@@ -19,7 +19,7 @@ const Landing: React.FC = () => {
             Lorem ipsum dolor sit amet, consectetur adipiscing elit.
           </p>
           <div className="flex flex-row space-x-10">
-            <a href="/register">
+            <a href="/register/admin">
               <Button
                 variant="outline"
                 className="text-dwellow-white-200 bg-dwellow-dark-200 hover:bg-dwellow-dark-100 hover:text-dwellow-white-200"

@@ -12,13 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "@radix-ui/react-icons";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerClose,
-} from "@/components/ui/drawer";
+import { Pencil1Icon } from "@radix-ui/react-icons";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -38,8 +32,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-import { Label } from "@/components/ui/label";
-
 interface Property {
   id: number;
   title: string;
@@ -58,10 +50,12 @@ interface Unit {
 }
 
 function Property() {
+  const [isUnitDialogOpen, setIsUnitDialogOpen] = useState(false);
+  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+
   const { id } = useParams<{ id: string }>();
   const [property, setProperty] = useState<Property | null>(null);
   const [units, setUnits] = useState<Unit[]>([]);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [selectedUnit, setSelectedUnit] = useState("");
   const [newUnit, setNewUnit] = useState<Partial<Unit>>({
@@ -102,10 +96,6 @@ function Property() {
     }
   };
 
-  const handleAddUnit = () => {
-    setIsDrawerOpen(true);
-  };
-
   const handleSaveUnit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Saving unit:", newUnit); // Log newUnit before sending
@@ -117,16 +107,11 @@ function Property() {
 
       // Refresh unit list after successful post
       fetchData(id);
-
+      setIsUnitDialogOpen(false);
       setNewUnit({});
-      setIsDrawerOpen(false); // Close the drawer after saving
     } catch (error) {
       console.error("Error during save or refresh units:", error);
     }
-  };
-
-  const closeDrawer = () => {
-    setIsDrawerOpen(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,6 +141,7 @@ function Property() {
         { email, unitId, id }
       );
       console.log("Invite sent successfully:", response);
+      setIsInviteDialogOpen(false);
     } catch (error) {
       console.error("Failed to send invite:", error);
     }
@@ -165,74 +151,64 @@ function Property() {
     <>
       {property && (
         <div>
-          <h2>{property.title}</h2>
+          <p className="font-bold text-xl">{property.title}</p>
           <p>{property.address}</p>
           <p>{property.description}</p>
         </div>
       )}
       <div className="my-5 space-x-5">
-        <Button onClick={handleAddUnit}>
-          <PlusIcon className="" />
-          Add New Unit
-        </Button>
-        <Drawer open={isDrawerOpen} onClose={closeDrawer}>
-          <DrawerContent>
-            <DrawerHeader>
-              <DrawerTitle>Add New Unit</DrawerTitle>
-              <DrawerClose />
-            </DrawerHeader>
-            <form onSubmit={handleSaveUnit}>
-              <div className="p-4">
-                <div className="mb-4">
-                  <label
-                    htmlFor="unit"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Unit:
-                  </label>
-                  <Input
-                    id="unit"
-                    name="unit"
-                    type="text"
-                    placeholder="Enter unit"
-                    value={newUnit.unit || ""}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="description"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Description:
-                  </label>
-                  <Input
-                    id="description"
-                    name="description"
-                    type="text"
-                    placeholder="Enter description"
-                    value={newUnit.description || ""}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <Button type="submit" className="mr-2">
-                  Save
-                </Button>
-                <Button variant="outline" onClick={closeDrawer}>
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </DrawerContent>
-        </Drawer>
-        <Dialog>
+        <Dialog open={isUnitDialogOpen} onOpenChange={setIsUnitDialogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button onClick={() => setIsUnitDialogOpen(true)}>
+              <PlusIcon />
+              Add New Unit
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Unit</DialogTitle>
+              <DialogDescription>
+                Enter unit number and a description for the unit.
+              </DialogDescription>
+            </DialogHeader>
+            <div>
+              <p className="text-sm font-semibold mb-1">Unit Number</p>
+              <Input
+                id="unit"
+                name="unit"
+                type="text"
+                placeholder="Enter unit"
+                value={newUnit.unit || ""}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div>
+            <p className="text-sm font-semibold mb-1">Unit Description</p>
+              <Input
+                id="description"
+                name="description"
+                type="text"
+                placeholder="Enter description"
+                value={newUnit.description || ""}
+                onChange={handleInputChange}
+              />
+            </div>
+            <DialogFooter>
+              <Button onClick={handleSaveUnit}>Save</Button>
+              <DialogClose asChild onClick={() => setIsUnitDialogOpen(false)}>
+                <Button variant="secondary">Close</Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={() => setIsInviteDialogOpen(true)}>
               <PlusIcon />
               Invite a Tenant
             </Button>
           </DialogTrigger>
-
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Invite a Tenant</DialogTitle>
@@ -240,37 +216,49 @@ function Property() {
                 Enter the tenant's email and select the unit to send the invite.
               </DialogDescription>
             </DialogHeader>
-            <Input
-              placeholder="Tenant's email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <Select onValueChange={setSelectedUnit}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select Unit" />
-              </SelectTrigger>
-              <SelectContent>
-                {units.length > 0 ? (
-                  units.map((unit) => (
-                    <SelectItem key={unit.id} value={unit.unit}>
-                      {unit.unit}
+            <div>
+            <p className="text-sm font-semibold mb-1">Tenant Email</p>
+              <Input
+                placeholder="email@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <p className="text-sm font-semibold mb-1">Unit Number</p>
+              <Select onValueChange={setSelectedUnit}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Unit" />
+                </SelectTrigger>
+                <SelectContent>
+                  {units.length > 0 ? (
+                    units.map((unit) => (
+                      <SelectItem key={unit.id} value={unit.unit}>
+                        {unit.unit}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem key="no-units" value="no-units" disabled>
+                    No units available
                     </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem key="no-units" value="no-units" disabled>
-                  No units available
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
+                  )}
+                </SelectContent>
+              </Select>
+            </div>
+            
             <DialogFooter>
               <Button onClick={handleSendInvite}>Send Invite</Button>
               <DialogClose asChild>
-                <Button variant="secondary">Close</Button>
+                <Button variant="secondary" onClick={() => setIsInviteDialogOpen(false)}>Close</Button>
               </DialogClose>
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        <Button>
+          <Pencil1Icon/>
+          Edit
+        </Button>
       </div>
       
       <Table>

@@ -58,6 +58,9 @@ interface Ticket {
   photo_url: string;
   special_instructions: string;
   priority: string;
+  status: string;
+  time_created: string;
+  time_updated: string;
 }
 
 function Tickets() {
@@ -126,12 +129,13 @@ function Tickets() {
 
   const fetchTickets = async () => {
     try {
-      const response = await API.get("/tickets");
+      const response = await API.get("/ticket");
       if (response.status === 200) {
         const jsonData = await response.data;
+        console.log(jsonData)
         if (jsonData.success && Array.isArray(jsonData.data)) {
           const formattedTickets = jsonData.data.map((ticket: any) => ({
-            id: ticket.id,
+            id: ticket.ticket_id,
             description: ticket.description,
             unit_id: ticket.unit_id,
             user_id: ticket.user_id,
@@ -140,9 +144,12 @@ function Tickets() {
             photo_url: ticket.photo_url,
             special_instructions: ticket.special_instructions,
             priority: ticket.priority,
+            time_created: ticket.time_created,
+            time_updated: ticket.time_updated,
           }));
           setTickets(formattedTickets);
           localStorage.setItem("tickets", JSON.stringify(formattedTickets));
+          console.log("fetched tickets");
           return formattedTickets;
         } else {
           console.error("No tickets found or invalid data structure");
@@ -306,7 +313,7 @@ function Tickets() {
                 <div className="relative">
                   <Input
                   className="text-sm"
-                  placeholder="Ticket Length"
+                  placeholder="Ex. 2 Days"
                   value={newTicketLength}
                   onChange={(e) => setNewTicketLength(e.target.value)}
                   maxLength={25}
@@ -314,16 +321,20 @@ function Tickets() {
                   <CharacterCount currentCount={newTicketLength.length} maxCount={25} />
                 </div>
                 <p className="text-base font-semibold mt-2 mb-1">Issue Area</p>
-                <div className="relative">
-                  <Input
-                  className="text-sm"
-                  placeholder="Issue Area"
-                  value={newTicketIssueArea}
-                  onChange={(e) => setNewTicketIssueArea(e.target.value)}
-                  maxLength={25}
-                  />
-                  <CharacterCount currentCount={newTicketLength.length} maxCount={25} />
-                </div>
+                <Select value={newTicketIssueArea} onValueChange={(e) => setNewTicketIssueArea(e)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Issue Area" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="HVAC">HVAC</SelectItem>
+                    <SelectItem value="AC/Heating">AC/Heating</SelectItem>
+                    <SelectItem value="Structure">Structure</SelectItem>
+                    <SelectItem value="Plumbing">Plumbing</SelectItem>
+                    <SelectItem value="Electrical">Electrical</SelectItem>
+                    <SelectItem value="Parking">Parking</SelectItem>
+                    <SelectItem value="Amenities">Amenities</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
