@@ -62,6 +62,7 @@ function Property() {
     unit: "",
     description: "",
   });
+  const [editingUnitId, setEditingUnitId] = useState<number | null>(null);
 
   useEffect(() => {
     const cachedProperty = localStorage.getItem(`property-${id}`);
@@ -120,6 +121,42 @@ function Property() {
       ...prevUnit,
       [name]: value,
     }));
+  };
+
+  const handleEditUnit = (unit: Unit) => {
+    setEditingUnitId(unit.id);
+    setNewUnit(unit);
+  };
+
+  const handleSaveEditedUnit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Editing unit:", newUnit);
+
+    try {
+      // Update unit data on the server
+      const putResponse = await API.put(`/properties/${id}/units/${editingUnitId}`, newUnit);
+      console.log("Unit updated successfully:", putResponse);
+
+      // Refresh unit list after successful update
+      fetchData(id);
+      setEditingUnitId(null);
+      setNewUnit({});
+    } catch (error) {
+      console.error("Error during update or refresh units:", error);
+    }
+  };
+
+  const handleDeleteUnit = async (unitId: number) => {
+    try {
+      // Delete unit data on the server
+      const deleteResponse = await API.delete(`/properties/${id}/units/${unitId}`);
+      console.log("Unit deleted successfully:", deleteResponse);
+
+      // Refresh unit list after successful delete
+      fetchData(id);
+    } catch (error) {
+      console.error("Error during delete or refresh units:", error);
+    }
   };
 
   const handleSendInvite = async () => {
@@ -183,7 +220,7 @@ function Property() {
               />
             </div>
             <div>
-            <p className="text-sm font-semibold mb-1">Unit Description</p>
+              <p className="text-sm font-semibold mb-1">Unit Description</p>
               <Input
                 id="description"
                 name="description"
@@ -217,7 +254,7 @@ function Property() {
               </DialogDescription>
             </DialogHeader>
             <div>
-            <p className="text-sm font-semibold mb-1">Tenant Email</p>
+              <p className="text-sm font-semibold mb-1">Tenant Email</p>
               <Input
                 placeholder="email@example.com"
                 value={email}
@@ -254,11 +291,6 @@ function Property() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-
-        <Button>
-          <Pencil1Icon/>
-          Edit
-        </Button>
       </div>
       
       <Table>
@@ -269,22 +301,60 @@ function Property() {
             <TableHead>Tenant</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Phone</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {units.length > 0 ? (
             units.map((unit) => (
               <TableRow key={unit.id}>
-                <TableCell>{unit.unit}</TableCell>
-                <TableCell>{unit.description}</TableCell>
+                <TableCell>
+                  {editingUnitId === unit.id ? (
+                    <Input
+                      id="unit"
+                      name="unit"
+                      type="text"
+                      value={newUnit.unit || ""}
+                      onChange={handleInputChange}
+                    />
+                  ) : (
+                    unit.unit
+                  )}
+                </TableCell>
+                <TableCell>
+                  {editingUnitId === unit.id ? (
+                    <Input
+                      id="description"
+                      name="description"
+                      type="text"
+                      value={newUnit.description || ""}
+                      onChange={handleInputChange}
+                    />
+                  ) : (
+                    unit.description
+                  )}
+                </TableCell>
                 <TableCell>{unit.full_name}</TableCell>
                 <TableCell>{unit.email}</TableCell>
                 <TableCell>{unit.phone_number}</TableCell>
+                <TableCell className="flex space-x-4">
+                  {editingUnitId === unit.id ? (
+                    <Button onClick={handleSaveEditedUnit}>Save</Button>
+                  ) : (
+                    <Button onClick={() => handleEditUnit(unit)}>
+                      <Pencil1Icon />
+                      Edit
+                    </Button>
+                  )}
+                  <Button variant={"destructive"} onClick={() => handleDeleteUnit(unit.id)}>
+                    Delete
+                  </Button>
+                </TableCell>
               </TableRow>
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={5}>No units available</TableCell>
+              <TableCell colSpan={6}>No units available</TableCell>
             </TableRow>
           )}
         </TableBody>
