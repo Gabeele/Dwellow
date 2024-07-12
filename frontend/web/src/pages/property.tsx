@@ -388,8 +388,12 @@ function Property() {
                 <TableCell className="flex space-x-4">
                   {editingUnitId === unit.id ? (
                     <>
-                      <Button onClick={handleSaveEditedUnit}>Save</Button>
-                      <Button variant="outline" onClick={handleCancelEdit}>Cancel</Button>
+                      <Button className="mr-[7.4px]" onClick={handleSaveEditedUnit}>
+                        Save
+                      </Button>
+                      <Button variant={"outline"} onClick={handleCancelEdit}>
+                        Cancel
+                      </Button>
                     </>
                   ) : (
                     <>
