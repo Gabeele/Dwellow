@@ -36,6 +36,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert"
+import Loading from "@/components/Loading";
 
 interface Property {
   id: number;
@@ -71,6 +72,7 @@ function Property() {
   const [alertTitle, setAlertTitle] = useState("Default");
   const [alertDescription, setAlertDescription] = useState("Description");
   const [showAlert, setShowAlert] = useState(false); // use for later
+  const [loading, setLoading] = useState(true);
 
   // local caching
   useEffect(() => {
@@ -82,6 +84,7 @@ function Property() {
     if (cachedProperty && cachedUnits) {
       setProperty(JSON.parse(cachedProperty));
       setUnits(JSON.parse(cachedUnits));
+      setLoading(false);
     } else {
       fetchData(id);
     }
@@ -119,6 +122,7 @@ function Property() {
     } catch (error) {
       console.error("Failed to fetch property data:", error);
     }
+    setLoading(false);
   };
 
   const handleSaveUnit = async (e: React.FormEvent) => {
@@ -215,6 +219,10 @@ function Property() {
       console.error("Failed to send invite:", error);
     }
   };
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <>

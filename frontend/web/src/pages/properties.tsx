@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlusIcon } from "@radix-ui/react-icons";
+import Loading from "@/components/Loading";
 
 interface Property {
   id: number;
@@ -74,6 +75,7 @@ function Properties() {
     photo: "",
     description: "",
   });
+  const [loading, setLoading] = useState(true);
 
   const clearCache = () => {
     localStorage.clear();
@@ -83,8 +85,12 @@ function Properties() {
     const cachedProperties = localStorage.getItem("properties");
     if (cachedProperties) {
       setProperties(JSON.parse(cachedProperties));
+      setLoading(false);
     } else {
-      fetchProperties().then(setProperties);
+      fetchProperties().then((data) => {
+        setProperties(data);
+        setLoading(false);
+      });
     }
   }, []);
 
@@ -122,6 +128,10 @@ function Properties() {
       [name]: value,
     }));
   };
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <>
