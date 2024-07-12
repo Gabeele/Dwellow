@@ -31,6 +31,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert"
 
 interface Property {
   id: number;
@@ -63,7 +68,11 @@ function Property() {
     description: "",
   });
   const [editingUnitId, setEditingUnitId] = useState<number | null>(null);
+  const [alertTitle, setAlertTitle] = useState("Default");
+  const [alertDescription, setAlertDescription] = useState("Description");
+  const [showAlert, setShowAlert] = useState(false); // use for later
 
+  // local caching
   useEffect(() => {
     const cachedProperty = localStorage.getItem(`property-${id}`);
     const cachedUnits = localStorage.getItem(`units-${id}`);
@@ -78,6 +87,20 @@ function Property() {
     }
   }, [id]);
 
+  // sets values to default or null if any dialog gets closed
+  useEffect(() => {
+    if (!isUnitDialogOpen) {
+      setNewUnit({
+        unit: "",
+        description: "",
+      })
+    }
+    if (!isInviteDialogOpen) {
+      setEmail("");
+      setSelectedUnit("");
+    }
+  }, [isUnitDialogOpen, isInviteDialogOpen]);
+
   const fetchData = async (id: any) => {
     try {
       const response = await API.get(`/properties/${id}/units`);
@@ -87,6 +110,7 @@ function Property() {
         setProperty(jsonData.property);
         setUnits(jsonData.units || []);
 
+        // store things in cache
         localStorage.setItem(`property-${id}`, JSON.stringify(jsonData.property));
         localStorage.setItem(`units-${id}`, JSON.stringify(jsonData.units || []));
       } else {
@@ -126,6 +150,14 @@ function Property() {
   const handleEditUnit = (unit: Unit) => {
     setEditingUnitId(unit.id);
     setNewUnit(unit);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingUnitId(null);
+    setNewUnit({
+      unit: "",
+      description: "",
+    });
   };
 
   const handleSaveEditedUnit = async (e: React.FormEvent) => {
@@ -186,13 +218,22 @@ function Property() {
 
   return (
     <>
-      {property && (
-        <div>
-          <p className="font-bold text-xl">{property.title}</p>
-          <p>{property.address}</p>
-          <p>{property.description}</p>
-        </div>
-      )}
+      <div className="flex items-center">
+        {property && (
+          <div>
+            <p className="font-bold text-xl">{property.title}</p>
+            <p>{property.address}</p>
+            <p>{property.description}</p>
+          </div>
+        )}
+        { showAlert ? 
+          <Alert>
+            <AlertTitle>{alertTitle}</AlertTitle>
+            <AlertDescription>{alertDescription}</AlertDescription>
+          </Alert>
+          : null 
+        }
+      </div>
       <div className="my-5 space-x-5">
         <Dialog open={isUnitDialogOpen} onOpenChange={setIsUnitDialogOpen}>
           <DialogTrigger asChild>
@@ -282,7 +323,6 @@ function Property() {
                 </SelectContent>
               </Select>
             </div>
-            
             <DialogFooter>
               <Button onClick={handleSendInvite}>Send Invite</Button>
               <DialogClose asChild>
@@ -308,7 +348,7 @@ function Property() {
           {units.length > 0 ? (
             units.map((unit) => (
               <TableRow key={unit.id}>
-                <TableCell>
+                <TableCell className="w-1/6 text-wrap">
                   {editingUnitId === unit.id ? (
                     <Input
                       id="unit"
@@ -321,7 +361,7 @@ function Property() {
                     unit.unit
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell className="w-1/4 text-wrap">
                   {editingUnitId === unit.id ? (
                     <Input
                       id="description"
@@ -334,21 +374,26 @@ function Property() {
                     unit.description
                   )}
                 </TableCell>
-                <TableCell>{unit.full_name}</TableCell>
-                <TableCell>{unit.email}</TableCell>
-                <TableCell>{unit.phone_number}</TableCell>
+                <TableCell className="text-wrap">{unit.full_name}</TableCell>
+                <TableCell className="text-wrap">{unit.email}</TableCell>
+                <TableCell className="text-wrap">{unit.phone_number}</TableCell>
                 <TableCell className="flex space-x-4">
                   {editingUnitId === unit.id ? (
-                    <Button onClick={handleSaveEditedUnit}>Save</Button>
+                    <>
+                      <Button onClick={handleSaveEditedUnit}>Save</Button>
+                      <Button variant="outline" onClick={handleCancelEdit}>Cancel</Button>
+                    </>
                   ) : (
-                    <Button onClick={() => handleEditUnit(unit)}>
-                      <Pencil1Icon />
-                      Edit
-                    </Button>
+                    <>
+                      <Button onClick={() => handleEditUnit(unit)}>
+                        <Pencil1Icon />
+                        Edit
+                      </Button>
+                      <Button variant={"destructive"} onClick={() => handleDeleteUnit(unit.id)}>
+                        Delete
+                      </Button>
+                    </>
                   )}
-                  <Button variant={"destructive"} onClick={() => handleDeleteUnit(unit.id)}>
-                    Delete
-                  </Button>
                 </TableCell>
               </TableRow>
             ))

@@ -88,6 +88,18 @@ function Properties() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!isDialogOpen) {
+      setNewProperty({
+        title: "",
+        address: "",
+        units: 0,
+        photo: "",
+        description: "",
+      });
+    }
+  }, [isDialogOpen]);
+
   const handleSaveProperty = (e: React.FormEvent) => {
     e.preventDefault();
     API.post("/properties", newProperty)
