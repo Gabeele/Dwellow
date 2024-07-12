@@ -11,13 +11,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlusIcon } from "@radix-ui/react-icons";
@@ -64,7 +66,7 @@ export const fetchProperties = async () => {
 
 function Properties() {
   const [properties, setProperties] = useState<Property[]>([]);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newProperty, setNewProperty] = useState<Partial<Property>>({
     title: "",
     address: "",
@@ -86,10 +88,6 @@ function Properties() {
     }
   }, []);
 
-  const handleAddProperty = () => {
-    setIsDrawerOpen(true);
-  };
-
   const handleSaveProperty = (e: React.FormEvent) => {
     e.preventDefault();
     API.post("/properties", newProperty)
@@ -97,16 +95,12 @@ function Properties() {
         console.log("Property saved successfully:", response);
         clearCache();
         fetchProperties().then(setProperties);
-        setIsDrawerOpen(false);
+        setIsDialogOpen(false);
         setNewProperty({});
       })
       .catch((error) => {
         console.error("Error saving property:", error);
       });
-  };
-
-  const closeDrawer = () => {
-    setIsDrawerOpen(false);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,111 +115,82 @@ function Properties() {
     <>
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-dwellow-dark-200">Properties</h1>
-        <Button className="mt-4" onClick={handleAddProperty}>
-          <PlusIcon />
-          Add New Property
-        </Button>
-        <Drawer open={isDrawerOpen} onClose={closeDrawer}>
-          <DrawerContent>
-            <div className="mx-auto w-full max-w-md">
-              <DrawerHeader>
-                <DrawerTitle>Add New Property</DrawerTitle>
-                <DrawerClose />
-              </DrawerHeader>
-              <div className="p-4">
-                <form>
-                  <div className="mb-4">
-                    <label
-                      htmlFor="title"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Title:
-                    </label>
-                    <Input
-                      id="title"
-                      name="title"
-                      type="text"
-                      placeholder="Enter title"
-                      value={newProperty.title}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label
-                      htmlFor="address"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Address:
-                    </label>
-                    <Input
-                      id="address"
-                      name="address"
-                      type="text"
-                      placeholder="Enter address"
-                      value={newProperty.address}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label
-                      htmlFor="description"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Description:
-                    </label>
-                    <Input
-                      id="description"
-                      name="description"
-                      type="text"
-                      placeholder="Enter description"
-                      value={newProperty.description}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label
-                      htmlFor="photo"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Upload Photo:
-                    </label>
-                    <Input
-                      id="photo"
-                      name="photo"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label
-                      htmlFor="units"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Number of Units:
-                    </label>
-                    <Input
-                      id="units"
-                      name="units"
-                      type="number"
-                      placeholder="Enter number of units"
-                      value={newProperty.units}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <Button className="mr-2" onClick={handleSaveProperty}>
-                    Save
-                  </Button>
-                  <DrawerClose asChild>
-                    <Button variant="outline" onClick={closeDrawer}>
-                      Cancel
-                    </Button>
-                  </DrawerClose>
-                </form>
-              </div>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="mt-4" onClick={() => setIsDialogOpen(true)}>
+              <PlusIcon />
+              Add New Property
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Property</DialogTitle>
+              <DialogDescription>
+              </DialogDescription>
+            </DialogHeader>
+            <div>
+              <p className="text-sm font-semibold mb-1">Property Name</p>
+              <Input
+                id="title"
+                name="title"
+                type="text"
+                placeholder="Enter title"
+                value={newProperty.title}
+                onChange={handleInputChange}
+              />
             </div>
-          </DrawerContent>
-        </Drawer>
+            <div>
+              <p className="text-sm font-semibold mb-1">Address</p>
+              <Input
+                id="address"
+                name="address"
+                type="text"
+                placeholder="Enter address"
+                value={newProperty.address}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div>
+              <p className="text-sm font-semibold mb-1">Description</p>
+              <Input
+                id="description"
+                name="description"
+                type="text"
+                placeholder="Enter description"
+                value={newProperty.description}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div>
+              <p className="text-sm font-semibold mb-1">Upload Photo</p>
+              <Input
+                id="photo"
+                name="photo"
+                type="file"
+                accept="image/*"
+                onChange={handleInputChange}
+              />
+            </div>
+            <div>
+              <p className="text-sm font-semibold mb-1">Number of Units</p>
+              <Input
+                id="units"
+                name="units"
+                type="number"
+                placeholder="Enter number of units"
+                value={newProperty.units}
+                onChange={handleInputChange}
+                min={0}
+              />
+            </div>
+            <DialogFooter>
+              <Button onClick={handleSaveProperty}>Save</Button>
+              <DialogClose asChild onClick={() => setIsDialogOpen(false)}>
+                <Button variant="secondary">Close</Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 pl-0 gap-4 p-4">
           {properties.map(({ id, title, address, units, photo, description }) => (
             <Link key={id} to={`/property/${id}`} className="max-w-xs">
