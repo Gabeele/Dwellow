@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import API from "../utils/Api";
 import { useEffect, useState } from "react";
 import { fetchProperties } from "./properties";
+import Loading from "@/components/Loading";
 
 interface User {
   email: string;
@@ -24,9 +25,9 @@ function Home() {
   const [user, setUser] = useState<User[]>([]);
   const [name, setName] = useState("");
   const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user data is cached
     const cachedUser = localStorage.getItem("user");
     if (cachedUser) {
       setUser(JSON.parse(cachedUser));
@@ -46,8 +47,12 @@ function Home() {
     const cachedProperties = localStorage.getItem("properties");
     if (cachedProperties) {
       setProperties(JSON.parse(cachedProperties));
+      setLoading(false);
     } else {
-      fetchProperties().then(setProperties);
+      fetchProperties().then((data) => {
+        setProperties(data);
+        setLoading(false);
+      });
     }
   }, []);
 
@@ -65,16 +70,17 @@ function Home() {
           setUser(retrievedUser);
         }
       } else {
-        console.error(
-          "Failed to fetch user data, status code:",
-          response.status
-        );
+        console.error("Failed to fetch user data, status code:", response.status);
         setUser([]);
       }
     } catch (error: any) {
       console.error("Cannot retrieve user:", error.message);
     }
   };
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div className="">
