@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import API from "../utils/Api";
 import { useEffect, useState } from "react";
 import { fetchProperties } from "./properties";
+import Loading from "@/components/Loading";
 
 interface User {
   email: string;
@@ -24,12 +25,14 @@ function Home() {
   const [user, setUser] = useState<User[]>([]);
   const [name, setName] = useState("");
   const [properties, setProperties] = useState<Property[]>([]);
+  const [loadingUser, setLoadingUser] = useState(true); // Loading state for user data
+  const [loadingProperties, setLoadingProperties] = useState(true); // Loading state for properties data
 
   useEffect(() => {
-    // Check if user data is cached
     const cachedUser = localStorage.getItem("user");
     if (cachedUser) {
       setUser(JSON.parse(cachedUser));
+      setLoadingUser(false); // Set loading to false when data is retrieved
     } else {
       getUser();
     }
@@ -46,8 +49,12 @@ function Home() {
     const cachedProperties = localStorage.getItem("properties");
     if (cachedProperties) {
       setProperties(JSON.parse(cachedProperties));
+      setLoadingProperties(false); // Set loading to false when data is retrieved
     } else {
-      fetchProperties().then(setProperties);
+      fetchProperties().then((data) => {
+        setProperties(data);
+        setLoadingProperties(false); // Set loading to false when data is retrieved
+      });
     }
   }, []);
 
@@ -65,16 +72,21 @@ function Home() {
           setUser(retrievedUser);
         }
       } else {
-        console.error(
-          "Failed to fetch user data, status code:",
-          response.status
-        );
+        console.error("Failed to fetch user data, status code:", response.status);
         setUser([]);
       }
     } catch (error: any) {
       console.error("Cannot retrieve user:", error.message);
+    } finally {
+      setLoadingUser(false); // Set loading to false after fetching data
     }
   };
+
+  const isLoading = loadingUser || loadingProperties; // Combine loading states
+
+  if (isLoading) {
+    return <Loading />;
+  }
 
   return (
     <div className="">

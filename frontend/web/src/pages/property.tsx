@@ -31,6 +31,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert"
+import Loading from "@/components/Loading";
 
 interface Property {
   id: number;
@@ -62,7 +68,13 @@ function Property() {
     unit: "",
     description: "",
   });
+  const [editingUnitId, setEditingUnitId] = useState<number | null>(null);
+  const [alertTitle, setAlertTitle] = useState("Default");
+  const [alertDescription, setAlertDescription] = useState("Description");
+  const [showAlert, setShowAlert] = useState(false); // use for later
+  const [loading, setLoading] = useState(true);
 
+  // local caching
   useEffect(() => {
     const cachedProperty = localStorage.getItem(`property-${id}`);
     const cachedUnits = localStorage.getItem(`units-${id}`);
@@ -72,10 +84,25 @@ function Property() {
     if (cachedProperty && cachedUnits) {
       setProperty(JSON.parse(cachedProperty));
       setUnits(JSON.parse(cachedUnits));
+      setLoading(false);
     } else {
       fetchData(id);
     }
   }, [id]);
+
+  // sets values to default or null if any dialog gets closed
+  useEffect(() => {
+    if (!isUnitDialogOpen) {
+      setNewUnit({
+        unit: "",
+        description: "",
+      })
+    }
+    if (!isInviteDialogOpen) {
+      setEmail("");
+      setSelectedUnit("");
+    }
+  }, [isUnitDialogOpen, isInviteDialogOpen]);
 
   const fetchData = async (id: any) => {
     try {
@@ -86,6 +113,7 @@ function Property() {
         setProperty(jsonData.property);
         setUnits(jsonData.units || []);
 
+        // store things in cache
         localStorage.setItem(`property-${id}`, JSON.stringify(jsonData.property));
         localStorage.setItem(`units-${id}`, JSON.stringify(jsonData.units || []));
       } else {
@@ -94,6 +122,7 @@ function Property() {
     } catch (error) {
       console.error("Failed to fetch property data:", error);
     }
+    setLoading(false);
   };
 
   const handleSaveUnit = async (e: React.FormEvent) => {
@@ -122,6 +151,50 @@ function Property() {
     }));
   };
 
+  const handleEditUnit = (unit: Unit) => {
+    setEditingUnitId(unit.id);
+    setNewUnit(unit);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingUnitId(null);
+    setNewUnit({
+      unit: "",
+      description: "",
+    });
+  };
+
+  const handleSaveEditedUnit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Editing unit:", newUnit);
+
+    try {
+      // Update unit data on the server
+      const putResponse = await API.put(`/properties/${id}/units/${editingUnitId}`, newUnit);
+      console.log("Unit updated successfully:", putResponse);
+
+      // Refresh unit list after successful update
+      fetchData(id);
+      setEditingUnitId(null);
+      setNewUnit({});
+    } catch (error) {
+      console.error("Error during update or refresh units:", error);
+    }
+  };
+
+  const handleDeleteUnit = async (unitId: number) => {
+    try {
+      // Delete unit data on the server
+      const deleteResponse = await API.delete(`/properties/${id}/units/${unitId}`);
+      console.log("Unit deleted successfully:", deleteResponse);
+
+      // Refresh unit list after successful delete
+      fetchData(id);
+    } catch (error) {
+      console.error("Error during delete or refresh units:", error);
+    }
+  };
+
   const handleSendInvite = async () => {
     if (!email || !selectedUnit) {
       alert("Please provide both an email address and a unit.");
@@ -147,15 +220,28 @@ function Property() {
     }
   };
 
+  if (loading) {
+    return <Loading />;
+  }
+
   return (
     <>
-      {property && (
-        <div>
-          <p className="font-bold text-xl">{property.title}</p>
-          <p>{property.address}</p>
-          <p>{property.description}</p>
-        </div>
-      )}
+      <div className="flex items-center">
+        {property && (
+          <div>
+            <p className="font-bold text-xl">{property.title}</p>
+            <p>{property.address}</p>
+            <p>{property.description}</p>
+          </div>
+        )}
+        { showAlert ? 
+          <Alert>
+            <AlertTitle>{alertTitle}</AlertTitle>
+            <AlertDescription>{alertDescription}</AlertDescription>
+          </Alert>
+          : null 
+        }
+      </div>
       <div className="my-5 space-x-5">
         <Dialog open={isUnitDialogOpen} onOpenChange={setIsUnitDialogOpen}>
           <DialogTrigger asChild>
@@ -183,7 +269,7 @@ function Property() {
               />
             </div>
             <div>
-            <p className="text-sm font-semibold mb-1">Unit Description</p>
+              <p className="text-sm font-semibold mb-1">Unit Description</p>
               <Input
                 id="description"
                 name="description"
@@ -217,7 +303,7 @@ function Property() {
               </DialogDescription>
             </DialogHeader>
             <div>
-            <p className="text-sm font-semibold mb-1">Tenant Email</p>
+              <p className="text-sm font-semibold mb-1">Tenant Email</p>
               <Input
                 placeholder="email@example.com"
                 value={email}
@@ -245,7 +331,6 @@ function Property() {
                 </SelectContent>
               </Select>
             </div>
-            
             <DialogFooter>
               <Button onClick={handleSendInvite}>Send Invite</Button>
               <DialogClose asChild>
@@ -254,11 +339,6 @@ function Property() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-
-        <Button>
-          <Pencil1Icon/>
-          Edit
-        </Button>
       </div>
       
       <Table>
@@ -269,22 +349,65 @@ function Property() {
             <TableHead>Tenant</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Phone</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {units.length > 0 ? (
             units.map((unit) => (
               <TableRow key={unit.id}>
-                <TableCell>{unit.unit}</TableCell>
-                <TableCell>{unit.description}</TableCell>
-                <TableCell>{unit.full_name}</TableCell>
-                <TableCell>{unit.email}</TableCell>
-                <TableCell>{unit.phone_number}</TableCell>
+                <TableCell className="w-1/6 text-wrap">
+                  {editingUnitId === unit.id ? (
+                    <Input
+                      id="unit"
+                      name="unit"
+                      type="text"
+                      value={newUnit.unit || ""}
+                      onChange={handleInputChange}
+                    />
+                  ) : (
+                    unit.unit
+                  )}
+                </TableCell>
+                <TableCell className="w-1/4 text-wrap">
+                  {editingUnitId === unit.id ? (
+                    <Input
+                      id="description"
+                      name="description"
+                      type="text"
+                      value={newUnit.description || ""}
+                      onChange={handleInputChange}
+                    />
+                  ) : (
+                    unit.description
+                  )}
+                </TableCell>
+                <TableCell className="text-wrap">{unit.full_name}</TableCell>
+                <TableCell className="text-wrap">{unit.email}</TableCell>
+                <TableCell className="text-wrap">{unit.phone_number}</TableCell>
+                <TableCell className="flex space-x-4">
+                  {editingUnitId === unit.id ? (
+                    <>
+                      <Button onClick={handleSaveEditedUnit}>Save</Button>
+                      <Button variant="outline" onClick={handleCancelEdit}>Cancel</Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button onClick={() => handleEditUnit(unit)}>
+                        <Pencil1Icon />
+                        Edit
+                      </Button>
+                      <Button variant={"destructive"} onClick={() => handleDeleteUnit(unit.id)}>
+                        Delete
+                      </Button>
+                    </>
+                  )}
+                </TableCell>
               </TableRow>
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={5}>No units available</TableCell>
+              <TableCell colSpan={6}>No units available</TableCell>
             </TableRow>
           )}
         </TableBody>

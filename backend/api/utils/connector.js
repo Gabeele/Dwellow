@@ -428,12 +428,17 @@ async function updateUnit(userId, unitId, unitData) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
-        request.input('userId', sql.Int, userId);
-        request.input('unitId', sql.Int, unitId);
-        request.input('unitData', sql.NVarChar, unitData);
+
+        const { id, unit, property_id, tenant_id, description } = unitData;
+
+        request.input('id', sql.Int, id);
+        request.input('unit', sql.NVarChar, unit);
+        request.input('property_id', sql.Int, property_id);
+        request.input('tenant_id', sql.Int, tenant_id);
+        request.input('description', sql.NVarChar, description);
 
         const result = await request.execute('UpdateUnit');
-        if (result.rowsAffected[0] > 0) {
+        if (result && result.rowsAffected && result.rowsAffected.length > 0 && result.rowsAffected[0] > 0) {
             logger.info(`Unit with unit_id ${unitId} updated successfully.`);
             return true;
         } else {
@@ -448,12 +453,12 @@ async function updateUnit(userId, unitId, unitData) {
     }
 }
 
+
 async function deleteUnit(userId, unitId) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
-        request.input('userId', sql.Int, userId);
-        request.input('unitId', sql.Int, unitId);
+        request.input('id', sql.Int, unitId);
 
         const result = await request.execute('RemoveUnit');
         if (result.rowsAffected[0] > 0) {
