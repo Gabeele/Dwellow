@@ -1,7 +1,32 @@
 const express = require('express');
 const logger = require('../utils/logger');
-const { getTickets, getOneTicket, updateTicket, createTicket, deleteTicket, getOneComment, createComment, getComments, getTicketsStatus } = require('../utils/connector.js');
+const { getTickets, 
+    getOneTicket, 
+    updateTicket, 
+    createTicket, 
+    deleteTicket, 
+    getOneComment, 
+    createComment, 
+    getComments,
+    getTicketsStatus,
+    getUser,
+    getTicketsForTeam,
+    } = require('../utils/connector.js');
 const router = express.Router();
+
+// Middleware to verify that the rest of the routes are only accessible to admins
+const isAdmin = (req, res, next) => {
+    if (req.role !== 'admin') {
+        logger.warn(`User with ID: ${req.user_id} attempted to perform an admin action`);
+        return res.status(403).send('Unauthorized: This action is allowed for admin only');
+    }
+    else {
+        logger.info(`Admin with ID: ${req.user_id} is accessing admin routes`);
+
+    }
+    next();
+};
+
 /**
  * @swagger
  * /Ticket:
@@ -48,18 +73,37 @@ const router = express.Router();
  */
 router.get('/', async (req, res) => {
 //console.log("hello")
+    const id = req.user_id;
+
     try {
-        const id = req.user_id;
+        const user = await getUser(req.user_id);
+        const team_id = user.recordset[0].team_id;
 
-        const ticket = await getTickets(id);
+        if(isAdmin)
+        {
+            const ticket = await getTicketsForTeam(team_id);
 
-        if (!ticket) {
-            logger.warn(`Get Ticket: No ticket found with id ${id}`);
-            return res.status(400).json({ message: `No ticket found with id ${id}` });
+            if (!ticket) {
+                logger.warn(`Get Team Tickets: No tickets found with team id ${team_id}`);
+                return res.status(400).json({ message: `No tickets found with team id ${team_id}` });
+            }
+            logger.info(`Get Team Tickets: ticket ${team_id} information accessed.`);
+            res.status(200).json({
+                success: true,
+                data: ticket
+            });
         }
+        else {
+            const ticket = await getTickets(id);
 
-        logger.info(`Get Ticket: ticket ${id} information accessed.`); // TODO: We should return the ticket infromation here as json or somehting. IDK what is returned back. (Also update the comments)
-        res.status(200).json(ticket.recordset);
+            if (!ticket) {
+                logger.warn(`Get Ticket: No ticket found with id ${id}`);
+                return res.status(400).json({ message: `No ticket found with id ${id}` });
+            }
+
+            logger.info(`Get Ticket: ticket ${id} information accessed.`); // TODO: We should return the ticket infromation here as json or somehting. IDK what is returned back. (Also update the comments)
+            res.status(200).json(ticket.recordset);
+        }
     } catch (error) {
         logger.error(`Error getting Ticket information for ticket ${id}: ${error.message}`);
         res.status(500).json({ error: 'Internal Server Error' });
@@ -234,20 +278,20 @@ router.delete('/:ticket_id', async (req, res) => {
 router.post('/', async (req, res) => {
     try {
 
-        const {unit_id, userId, description, length, priority, issue_area, photo_url, special_instructions } = req.body;
+        const {unit_id, user_id, description, length, priority, issue_area, photo_url, special_instructions } = req.body;
 
         console.log(req.body);
 
-        const newticket = await createTicket( unit_id, userId, description, length, priority, issue_area, photo_url, special_instructions);
+        const newticket = await createTicket( unit_id, user_id, description, length, priority, issue_area, photo_url, special_instructions);
         if (newticket) {
-            logger.info(`User with ID: ${req.userId} created a new ticket with ID: ${newticket.ticket_id}`);
+            logger.info(`User with ID: ${req.user_id} created a new ticket with ID: ${newticket.ticket_id}`);
             res.status(201).json(newticket);
         } else {
-            logger.warn(`ticket creation failed by user ${req.userId}`);
+            logger.warn(`ticket creation failed by user ${req.user_id}`);
             res.status(400).send('Failed to create ticket');
         }
     } catch (error) {
-        logger.error(`Error creating ticket by admin ${req.userId}: ${error}`);
+        logger.error(`Error creating ticket by admin ${req.user_id}: ${error}`);
         res.status(500).send('Error creating ticket');
     }
 });
