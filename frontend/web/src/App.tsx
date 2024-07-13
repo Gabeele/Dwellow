@@ -14,12 +14,14 @@ import Contracts from "./pages/contracts";
 import Manage from "./pages/manage";
 import Invitations from "./pages/invitations";
 import Network from "./pages/network";
+import Reviews from "./pages/reviews";
 
 // Define your route configurations
 const publicRoutes = [
   { path: "/login", component: Login },
   { path: "/", component: Landing },
   { path: "/register/admin", component: RegisterAdmin },
+  { path: "/reviews", component: Reviews },
 ];
 
 const protectedRoutes = [
