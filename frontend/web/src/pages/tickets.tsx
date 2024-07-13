@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/card";
 import API from "@/utils/Api";
 import CharacterCount from "@/components/CharacterCount";
+import Loading from "@/components/Loading";
 
 interface Property {
   id: number;
@@ -80,11 +81,13 @@ function Tickets() {
   const [newTicketPhotoURL, setNewTicketPhotoURL] = useState("");
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const cachedTickets = localStorage.getItem("tickets");
     if (cachedTickets) {
       setTickets(JSON.parse(cachedTickets));
+      setLoading(false);
     } else {
       fetchTickets();
     }
@@ -150,6 +153,7 @@ function Tickets() {
           setTickets(formattedTickets);
           localStorage.setItem("tickets", JSON.stringify(formattedTickets));
           console.log("fetched tickets");
+          setLoading(false);
           return formattedTickets;
         } else {
           console.error("No tickets found or invalid data structure");
@@ -191,7 +195,7 @@ function Tickets() {
           issue_area: newTicketIssueArea, photo_url: newTicketPhotoURL, special_instructions: newTicketDesc }
       );
       console.log("Ticket created successfully:", response);
-
+      fetchTickets();
     } catch (error) {
       console.error("Failed to create ticket:", error);
     }
@@ -208,6 +212,10 @@ function Tickets() {
       setNewTicketLength("");
     }
   }, [dialogOpen]);
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div className="">
