@@ -64,6 +64,44 @@ interface Ticket {
   time_updated: string;
 }
 
+export const fetchTickets = async () => {
+  try {
+    const response = await API.get("/ticket");
+    if (response.status === 200) {
+      const jsonData = await response.data;
+      console.log(jsonData)
+      if (jsonData.success && Array.isArray(jsonData.data)) {
+        const formattedTickets = jsonData.data.map((ticket: any) => ({
+          id: ticket.ticket_id,
+          description: ticket.description,
+          unit_id: ticket.unit_id,
+          user_id: ticket.user_id,
+          length: ticket.length,
+          issue_area: ticket.issue_area,
+          photo_url: ticket.photo_url,
+          special_instructions: ticket.special_instructions,
+          priority: ticket.priority,
+          status: ticket.status,
+          time_created: ticket.time_created,
+          time_updated: ticket.time_updated,
+        }));
+        localStorage.setItem("tickets", JSON.stringify(formattedTickets));
+        console.log("fetched tickets");
+        return formattedTickets;
+      } else {
+        console.error("No tickets found or invalid data structure");
+        return [];
+      }
+    } else {
+      console.error("Failed to fetch tickets, status code:", response.status);
+      return [];
+    }
+  } catch (error: any) {
+    console.error("Failed to fetch tickets:", error.message);
+    return [];
+  }
+};
+
 function Tickets() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
@@ -89,7 +127,10 @@ function Tickets() {
       setTickets(JSON.parse(cachedTickets));
       setLoading(false);
     } else {
-      fetchTickets();
+      fetchTickets().then((data) => {
+        setTickets(data);
+        setLoading(false);
+      })
     }
   }, []);
 
@@ -127,45 +168,6 @@ function Tickets() {
       }
     } catch (error) {
       console.error("Failed to fetch unit data:", error);
-    }
-  };
-
-  const fetchTickets = async () => {
-    try {
-      const response = await API.get("/ticket");
-      if (response.status === 200) {
-        const jsonData = await response.data;
-        console.log(jsonData)
-        if (jsonData.success && Array.isArray(jsonData.data)) {
-          const formattedTickets = jsonData.data.map((ticket: any) => ({
-            id: ticket.ticket_id,
-            description: ticket.description,
-            unit_id: ticket.unit_id,
-            user_id: ticket.user_id,
-            length: ticket.length,
-            issue_area: ticket.issue_area,
-            photo_url: ticket.photo_url,
-            special_instructions: ticket.special_instructions,
-            priority: ticket.priority,
-            time_created: ticket.time_created,
-            time_updated: ticket.time_updated,
-          }));
-          setTickets(formattedTickets);
-          localStorage.setItem("tickets", JSON.stringify(formattedTickets));
-          console.log("fetched tickets");
-          setLoading(false);
-          return formattedTickets;
-        } else {
-          console.error("No tickets found or invalid data structure");
-          return [];
-        }
-      } else {
-        console.error("Failed to fetch tickets, status code:", response.status);
-        return [];
-      }
-    } catch (error: any) {
-      console.error("Failed to fetch tickets:", error.message);
-      return [];
     }
   };
 
