@@ -1,67 +1,55 @@
-from utilities.db import
-from agents.agent import AgentBase
+import os
 from crewai import Agent, Task, Crew, Process
 from crewai_tools import PDFSearchTool
+from utilities.db import get_contract_pdf_uri_by_user_id
+from agents.agent import AgentBase
+
+os.environ["OPENAI_API_KEY"] = "Your OpenAI Key"
+os.environ["SERPER_API_KEY"] = "Your Serper Key"
 
 class ContractAgent(AgentBase):
-    def __init__(self, db_path):
-        super().__init__(
-            role="contract_handler",
-            goal="Fetch contract information based on user queries.",
-            backstory="You are an AI assistant whose job is to fetch and interpret contract information based on user queries. Be helpful, accurate, and efficient."
-        )
+
+    def __init__(self):
+        self.role = "contract_handler"
+        self.goal = "Fetch contract information based on user queries."
+        self.backstory = "You are an AI assistant whose job is to fetch and interpret contract information based on user queries. Be helpful, accurate, and efficient."
+        self.pdf_search_tool = PDFSearchTool()
+        
         self.agent = Agent(
             role=self.role,
             goal=self.goal,
             backstory=self.backstory,
             verbose=True,
             allow_delegation=False,
-            llm=self.llm
+            tools=[self.pdf_search_tool]
         )
-        self.db_path = db_path
-        self.pdf_search_tool = PDFSearchTool()
 
-    def fetch_pdf_uri(self, user_id):
-        return db.get_contract_pdf_uri_by_user_id(user_id)
-
-    def search_pdf(self, pdf_uri, query):
-        # Search within the PDF document using PDFSearchTool
-        self.pdf_search_tool = PDFSearchTool(pdf=pdf_uri)
-        result = self.pdf_search_tool.run(query=query)
-        return result
-
+    def get_contract_pdf_uri_by_user_id(self, user_id):
+        return get_contract_pdf_uri_by_user_id(user_id)
+  
     def handle_query(self, query, user_id):
-        pdf_uri = self.fetch_pdf_uri(user_id)
-        if pdf_uri is None:
-            return "No contract found for the given user ID."
+        # Fetch the PDF URI
+        url = self.get_contract_pdf_uri_by_user_id(user_id)
 
-        result = self.search_pdf(pdf_uri, query)
-        return result
+        # Update the PDF search tool with the new URL
+        self.pdf_search_tool = PDFSearchTool(url)
 
-    def create_task(self, description, expected_output):
-        return {
-            "description": description,
-            "expected_output": expected_output
-        }
+        # Create a task to search the PDF for the query
+        task = Task(
+            description=f"Using the PDF tool, search through and find the answer to this query: {query}. If there is no answer or the question is out of scope, then generate a reply saying so. Make sure to be accurate and do not make anything up.",
+            expected_output="A response to the query based on the PDF content.",
+            tools=[self.pdf_search_tool],
+            agent=self.agent
+        )
+
+        return self.run_task(task)
 
     def run_task(self, task):
-        task = Task(
-            description=task["description"],
-            agent=self.agent,
-            expected_output=task["expected_output"]
-        )
         crew = Crew(
             agents=[self.agent],
             tasks=[task],
-            processes=Process.sequential,
+            process=Process.sequential,
             verbose=2
         )
         result = crew.kickoff()
         return result
-
-    def respond_to_query(self, query, user_id):
-        task = self.create_task(
-            description=f"Respond to the query based on contract PDF content: {query}",
-            expected_output="Relevant information or data from the contract"
-        )
-        return self.run_task(task)

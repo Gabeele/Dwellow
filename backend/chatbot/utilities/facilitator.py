@@ -10,6 +10,7 @@ class Facilitator:
     def __init__(self, session):
         self.session = session
         self.maintenance_agent = MaintenanceRequestAgent()
+        self.contract_agent = ContractAgent()
         self.humanizer = Humanize()
         self.intent_classifier = IntentClassifier()
         self.response_generator = ResponseGenerator.ResponseGenerator()
@@ -107,8 +108,7 @@ class Facilitator:
         
     def contract_request_process(self, user_input):
         try:
-            contract_agent = ContractAgent()
-            response = contract_agent.handle_query(user_input, self.session.user_id)
+            response = self.contract_agent.handle_query(user_input, self.session.user_id)
             self.send_message(response)
             self.send_message("Is there anything else I can help you with?")
         except Exception as e:
