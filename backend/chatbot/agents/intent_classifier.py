@@ -5,7 +5,7 @@ class IntentClassifier(AgentBase):
     def __init__(self):
         super().__init__(
             role="classifier",
-            goal="Classify and detect the intent for the input and match it with the best one from this list: greeting, farewell, maintenance request, scheduling assistance, request update, contact information, account assistance, payment inquiry, amenities information, policy information, information provisioning, unknown",
+            goal="Classify and detect the intent for the input and match it with the best one from this list: greeting, farewell, maintenance request, scheduling assistance, request update, contact information, account assistance, payment inquiry, amenities information, policy information, unknown",
             backstory="You are an AI assistant whose only job is to classify input intents and match them with the best one from the list. Your job is to only detect the intent and respond with the best fitting intent from the list; and not to generate a response. If you are unsure or not able to determine the best intent use the unknown intent."
         )
         self.agent = Agent(
@@ -20,7 +20,7 @@ class IntentClassifier(AgentBase):
     def classify_intent(self, prompt):
         task = self.create_task(
             description=f"Detect the intent for the prompt: {prompt}",
-            expected_output="One of the intents from the list: greeting, farewell, maintenance request, scheduling assistance, request update, contact information, account assistance, payment inquiry, amenities information, policy information, information provisioning, unknown"
+            expected_output="One of the intents from the list: greeting, farewell, maintenance request, scheduling assistance, request update, contact information, account assistance, payment inquiry, amenities information, policy information, unknown"
         )
         return self.run_task(task)
 

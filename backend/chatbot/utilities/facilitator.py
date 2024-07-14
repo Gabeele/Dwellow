@@ -1,6 +1,7 @@
 from agents.intent_classifier import IntentClassifier
 import agents.response_generator as ResponseGenerator
 from agents.maintenance_request_agent import MaintenanceRequestAgent
+from agents.contract_agent import ContractAgent
 from utilities.db import create_ticket
 from agents.humanize_agent import Humanize
 import logging
@@ -103,6 +104,17 @@ class Facilitator:
             return "Medium"
         else:
             return "Low"
+        
+    def contract_request_process(self, user_input):
+        try:
+            contract_agent = ContractAgent()
+            response = contract_agent.handle_query(user_input, self.session.user_id)
+            self.send_message(response)
+            self.send_message("Is there anything else I can help you with?")
+        except Exception as e:
+            self.logger.error(f"An error occurred while processing the contract request: {e}")
+            self.send_message("An error occurred while processing your request. Please try again.")
+
 
     def process_intent(self, intent, user_input):
         response = None
@@ -118,6 +130,8 @@ class Facilitator:
             elif intent == "farewell":
                 response = self.response_generator.generate_response("farewell")
                 done = True
+            elif intent == "contract information":
+                self.contract_request_process(user_input)
             elif intent == "maintenance request":
                 self.maintenance_request_process()
                 done = True  # Assuming maintenance request processing ends the current session
