@@ -107,6 +107,26 @@ async function getUser(id) {
     }
 }
 
+async function getUsersByTeam(id) {
+    try {
+        console.log(id);
+
+        await sql.connect(config);
+        const query = `SELECT * FROM users WHERE team_id = '${id}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching user with user_id ${id}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+
 async function getUserId(token) { // TODO: Gavin's attempt at making a user ID thing
 
     try {
@@ -295,6 +315,25 @@ async function getProperties(team_id) {
         await sql.close();
     }
 }
+
+async function getPropertyByAddress(address) {
+    try {    
+        console.log(address);
+        await sql.connect(config);
+        const query = `SELECT * from properties where address like '${address}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result.recordset;
+    } catch (error) {
+        logger.error(`Error fetching properties with address ${address}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
 
 async function createProperty(title, address, description, photo_url, team_id) {
     try {
@@ -633,6 +672,27 @@ async function associateUserWithInviteCode(user_id, code) {
     }
 }
 
+async function getInviteCodes(property_id)
+{
+    try {
+        console.log(property_id);
+
+        await sql.connect(config);
+        const query = `SELECT * FROM invite_codes WHERE property_id = '${property_id}'`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching codes: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+
+}
+
 async function createCode(property_id, unit_id, email, code) {
     try {
         await sql.connect(config);
@@ -781,6 +841,8 @@ module.exports = {
     getOneComment,
     getComments,
     getTicketsStatus,
-    getAnnouncementByProperty
-
+    getAnnouncementByProperty,
+    getInviteCodes,
+    getUsersByTeam,
+    getPropertyByAddress
 };

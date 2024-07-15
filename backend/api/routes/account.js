@@ -1,7 +1,7 @@
 
 const express = require('express');
 const logger = require('../utils/logger');
-const { getUser, deleteUser, updateUser, createAccount, checkEmail } = require('../utils/connector.js');
+const { getUser, deleteUser, updateUser, createAccount, checkEmail, getUsersByTeam } = require('../utils/connector.js');
 const router = express.Router();
 /**
  * @swagger
@@ -67,6 +67,27 @@ router.get('/', async (req, res) => {
     }
 });
 
+
+router.get('/:team_id', async (req, res) => {
+    //console.log("hello")
+        try {
+            const { team_id } = req.params;
+            console.log (team_id);
+
+            const user = await getUsersByTeam(team_id);
+    
+            if (!user) {
+                logger.warn(`Get Account: No team found with id ${team_id}`);
+                return res.status(400).json({ message: `No user found with id ${team_id}` });
+            }
+    
+            logger.info(`Get Account: User ${team_id} information accessed.`); // TODO: We should return the user infromation here as json or somehting. IDK what is returned back. (Also update the comments)
+            res.status(200).json(user.recordset);
+        } catch (error) {
+            logger.error(`Error getting account information for users of team ${team_id}: ${error.message}`);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    });
 
 /**
  * @swagger
