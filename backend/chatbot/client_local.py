@@ -3,13 +3,13 @@ import json
 
 def run_client(host, port):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    TOKEN = 'eyJhbGciOiJSUzI1NiIsImtpZCI6ImMxNTQwYWM3MWJiOTJhYTA2OTNjODI3MTkwYWNhYmU1YjA1NWNiZWMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZHdlbGxvdy1hYjE0NCIsImF1ZCI6ImR3ZWxsb3ctYWIxNDQiLCJhdXRoX3RpbWUiOjE3MjA5NjQzNjIsInVzZXJfaWQiOiJuYlRLZDBLZ3RwVUFGdGRwOTdaclhZM2JYUTIzIiwic3ViIjoibmJUS2QwS2d0cFVBRnRkcDk3WnJYWTNiWFEyMyIsImlhdCI6MTcyMDk2NDM2MiwiZXhwIjoxNzIwOTY3OTYyLCJlbWFpbCI6ImFiZWVsZS5zLmdhdmluQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImFiZWVsZS5zLmdhdmluQGdtYWlsLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.C-3BQq9R-YqKAIu57PYzJGCLS27H0va6BMMW0qkPOwh2F09HEjsJyBI2_O7AltPYNNZ02JnoaWt_mheSKUKOKVi3cxJLX0uX5gEfjAVbPsr0tlP-B1kM35KQnGnjsufKtoHydQWwZ90iZV5Tct30oCnPqzYyoAvjIO0UshIF64zieVNVwpyJE14Sa6pZhevGbjqQzZYLe1VnJNwECjZhOSXjlRA_JMcKewwIHeKUhUUVY3fkJCJJtItAbfHUsfKCgtICX_bT5Qg4Y9UlO54gn5KbjeL25veUiVgodDm4VfBVPpRuhVhfjMLvuyV0Ypr-40t9aYcph3wbZePxr5v44A'
+    TOKEN = 'eyJhbGciOiJSUzI1NiIsImtpZCI6ImMxNTQwYWM3MWJiOTJhYTA2OTNjODI3MTkwYWNhYmU1YjA1NWNiZWMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZHdlbGxvdy1hYjE0NCIsImF1ZCI6ImR3ZWxsb3ctYWIxNDQiLCJhdXRoX3RpbWUiOjE3MjEwMDA0NzMsInVzZXJfaWQiOiJuYlRLZDBLZ3RwVUFGdGRwOTdaclhZM2JYUTIzIiwic3ViIjoibmJUS2QwS2d0cFVBRnRkcDk3WnJYWTNiWFEyMyIsImlhdCI6MTcyMTAwMDQ3MywiZXhwIjoxNzIxMDA0MDczLCJlbWFpbCI6ImFiZWVsZS5zLmdhdmluQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImFiZWVsZS5zLmdhdmluQGdtYWlsLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.guuxZXnQ0QKLqVp9GGfEx_cYAp6TbFh3Rf_-pYmgvLwV2P1DemGDyFoHWn9Ui4QCC0ozhk0xDPRTcg2jm0fwiCMmTJcjjJYamRNTttSCVUUNS4rmZDL-f6MTqfMPp2_H7Tp4FRVgiwRFmeoz1ZvaJshvws5g59TpXpumpbQCfkdhfkD26iZ7KDGFT9ctmwaGaNIdzkRUwvIh8XKsjD4ma4PGtkOTb8v5KAtqlkJCbJ5xs6rbyJCK0-F-V_ZPfQKhmQBO707wiVvh33__33k0N6phmPpa42GBr6BJ-0iQ6XLyPhXWNZO-MCSvST3GVQckoTCRRCZypNOP6ZRTyVV1KQ'
     try:
         client_socket.connect((host, port))
         print(f"Connected to server at {host}:{port}")
 
         # Prepare and send token data
-        token_data = json.dumps({"jwt": TOKEN})
+        token_data = json.dumps({"Autherization": "Bearer " + TOKEN})
         print(f"Sending token data: {token_data}")
         client_socket.sendall(token_data.encode('utf-8'))
 
@@ -42,7 +42,7 @@ def run_client(host, port):
         print("Closed connection")
 
 if __name__ == "__main__":
-    HOST = '100.81.73.105'
+    HOST = 'localhost'
     PORT = 5000
 
     run_client(HOST, PORT)

@@ -109,8 +109,7 @@ class Facilitator:
     def contract_request_process(self, user_input):
         try:
             response = self.contract_agent.handle_query(user_input, self.session.user_id)
-            self.send_message(response)
-            self.send_message("Is there anything else I can help you with?")
+            self.send_message(response + " Is there anything else I can help you with?")
         except Exception as e:
             self.logger.error(f"An error occurred while processing the contract request: {e}")
             self.send_message("An error occurred while processing your request. Please try again.")
