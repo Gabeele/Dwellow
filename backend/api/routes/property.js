@@ -14,7 +14,8 @@ const { getProperties,
     associateUnitWithUser,
     createCode,
     deleteInviteCode, 
-    getUser} = require('../utils/connector');
+    getUser,
+    getPropertyByAddress} = require('../utils/connector');
 
 /**
  * @swagger
@@ -82,6 +83,26 @@ router.get('/', isAdmin, async (req, res) => {
     }
 });
 
+
+router.get('/address', isAdmin, async (req, res) => {
+    try {
+        const { address } = req.body;
+        console.log(address);
+
+        const property = await getPropertyByAddress(address)
+
+        if (!property) {
+            logger.warn(`Property with ID: ${req.params.propertyId} not found`);
+            return res.status(404).send('Property not found');
+        }
+        logger.info(`Fetched property for address: ${address}`);
+        res.json(property);
+    } catch (error) {
+        logger.error(`Error fetching property address ${address}: ${error}`);
+        res.status(500).send('Error fetching property');
+    }
+});
+
 /**
  * @swagger
  * /properties/{propertyId}/units:
@@ -141,6 +162,7 @@ router.get('/:propertyId/units', isAdmin, async (req, res) => {
         res.status(500).send('Error fetching property and its units');
     }
 });
+
 
 /**
  * @swagger
