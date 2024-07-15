@@ -40,23 +40,57 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
         final response = await http.get(
           Uri.parse('https://api.dwellow.ca/ticket/${widget.ticket.ticketId}'),
           headers: {
-            'Authorization': 'bearer $token',
+            'Authorization': 'Bearer $token',
           },
         );
 
         if (response.statusCode == 200) {
           var data = jsonDecode(response.body);
-          setState(() {
-            comments = (data['comments'] as List)
-                .map((comment) => Comment.fromJson(comment))
-                .toList();
-          });
+          // Handle other ticket details here if necessary
+          fetchComments();
         } else {
           print('Failed to fetch ticket details: ${response.reasonPhrase}');
         }
       }
     } catch (e) {
       print('Error fetching ticket details: $e');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> fetchComments() async {
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        String? token = await user.getIdToken();
+
+        final response = await http.get(
+          Uri.parse(
+              'https://api.dwellow.ca/ticket/${widget.ticket.ticketId}/comments'),
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        );
+
+        if (response.statusCode == 200) {
+          var data = jsonDecode(response.body);
+          setState(() {
+            comments = (data as List)
+                .map((comment) => Comment.fromJson(comment))
+                .toList();
+          });
+        } else {
+          print('Failed to fetch comments: ${response.reasonPhrase}');
+        }
+      }
+    } catch (e) {
+      print('Error fetching comments: $e');
     } finally {
       setState(() {
         isLoading = false;
@@ -75,7 +109,7 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
 
         final response = await http.post(
           Uri.parse(
-              'https://api.dwellow.ca/ticket/${widget.ticket.ticketId}/comment'),
+              'https://api.dwellow.ca/ticket/${widget.ticket.ticketId}/comments'),
           headers: {
             'Authorization': 'Bearer $token',
             'Content-Type': 'application/json',
@@ -87,7 +121,7 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
         );
 
         if (response.statusCode == 201) {
-          fetchTicketDetails();
+          fetchComments(); // Refresh comments after adding a new one
         } else {
           print('Failed to add comment: ${response.reasonPhrase}');
         }
@@ -198,8 +232,9 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
                               itemBuilder: (context, index) {
                                 final comment = comments[index];
                                 return ListTile(
-                                  title: Text(comment.text),
-                                  subtitle: Text('User ID: ${comment.userId}'),
+                                  title: Text(comment.description),
+                                  subtitle: Text(
+                                      'User ID: ${comment.userId}\nPosted: ${comment.postedDate}'),
                                 );
                               },
                             ),
@@ -251,13 +286,15 @@ class Comment {
   final int commentId;
   final int ticketId;
   final int userId;
-  final String text;
+  final String description;
+  final DateTime postedDate;
 
   Comment({
     required this.commentId,
     required this.ticketId,
     required this.userId,
-    required this.text,
+    required this.description,
+    required this.postedDate,
   });
 
   factory Comment.fromJson(Map<String, dynamic> json) {
@@ -265,7 +302,8 @@ class Comment {
       commentId: json['comment_id'],
       ticketId: json['ticket_id'],
       userId: json['user_id'],
-      text: json['text'],
+      description: json['description'],
+      postedDate: DateTime.parse(json['posted_date']),
     );
   }
 }

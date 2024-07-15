@@ -96,3 +96,29 @@ def get_user_id_from_token(token):
             cursor.close()
         if conn:
             conn.close()
+
+def get_contract_pdf_uri_by_user_id(user_id):
+    conn = None
+    cursor = None
+    try:
+        conn = pyodbc.connect(conn_str)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT contract_url
+            FROM contracts
+            WHERE user_id = ?
+        """, (user_id,))
+        
+        contract_url = cursor.fetchone()
+        if contract_url:
+            return contract_url[0]
+        else:
+            raise Exception("No contract found for the user")
+    except Exception as e:
+        raise Exception(f"Error retrieving contract: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()

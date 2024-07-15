@@ -43,7 +43,13 @@ class Session:
                 return False
 
             # Initialize the facilitator
+            print("Initializing facilitator...")
             self.facilitator = Facilitator(self)
+            if self.facilitator is None:
+                print("Facilitator initialization failed.")
+                return False
+
+            print("Facilitator initialized successfully.")
             return True
         except Exception as e:
             print(f"An error occurred while establishing user: {e}")
@@ -58,7 +64,7 @@ class Session:
             print(f"An error occurred while closing the socket: {e}")
 
     def run(self):
-        self.socket.send(b'ACK')                
+        self.socket.send(b'ACK')
         if self.establish_user():
             try:
                 # Send acknowledgment to client

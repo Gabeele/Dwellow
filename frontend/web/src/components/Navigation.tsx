@@ -50,9 +50,6 @@ function Navigation() {
             <Link to="/tickets" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
               Tickets
             </Link>
-            <Link to="/analytics" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
-              Analytics
-            </Link>
             <Link to="/contracts" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
               Contracts
             </Link>
@@ -62,8 +59,8 @@ function Navigation() {
             <Link to="/invitations" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
               Invitations
             </Link>
-            <Link to="/resources" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
-              Resources
+            <Link to="/network" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
+              Network
             </Link>
           </div>
         </div>

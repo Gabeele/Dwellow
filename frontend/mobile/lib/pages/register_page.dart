@@ -123,10 +123,10 @@ class _RegisterPageState extends State<RegisterPage> {
           'Authorization': '$token',
         },
         body: jsonEncode({
-          'full_name': fullName,
-          'user_type': 'tenant',
+          'fullName': fullName,
+          'userType': 'tenant',
           'email': email,
-          'phone_number': phoneNumber,
+          'phoneNumber': phoneNumber,
         }),
       );
 

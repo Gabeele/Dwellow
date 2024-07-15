@@ -11,9 +11,9 @@ class Announcement {
 
   factory Announcement.fromJson(Map<String, dynamic> json) {
     return Announcement(
-      title: json['title'],
-      description: json['description'],
-      date: json['date'],
+      title: json['title'] as String,
+      description: json['text'] as String,
+      date: json['announcement_date'] as String,
     );
   }
 }
