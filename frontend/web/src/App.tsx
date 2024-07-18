@@ -15,6 +15,7 @@ import Manage from "./pages/manage";
 import Invitations from "./pages/invitations";
 import Network from "./pages/network";
 import Reviews from "./pages/reviews";
+import Ticket from "./pages/ticket"
 
 // Define your route configurations
 const publicRoutes = [
@@ -29,6 +30,7 @@ const protectedRoutes = [
   { path: "/properties", component: Properties },
   { path: "/property/:id", component: Property },
   { path: "/tickets", component: Tickets },
+  { path: "/tickets/:id", component: Ticket },
   { path: "/contracts", component: Contracts },
   { path: "/manage", component: Manage },
   { path: "/invitations", component: Invitations },

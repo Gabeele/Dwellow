@@ -120,7 +120,7 @@ function Home() {
   }
 
   return (
-    <div className="">
+    <>
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-dwellow-dark-200">Dashboard</h1>
         <p className="text-dwellow-dark-200 mt-2">Welcome, {name}</p>
@@ -168,7 +168,7 @@ function Home() {
           </div>
         </div>
       </main>
-    </div>
+    </>
   );
 }
 

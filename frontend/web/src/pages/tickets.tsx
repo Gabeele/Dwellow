@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { PlusIcon } from "@radix-ui/react-icons";
 import {
   Dialog,
@@ -357,19 +358,20 @@ function Tickets() {
           </DialogContent>
         </Dialog>
 
-
         <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 pl-0 gap-4 p-4">
           {tickets.map(({ id, description, unit_id, user_id, length, issue_area, photo_url, special_instructions, priority }) => (
-            <Card key={id}>
-              <CardHeader>
-                <CardTitle>{description}</CardTitle>
-                <CardDescription>{special_instructions}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="mt-4">{issue_area} Units</p>
-              </CardContent>
-              <CardFooter>{unit_id}</CardFooter>
-            </Card>
+            <Link key={id} to={`/tickets/${id}`} className="w-full">
+              <Card key={id}>
+                <CardHeader>
+                  <CardTitle>{description}</CardTitle>
+                  <CardDescription>{special_instructions}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="mt-4">{issue_area} Units</p>
+                </CardContent>
+                <CardFooter>{unit_id}</CardFooter>
+              </Card>
+            </Link>
           ))}
         </div>
       </main>
