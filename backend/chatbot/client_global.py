@@ -1,17 +1,17 @@
 import socket
-import threading
 import logging
+import ssl
 
 logging.basicConfig(filename='test_log.log', level=logging.INFO)
 
 def run_client():
-    TOKEN = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImMxNTQwYWM3MWJiOTJhYTA2OTNjODI3MTkwYWNhYmU1YjA1NWNiZWMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZHdlbGxvdy1hYjE0NCIsImF1ZCI6ImR3ZWxsb3ctYWIxNDQiLCJhdXRoX3RpbWUiOjE3MjEwNjQ1MDEsInVzZXJfaWQiOiJuYlRLZDBLZ3RwVUFGdGRwOTdaclhZM2JYUTIzIiwic3ViIjoibmJUS2QwS2d0cFVBRnRkcDk3WnJYWTNiWFEyMyIsImlhdCI6MTcyMTA2NDUwMSwiZXhwIjoxNzIxMDY4MTAxLCJlbWFpbCI6ImFiZWVsZS5zLmdhdmluQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImFiZWVsZS5zLmdhdmluQGdtYWlsLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.uMk4fIQIGP8ObqghNjMxzLbQVYjzGiWhINFdGpGeLEY3vv9yNKgf0WGPGK2IrYtLa8u88TciGVkNCET_tOrb9Z2l72swzI1bCaucCgwcW6HNwJhSnH1QwjOvtg9FMLUnhENR7Z0agUq0Dh-Ph6cidys9g3k2U5YiSSOEM9-Aj7vhxplz_RUdpzOX3cjyd7SEgjXzcgPeACSGErjS0H2VdvCv8Euf8BgfeAu5hm8jWSJvAXZ-TiyJFm-bAuyZYsn9dZWaCihBrxm__yuHjdSee_jXTd127NE56XnRnlFOcg00Ukn0bc5dtGp6tifVWyLQWtlmJQRwATi5HbXc_WkAOQ"
-    HOST = 'localhost'
-    PORT = 5000
-
+    TOKEN = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImMxNTQwYWM3MWJiOTJhYTA2OTNjODI3MTkwYWNhYmU1YjA1NWNiZWMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZHdlbGxvdy1hYjE0NCIsImF1ZCI6ImR3ZWxsb3ctYWIxNDQiLCJhdXRoX3RpbWUiOjE3MjEyNDEzODAsInVzZXJfaWQiOiJuYlRLZDBLZ3RwVUFGdGRwOTdaclhZM2JYUTIzIiwic3ViIjoibmJUS2QwS2d0cFVBRnRkcDk3WnJYWTNiWFEyMyIsImlhdCI6MTcyMTI0MTM4MCwiZXhwIjoxNzIxMjQ0OTgwLCJlbWFpbCI6ImFiZWVsZS5zLmdhdmluQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImFiZWVsZS5zLmdhdmluQGdtYWlsLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.lRTX7sc_u-0lC0nE4hzzAcddF0GfxT5MxOjvNA8teZne_0ixbbT4t8DySmDXYwXio9_WfYnVLwqFCj_TJ3mDtFoH39X5wZRXxLUIorTxGgLaf89sonmWWRd15ZtS6isCi3RurH_MsvG1wRGuakZh55DfvsR7UnPpCWk7LaXSIxAU4Opy01s7MNq9Ug87f_z35j_wGAR6OP-z5WWO52DTeGEqnjb31uI6zCTrBVEiS6gZ76Gie6Z17JtD7EcqiKAeV-MQ4vK-BI9BAIB7G_bE9QTHokGPwqEZJrG_W6ZPkT_tansfd-XspH6G3Scc9m4P5wjDFwFfYcze3EwfAwphFw"
+    HOST = 'ws://api.dwellow.ca'
+    
     # Initialize socket connection
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect((HOST, PORT))
+    client_socket = ssl.wrap_socket(client_socket)
+    client_socket.connect((HOST, 443))  # Default HTTPS port
 
     def receive_message():
         return client_socket.recv(1024).decode()
@@ -29,8 +29,8 @@ def run_client():
             # Send headers
             headers = {
                 "Upgrade": "websocket",
-                "Host": f"{HOST}:{PORT}",
-                "Origin": f"http://{HOST}:{PORT}",
+                "Host": HOST,
+                "Origin": f"https://{HOST}",
                 "Sec-WebSocket-Key": "guHq5sJrYfA7sERC1RkjIQ==",
                 "Sec-WebSocket-Version": "13",
                 "Connection": "Upgrade",

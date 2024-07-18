@@ -11,7 +11,7 @@ def start_session(connection):
         print(f"An error occurred in the session: {e}")
 
 def main():
-    HOST = 'localhost'
+    HOST = '0.0.0.0'
     PORT = 5000
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

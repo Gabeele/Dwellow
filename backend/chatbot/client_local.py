@@ -1,48 +1,67 @@
 import socket
-import json
+import threading
+import logging
 
-def run_client(host, port):
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    TOKEN = 'eyJhbGciOiJSUzI1NiIsImtpZCI6ImMxNTQwYWM3MWJiOTJhYTA2OTNjODI3MTkwYWNhYmU1YjA1NWNiZWMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZHdlbGxvdy1hYjE0NCIsImF1ZCI6ImR3ZWxsb3ctYWIxNDQiLCJhdXRoX3RpbWUiOjE3MjEwMDA0NzMsInVzZXJfaWQiOiJuYlRLZDBLZ3RwVUFGdGRwOTdaclhZM2JYUTIzIiwic3ViIjoibmJUS2QwS2d0cFVBRnRkcDk3WnJYWTNiWFEyMyIsImlhdCI6MTcyMTAwMDQ3MywiZXhwIjoxNzIxMDA0MDczLCJlbWFpbCI6ImFiZWVsZS5zLmdhdmluQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImFiZWVsZS5zLmdhdmluQGdtYWlsLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.guuxZXnQ0QKLqVp9GGfEx_cYAp6TbFh3Rf_-pYmgvLwV2P1DemGDyFoHWn9Ui4QCC0ozhk0xDPRTcg2jm0fwiCMmTJcjjJYamRNTttSCVUUNS4rmZDL-f6MTqfMPp2_H7Tp4FRVgiwRFmeoz1ZvaJshvws5g59TpXpumpbQCfkdhfkD26iZ7KDGFT9ctmwaGaNIdzkRUwvIh8XKsjD4ma4PGtkOTb8v5KAtqlkJCbJ5xs6rbyJCK0-F-V_ZPfQKhmQBO707wiVvh33__33k0N6phmPpa42GBr6BJ-0iQ6XLyPhXWNZO-MCSvST3GVQckoTCRRCZypNOP6ZRTyVV1KQ'
-    try:
-        client_socket.connect((host, port))
-        print(f"Connected to server at {host}:{port}")
+logging.basicConfig(filename='test_log.log', level=logging.INFO)
 
-        # Prepare and send token data
-        token_data = json.dumps({"Autherization": "Bearer " + TOKEN})
-        print(f"Sending token data: {token_data}")
-        client_socket.sendall(token_data.encode('utf-8'))
-
-        # Wait for acknowledgment from the server
-        response = client_socket.recv(1024)
-        if response.decode('utf-8') == 'ACK':
-            print("Server acknowledged the token")
-
-            # Listen for the first message from the server
-            initial_message = client_socket.recv(1024)
-            print("Bot: ", initial_message.decode('utf-8'))
-
-            # Main communication loop
-            while True:
-                user_input = input("You: ")
-                if user_input.lower() == 'exit':
-                    break
-
-                client_socket.sendall(user_input.encode('utf-8'))
-                response = client_socket.recv(1024)
-                print("Bot: ", response.decode('utf-8'))
-        else:
-            print("Failed to receive acknowledgment from server")
-
-    except Exception as e:
-        print(f"An error occurred: {e}")
-
-    finally:
-        client_socket.close()
-        print("Closed connection")
-
-if __name__ == "__main__":
-    HOST = 'localhost'
+def run_client():
+    TOKEN = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImMxNTQwYWM3MWJiOTJhYTA2OTNjODI3MTkwYWNhYmU1YjA1NWNiZWMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZHdlbGxvdy1hYjE0NCIsImF1ZCI6ImR3ZWxsb3ctYWIxNDQiLCJhdXRoX3RpbWUiOjE3MjEyNDEzODAsInVzZXJfaWQiOiJuYlRLZDBLZ3RwVUFGdGRwOTdaclhZM2JYUTIzIiwic3ViIjoibmJUS2QwS2d0cFVBRnRkcDk3WnJYWTNiWFEyMyIsImlhdCI6MTcyMTI0MTM4MCwiZXhwIjoxNzIxMjQ0OTgwLCJlbWFpbCI6ImFiZWVsZS5zLmdhdmluQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImFiZWVsZS5zLmdhdmluQGdtYWlsLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.lRTX7sc_u-0lC0nE4hzzAcddF0GfxT5MxOjvNA8teZne_0ixbbT4t8DySmDXYwXio9_WfYnVLwqFCj_TJ3mDtFoH39X5wZRXxLUIorTxGgLaf89sonmWWRd15ZtS6isCi3RurH_MsvG1wRGuakZh55DfvsR7UnPpCWk7LaXSIxAU4Opy01s7MNq9Ug87f_z35j_wGAR6OP-z5WWO52DTeGEqnjb31uI6zCTrBVEiS6gZ76Gie6Z17JtD7EcqiKAeV-MQ4vK-BI9BAIB7G_bE9QTHokGPwqEZJrG_W6ZPkT_tansfd-XspH6G3Scc9m4P5wjDFwFfYcze3EwfAwphFw"
+    HOST = 'https://chat.dwellow.ca'
     PORT = 5000
 
-    run_client(HOST, PORT)
+    # Initialize socket connection
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.connect((HOST, PORT))
+
+    def receive_message():
+        return client_socket.recv(1024).decode()
+
+    def send_message(message):
+        client_socket.sendall(message.encode())
+        logging.info(f"Sent: {message}")
+
+    try:
+        # Step 1: Wait for 'ACK'
+        message = receive_message()
+        if message == 'ACK':
+            logging.info("Received ACK from server")
+
+            # Send headers
+            headers = {
+                "Upgrade": "websocket",
+                "Host": f"{HOST}:{PORT}",
+                "Origin": f"http://{HOST}:{PORT}",
+                "Sec-WebSocket-Key": "guHq5sJrYfA7sERC1RkjIQ==",
+                "Sec-WebSocket-Version": "13",
+                "Connection": "Upgrade",
+                "Authorization": f"Bearer {TOKEN}"
+            }
+            headers_formatted = "\r\n".join([f"{key}: {value}" for key, value in headers.items()]) + "\r\n\r\n"
+            send_message(headers_formatted)
+            logging.info(f"Sent headers: {headers}")
+
+        # Step 2: Wait for 'connected'
+        message = receive_message()
+        if message == 'connected':
+            logging.info("Server acknowledged the connection")
+
+        # Step 3: Wait for initial message
+        message = receive_message()
+        logging.info(f"Bot: {message}")
+
+        # Step 4: Communication loop
+        while True:
+            user_input = input("You: ")
+            if user_input.lower() == 'exit':
+                break
+            send_message(user_input)
+            response = receive_message()
+            logging.info(f"Bot: {response}")
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+    finally:
+        logging.info("Closing connection")
+        client_socket.close()
+
+if __name__ == "__main__":
+    run_client()
