@@ -21,57 +21,57 @@ class Facilitator:
         logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
         self.logger = logging.getLogger(__name__)
 
-    def run(self):
+    async def run(self):
         try:
             while True:
                 if self.is_new_session:
-                    self.send_message("Hello there! What can I do for you? (Facilitator)")
+                    await self.send_message("Hello there! What can I do for you?")
                     self.is_new_session = False
                 else:
-                    user_input = self.receive_message()
+                    user_input = await self.receive_message()  # Awaiting the coroutine
                     if user_input is None:
                         break
 
                     intent = self.get_intent(user_input)
-                    response, done = self.process_intent(intent, user_input)
+                    response, done = await self.process_intent(intent, user_input)  # Await if needed
                     if response:
-                        self.send_message(response)
+                        await self.send_message(response)
                     if done:
                         break
         except Exception as e:
             self.logger.error(f"An error occurred during the session: {e}")
-            self.send_message("An error occurred. Please try again later.")
+            await self.send_message("An error occurred. Please try again later.")
         finally:
-            self.session.disconnect()
+            await self.session.disconnect()
 
-    def maintenance_request_process(self):
+    async def maintenance_request_process(self):
         done = False
         while not done:
             try:
                 key, next_question = self.maintenance_agent.get_next_question()
                 if next_question:
-                    self.send_message(next_question)
-                    user_response = self.receive_message()
+                    await self.send_message(next_question)
+                    user_response = await self.receive_message()
                     if user_response is None:
                         done = True
                         continue
                     
                     if key == "emergency" and user_response.strip().lower() in ["yes", "y"]:
-                        self.send_message("Call 911 now.")
+                        await self.send_message("Call 911 now.")
                         done = True
                     else:
                         self.maintenance_agent.handle_response(key, user_response)
                 else:
                     ticket_data = self.maintenance_agent.finalize_ticket()
-                    self.create_ticket_in_db(ticket_data)
-                    self.send_message("Sending your maintenance request now. Is there anything else I can help you with?")
+                    await self.create_ticket_in_db(ticket_data)
+                    await self.send_message("Sending your maintenance request now. Is there anything else I can help you with?")
                     done = True
             except Exception as e:
                 self.logger.error(f"An error occurred during the maintenance request process: {e}")
-                self.send_message("An error occurred while processing your request. Please try again.")
+                await self.send_message("An error occurred while processing your request. Please try again.")
                 done = True
 
-    def create_ticket_in_db(self, ticket_data):
+    async def create_ticket_in_db(self, ticket_data):
         try:
             unit_id = self.session.user_id 
             user_id = self.session.user_id
@@ -96,7 +96,7 @@ class Facilitator:
             )
         except Exception as e:
             self.logger.error(f"An error occurred while creating the ticket: {e}")
-            self.send_message("An error occurred while creating the ticket. Please try again.")
+            await self.send_message("An error occurred while creating the ticket. Please try again.")
 
     def determine_priority(self, severity, urgency):
         if severity >= 8 or urgency >= 8:
@@ -106,16 +106,15 @@ class Facilitator:
         else:
             return "Low"
         
-    def contract_request_process(self, user_input):
+    async def contract_request_process(self, user_input):
         try:
             response = self.contract_agent.handle_query(user_input, self.session.user_id)
-            self.send_message(response + " Is there anything else I can help you with?")
+            await self.send_message(response + " Is there anything else I can help you with?")
         except Exception as e:
             self.logger.error(f"An error occurred while processing the contract request: {e}")
-            self.send_message("An error occurred while processing your request. Please try again.")
+            await self.send_message("An error occurred while processing your request. Please try again.")
 
-
-    def process_intent(self, intent, user_input):
+    async def process_intent(self, intent, user_input):
         response = None
         done = False
         try:
@@ -130,10 +129,10 @@ class Facilitator:
                 response = self.response_generator.generate_response("farewell")
                 done = True
             elif intent == "contract information":
-                self.contract_request_process(user_input)
+                await self.contract_request_process(user_input)  # Awaiting the async method
             elif intent == "maintenance request":
-                self.maintenance_request_process()
-                done = True  # Assuming maintenance request processing ends the current session
+                await self.maintenance_request_process()  # Awaiting the async method
+                done = True  
             else:
                 response = self.response_generator.generate_response(intent)
         except Exception as e:
@@ -141,20 +140,20 @@ class Facilitator:
             response = "An error occurred while processing your request. Please try again."
         return response, done
 
-    def send_message(self, message):
+    async def send_message(self, message):
         humanized_message = self.humanizer.generate_response(message)
         try:
-            self.session.socket.send(humanized_message)
+            await self.session.socket.send(humanized_message)
         except Exception as e:
             self.logger.error(f"An error occurred while sending data: {e}")
-            self.session.disconnect()
+            await self.session.disconnect()
 
-    def receive_message(self):
+    async def receive_message(self):
         try:
-            return self.session.socket.receive()
+            return await self.session.socket.receive()  # Awaiting the coroutine
         except Exception as e:
             self.logger.error(f"An error occurred while receiving data: {e}")
-            self.session.disconnect()
+            await self.session.disconnect()
             return None
 
     def get_intent(self, data):

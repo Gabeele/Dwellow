@@ -1,29 +1,21 @@
-import json
 from utilities.sock import Sock
 from utilities.facilitator import Facilitator
 from utilities.auth import verify_jwt_and_get_token
 from utilities.db import get_user_id_from_token, get_unit_id_for_user
 
 class Session:
-    def __init__(self, connection):
-        self.socket = Sock(connection)
+    def __init__(self, websocket, headers):
+        self.socket = Sock(websocket)
         self.user_id = None
         self.unit_id = None
         self.token = None
         self.facilitator = None
+        self.headers = headers
 
-    def establish_user(self):
+    async def establish_user(self):
         try:
-            # Receive headers from the socket
-            headers = self.socket.receive_headers()
-            if headers is None:
-                print("No headers received")
-                return False
-
-            print(f"Received headers: {headers}")
-
             # Get the Authorization header
-            auth_header = headers.get("Authorization")
+            auth_header = self.headers.get("Authorization")
             if not auth_header or not auth_header.startswith("Bearer "):
                 print("Authorization header is missing or invalid")
                 return False
@@ -60,27 +52,27 @@ class Session:
             return True
         except Exception as e:
             print(f"An error occurred while establishing user: {e}")
-            self.disconnect()
+            await self.disconnect()
             return False
 
-    def disconnect(self):
+    async def disconnect(self):
         # Ensure the socket is closed properly
         try:
-            self.socket.close()
+            await self.socket.close()
         except Exception as e:
             print(f"An error occurred while closing the socket: {e}")
 
-    def run(self):
-        self.socket.send(b'ACK')
-        if self.establish_user():
+    async def run(self):
+        await self.socket.send('ACK')
+        if await self.establish_user():
             try:
                 # Send acknowledgment to client
-                self.socket.send(b'connected')
+                await self.socket.send('connected')
                 # Run the facilitator logic
-                self.facilitator.run()
+                await self.facilitator.run()
             except Exception as e:
                 print(f"An error occurred during session run: {e}")
             finally:
-                self.disconnect()
+                await self.disconnect()
         else:
-            self.disconnect()
+            await self.disconnect()
