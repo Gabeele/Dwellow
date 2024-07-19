@@ -1,6 +1,6 @@
 const express = require('express');
 const logger = require('../utils/logger');
-const { getTickets, getOneTicket, updateTicket, createTicket, deleteTicket, getOneComment, createComment, getComments, getTicketsStatus } = require('../utils/connector.js');
+const { getTickets, getOneTicket, updateTicket, createTicket, deleteTicket, getOneComment, createComment, getComments, getTicketsStatus, updateQueue } = require('../utils/connector.js');
 const router = express.Router();
 /**
  * @swagger
@@ -278,6 +278,26 @@ router.post('/:ticket_id/comments', async (req, res) => {
     }
 });
 
+router.post('/:ticket_id/queue', async (req, res) => {
+    try {
+
+        const {new_queue} = req.body;
+        
+        const ticket_id = req.params.ticket_id;
+
+        console.log(ticket_id);
+
+        const update = await updateQueue(ticket_id, new_queue);
+        if (update) {
+            res.status(201).json(update);
+        } else {
+            res.status(400).send('Failed to update ticket');
+        }
+    } catch (error) {
+        logger.error(`Error: ${error}`);
+        res.status(500).send('Error creating comment');
+    }
+});
 
 router.get('/:ticket_id/comments/:comment_id', async (req, res) => { // can change to delete
 
@@ -340,6 +360,7 @@ router.get('/:ticket_id/comments', async (req, res) => {
                 res.status(500).json({ error: 'Internal Server Error' });
             }
         });
+
 
 
 module.exports = router;

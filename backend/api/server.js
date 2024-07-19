@@ -106,6 +106,7 @@ app.use((err, req, res, next) => {
     res.status(500).send('Something broke!');
 });
 
+
 const PORT = 8080; // In docker this runs on port 23450
 
 app.listen(PORT);
