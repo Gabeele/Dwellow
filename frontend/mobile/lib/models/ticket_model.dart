@@ -1,10 +1,11 @@
-// ticket_model.dart
 class MaintenanceTicket {
   final String ticketId;
   final String issueArea;
   final String description;
   final DateTime date;
   final String priority;
+  final String status;
+  final int queue;
 
   MaintenanceTicket({
     required this.ticketId,
@@ -12,17 +13,21 @@ class MaintenanceTicket {
     required this.description,
     required this.date,
     required this.priority,
+    required this.status,
+    required this.queue,
   });
 
   factory MaintenanceTicket.fromJson(Map<String, dynamic> json) {
     return MaintenanceTicket(
-      ticketId: json['ticket_id']
-          .toString(), // Ensure ticket_id is treated as a string
+      ticketId: json['ticket_id'].toString(),
       issueArea: json['issue_area'] ?? '',
       description: json['description'] ?? '',
-      date:
-          json['date'] != null ? DateTime.parse(json['date']) : DateTime.now(),
+      date: json['time_created'] != null
+          ? DateTime.parse(json['time_created'])
+          : DateTime.now(),
       priority: json['priority'] ?? 'Low',
+      status: json['status'] ?? 'active',
+      queue: json['queue'] ?? 0,
     );
   }
 
@@ -33,6 +38,8 @@ class MaintenanceTicket {
       'description': description,
       'date': date.toIso8601String(),
       'priority': priority,
+      'status': status,
+      'queue': queue,
     };
   }
 }

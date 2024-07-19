@@ -1,7 +1,7 @@
 class Announcement {
   final String title;
   final String description;
-  final String date;
+  final DateTime date;
 
   Announcement({
     required this.title,
@@ -13,7 +13,7 @@ class Announcement {
     return Announcement(
       title: json['title'] as String,
       description: json['text'] as String,
-      date: json['announcement_date'] as String,
+      date: DateTime.parse(json['announcement_date']),
     );
   }
 }
