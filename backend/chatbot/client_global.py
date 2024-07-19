@@ -1,37 +1,45 @@
-import websocket
-import threading
+import asyncio
+import websockets
+import logging
 
-def run_client():
-    TOKEN = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImMxNTQwYWM3MWJiOTJhYTA2OTNjODI3MTkwYWNhYmU1YjA1NWNiZWMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZHdlbGxvdy1hYjE0NCIsImF1ZCI6ImR3ZWxsb3ctYWIxNDQiLCJhdXRoX3RpbWUiOjE3MjA5NjkwOTAsInVzZXJfaWQiOiJuYlRLZDBLZ3RwVUFGdGRwOTdaclhZM2JYUTIzIiwic3ViIjoibmJUS2QwS2d0cFVBRnRkcDk3WnJYWTNiWFEyMyIsImlhdCI6MTcyMDk2OTA5MCwiZXhwIjoxNzIwOTcyNjkwLCJlbWFpbCI6ImFiZWVsZS5zLmdhdmluQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImFiZWVsZS5zLmdhdmluQGdtYWlsLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.Wr-buBp1kv3XCnLVMtjYWmkLQoLt3hjdLtCBALIqlWhAkGddaW04I_-1Wh0U_-9_5aJjL3JvE0DYS4PVHoFosAVaPaGqsnqV63Dpet7ituu0lUFrm_M3aGx8ffXaUsD8bkP4ikryCL5QLRToELhKz6Tgm4i7Uc9XZZnxsDLR5HXlh0HpME9_5i2ROaI95YeFkF8gpmg72TvlWuy2GxLdbd38vtj30m2WRYI7rpo5nanbrZXcaSZ3n-BqHpq9NnryRYNlRidhxtxC4VtG4PcEbk1SButa4r-F_c0ZNBRgSnX1hIIhKCmZgY_NGS_DUcrt13p85UDyRi8GdKqlFbJL6w" 
-    uri = "ws://localhost:5000"
+logging.basicConfig(filename='test_log.log', level=logging.INFO)
 
-    def on_message(ws, message):
-        print("Bot:", message)
-        if message == "ACK":
-            print("Received ACK from server")
-        elif message == "connected":
-            print("Server acknowledged the connection")
-        else:
-            print("Bot:", message)
-            # Now enter the communication loop
-            threading.Thread(target=communication_loop, args=(ws,)).start()
+async def run_client():
+    TOKEN = "eyJhbGciOiJSUzI1NiIsImtpZCI6ImMxNTQwYWM3MWJiOTJhYTA2OTNjODI3MTkwYWNhYmU1YjA1NWNiZWMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vZHdlbGxvdy1hYjE0NCIsImF1ZCI6ImR3ZWxsb3ctYWIxNDQiLCJhdXRoX3RpbWUiOjE3MjEzMjA1MjQsInVzZXJfaWQiOiJuYlRLZDBLZ3RwVUFGdGRwOTdaclhZM2JYUTIzIiwic3ViIjoibmJUS2QwS2d0cFVBRnRkcDk3WnJYWTNiWFEyMyIsImlhdCI6MTcyMTMyMDUyNCwiZXhwIjoxNzIxMzI0MTI0LCJlbWFpbCI6ImFiZWVsZS5zLmdhdmluQGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbImFiZWVsZS5zLmdhdmluQGdtYWlsLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.L_2p5zEqAAfvg1k0EC3-iKLNZWRK1j_kb6oaJcopyABpIkB4NvPE9uVbS0uYeHKfuJ6BZG-qmuUm7KSNXwcJAIzYOhC6jdFb-QJwJX05Rjix5BaoGmNgEvQeDewRGn8-tSx5RLAuAD_sKZeTfpMrufP1rw6TpGFHOhO-nj-wUvDjnWsFls2kjeRXkKHmZYpfWHK1Lm-o2gLciM9lhkd8c1MrsCL2b-wumYCRLn44k76EvXQCtb6XwxiSEHhQlkCWzFl8dVEylJw4ykbfpkTOSL_xmC3ewZBZWwhoP_-K1QUrYBA02qpVxnOMCQR3c_GpDVpsZ5PKaOKWxWMvX1C5KA"
+    HOST = 'wss://chat.dwellow.ca'
 
-    def on_open(ws):
-        print("Connected to server")
+    uri = HOST
+    headers = {
+        "Authorization": f"Bearer {TOKEN}"
+    }
 
-    def communication_loop(ws):
-        while True:
-            user_input = input("You: ")
-            if user_input.lower() == 'exit':
-                break
-            ws.send(user_input)
+    async with websockets.connect(uri, extra_headers=headers, ssl=True) as websocket:
+        try:
+            message = await websocket.recv()
+            if message == "ACK":
+                message = await websocket.recv()
+                if message == 'connected':
+                    print("Server acknowledged the connection")
+                else:
+                    print("Server did not acknowledge the connection")
+                    return
+            else:
+                print("Connection failed")
+                return
 
-    ws = websocket.WebSocketApp(uri,
-                                header=[f"Authorization: Bearer {TOKEN}"],
-                                on_open=on_open,
-                                on_message=on_message)
+            message = await websocket.recv()
+            print(f"Bot: {message}")
 
-    ws.run_forever()
+            # Step 4: Communication loop
+            while True:
+                user_input = input("You: ")
+                if user_input.lower() == 'exit':
+                    break
+                await websocket.send(user_input)
+                response = await websocket.recv()
+                print(f"Bot: {response}")
+        except Exception as e:
+            print(f"An error occurred during the session: {e}")
 
 if __name__ == "__main__":
-    run_client()
+    asyncio.run(run_client())
