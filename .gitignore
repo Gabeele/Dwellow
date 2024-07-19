@@ -107,3 +107,4 @@ frontend/mobile/.flutter-plugins-dependencies
 frontend/mobile/.packages
 frontend/mobile/build/
 frontend/mobile/pubspec.lock
+backend/database/*.bak
