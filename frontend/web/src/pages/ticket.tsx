@@ -21,6 +21,9 @@ interface Ticket {
   status: string;
   time_created: string;
   time_updated: string;
+  queue: number;
+  time_resolved: string;
+  property_id: number;
 }
 
 function Ticket() {

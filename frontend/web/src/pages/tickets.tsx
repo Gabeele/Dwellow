@@ -63,6 +63,9 @@ interface Ticket {
   status: string;
   time_created: string;
   time_updated: string;
+  queue: number;
+  time_resolved: string;
+  property_id: number;
 }
 
 export const fetchTickets = async () => {
@@ -85,6 +88,9 @@ export const fetchTickets = async () => {
           status: ticket.status,
           time_created: ticket.time_created,
           time_updated: ticket.time_updated,
+          queue: ticket.queue,
+          time_resolved: ticket.time_resolved,
+          property_id: ticket.property_id
         }));
         localStorage.setItem("tickets", JSON.stringify(formattedTickets));
         console.log("fetched tickets");
@@ -195,7 +201,7 @@ function Tickets() {
       const response = await API.post(
         `/ticket`,
         { unit_id: selectedUnit, user_id: userId, description: newTicketTitle, length: newTicketLength, priority: newTicketPriority, 
-          issue_area: newTicketIssueArea, photo_url: newTicketPhotoURL, special_instructions: newTicketDesc }
+          issue_area: newTicketIssueArea, photo_url: newTicketPhotoURL, special_instructions: newTicketDesc, queue: 0, property_id: selectedPropertyId }
       );
       console.log("Ticket created successfully:", response);
       fetchTickets();
@@ -221,7 +227,7 @@ function Tickets() {
   }
 
   return (
-    <div className="">
+    <>
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-dwellow-dark-200">Tickets</h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -359,7 +365,7 @@ function Tickets() {
         </Dialog>
 
         <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 pl-0 gap-4 p-4">
-          {tickets.map(({ id, description, unit_id, user_id, length, issue_area, photo_url, special_instructions, priority }) => (
+          {tickets.map(({ id, description, unit_id, user_id, length, issue_area, photo_url, special_instructions, priority, property_id }) => (
             <Link key={id} to={`/ticket/${id}`} className="w-full">
               <Card key={id}>
                 <CardHeader>
@@ -375,7 +381,7 @@ function Tickets() {
           ))}
         </div>
       </main>
-    </div>
+    </>
   );
 }
 
