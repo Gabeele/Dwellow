@@ -25,7 +25,7 @@ class Facilitator:
         try:
             while True:
                 if self.is_new_session:
-                    await self.send_message("Hello there! What can I do for you?")
+                    await self.session.socket.send('👋 Hey, I am Kiwi! How can I help you today? \n \nYou can ask me to make a 🛠️ maintenance request or ask about your 📄 contract. ')
                     self.is_new_session = False
                 else:
                     user_input = await self.receive_message()  # Awaiting the coroutine

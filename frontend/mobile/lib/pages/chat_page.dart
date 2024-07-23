@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/rendering.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
+import 'dart:async'; // Import dart:async for Timer
 
 class ChatPage extends StatefulWidget {
   @override
@@ -21,6 +22,7 @@ class _ChatPageState extends State<ChatPage>
   bool _hasError = false;
   bool _showTypingIndicator = false;
   late AnimationController _animationController;
+  Timer? _connectionTimer; // Timer for checking connection timeout
 
   @override
   void initState() {
@@ -36,6 +38,9 @@ class _ChatPageState extends State<ChatPage>
       vsync: this,
       duration: Duration(milliseconds: 1000),
     )..repeat(reverse: true);
+
+    // Start the connection timer
+    _startConnectionTimer();
   }
 
   @override
@@ -43,7 +48,19 @@ class _ChatPageState extends State<ChatPage>
     _disconnectWebSocket();
     _scrollController.dispose();
     _animationController.dispose();
+    _connectionTimer?.cancel(); // Cancel the timer if it's still running
     super.dispose();
+  }
+
+  void _startConnectionTimer() {
+    _connectionTimer = Timer(Duration(minutes: 1), () {
+      if (!_isConnected && !_hasError) {
+        setState(() {
+          _hasError = true;
+          _isLoading = false;
+        });
+      }
+    });
   }
 
   void _disconnectWebSocket() {
@@ -69,12 +86,13 @@ class _ChatPageState extends State<ChatPage>
       _channel.stream.listen((message) {
         if (!_isConnected) {
           if (message == 'ACK') {
-            _channel.sink.add('connected');
+            // Handle ACK
           } else if (message == 'connected') {
             setState(() {
               _isConnected = true;
               _isLoading = false;
             });
+            _connectionTimer?.cancel(); // Cancel the timer if connected
           }
         } else {
           setState(() {
@@ -90,6 +108,7 @@ class _ChatPageState extends State<ChatPage>
           _hasError = true;
           _isLoading = false;
         });
+        _connectionTimer?.cancel(); // Cancel the timer on error
       });
     } else {
       // Handle user not signed in
@@ -140,7 +159,8 @@ class _ChatPageState extends State<ChatPage>
                   child: _hasError
                       ? Center(
                           child:
-                              Text('Connection error. Please try again later.'))
+                              Text('Connection error. Please try again later.'),
+                        )
                       : ListView.builder(
                           controller: _scrollController,
                           itemCount:
@@ -165,12 +185,33 @@ class _ChatPageState extends State<ChatPage>
                             controller: _controller,
                             decoration: InputDecoration(
                               hintText: 'Type your message...',
+                              filled: true,
+                              fillColor: Colors.white,
                               contentPadding:
                                   EdgeInsets.symmetric(horizontal: 10),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Colors.grey,
+                                ),
                               ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Colors.black,
+                                ),
+                              ),
+                              labelStyle: TextStyle(color: Colors.black),
+                              hintStyle: TextStyle(color: Colors.black54),
                             ),
+                            cursorColor: Colors.black,
+                            style: TextStyle(color: Colors.black),
                             enabled: !_isLoading,
                           ),
                         ),
@@ -201,8 +242,23 @@ class _ChatPageState extends State<ChatPage>
             if (_isLoading)
               Center(
                 child: Container(
-                  color: Colors.white.withOpacity(0.8),
-                  child: CircularProgressIndicator(),
+                  color: Colors.white,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment
+                        .center, // Center the children vertically
+                    mainAxisSize:
+                        MainAxisSize.min, // Minimize the column's size
+                    children: [
+                      CircularProgressIndicator(
+                        color: Colors.black,
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Connecting to chat server...',
+                        style: TextStyle(color: Colors.black),
+                      ),
+                    ],
+                  ),
                 ),
               ),
           ],

@@ -25,11 +25,9 @@ class _MyTextFieldState extends State<MyTextField> {
   @override
   void initState() {
     super.initState();
-    _fillColor = Color(0xFF737782); // Custom gray color
+    _fillColor = Colors.grey[200]!; // Lighter gray color for the fill
     _focusNode.addListener(() {
-      setState(() {
-        _fillColor = _focusNode.hasFocus ? Colors.black : Color(0xFF737782);
-      });
+      setState(() {});
     });
   }
 
@@ -41,7 +39,7 @@ class _MyTextFieldState extends State<MyTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final Color textColor = Colors.white; // White text color
+    final Color textColor = Colors.black; // Text color
 
     return TextFormField(
       controller: widget.controller,
@@ -49,23 +47,25 @@ class _MyTextFieldState extends State<MyTextField> {
       focusNode: _focusNode,
       decoration: InputDecoration(
         filled: true,
-        fillColor: _fillColor, // Dynamic background color
+        fillColor: _fillColor, // Use dynamic fill color
         labelText: widget.hintText,
-        labelStyle: TextStyle(color: Colors.white.withOpacity(0.8)),
+        labelStyle: TextStyle(color: Colors.black.withOpacity(0.8)),
         floatingLabelBehavior: FloatingLabelBehavior.auto,
-        hintStyle: TextStyle(color: Colors.white.withOpacity(0.8)),
+        hintStyle: TextStyle(
+            color: Colors.black.withOpacity(0.5)), // Lighter hint text
         contentPadding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(5),
-          borderSide: BorderSide(color: Colors.white),
+          borderSide: BorderSide(color: Colors.black), // Border color
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(5),
-          borderSide: BorderSide(color: Colors.white),
+          borderSide: BorderSide(color: Colors.black), // Border color
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(5),
-          borderSide: BorderSide(color: Colors.white),
+          borderSide:
+              BorderSide(color: Colors.blue), // Border color when focused
         ),
       ),
       obscureText: widget.obscureText,

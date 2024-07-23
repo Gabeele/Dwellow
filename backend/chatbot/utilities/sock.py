@@ -1,3 +1,4 @@
+import asyncio
 import websockets
 
 class Sock:
@@ -17,16 +18,18 @@ class Sock:
             print(f"An error occurred while sending data: {e}")
             await self.close()
 
-    def receive(self):
+
+    async def receive(self):
         try:
             print("Waiting to receive data...")
-            data = self.sock.recv()
+            data = await self.sock.recv()
             print(f"Received data: {data}")
             return data
         except Exception as e:
             print(f"An error occurred while receiving data: {e}")
-            self.close()
+            await self.close()  # Ensure close is also awaited if it's async
             return None
+
 
     async def close(self):
         try:
