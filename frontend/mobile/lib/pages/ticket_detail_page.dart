@@ -136,13 +136,11 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
   }
 
   String formatDate(DateTime date) {
-    return DateFormat('MMMM d, y').format(date);
+    return DateFormat('yyyy-MM-dd').format(date);
   }
 
   @override
   Widget build(BuildContext context) {
-    String reporter = 'Added by you';
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Details'),
@@ -154,92 +152,143 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
             Expanded(
               child: isLoading
                   ? Center(child: CircularProgressIndicator())
-                  : Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  widget.ticket.issueArea.toCapitalized(),
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
+                  : SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    widget.ticket.issueArea.toCapitalized(),
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              SizedBox(width: 10),
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: widget.ticket.priority == 'High'
-                                      ? Colors.red.withOpacity(0.1)
-                                      : widget.ticket.priority == 'Medium'
-                                          ? Colors.orange.withOpacity(0.1)
-                                          : Colors.green.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  widget.ticket.priority,
+                                SizedBox(width: 10),
+                                Text(
+                                  '#${widget.ticket.ticketId}',
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    color: widget.ticket.priority == 'High'
-                                        ? Colors.red
-                                        : widget.ticket.priority == 'Medium'
-                                            ? Colors.orange
-                                            : Colors.green,
+                                    color: Colors.black54,
                                   ),
                                 ),
-                              ),
-                              SizedBox(width: 10),
-                              Text(
-                                '#${widget.ticket.ticketId}',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black54,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            '$reporter on ${formatDate(widget.ticket.date)}',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.black54,
+                              ],
                             ),
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            widget.ticket.description,
-                            style: TextStyle(fontSize: 16),
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            'Comments',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          SizedBox(height: 8),
-                          Expanded(
-                            child: ListView.builder(
+                            SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: widget.ticket.priority == 'High'
+                                        ? Colors.red.withOpacity(0.1)
+                                        : widget.ticket.priority == 'Medium'
+                                            ? Colors.orange.withOpacity(0.1)
+                                            : Colors.green.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    widget.ticket.priority,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: widget.ticket.priority == 'High'
+                                          ? Colors.red
+                                          : widget.ticket.priority == 'Medium'
+                                              ? Colors.orange
+                                              : Colors.green,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 10),
+                                Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: widget.ticket.status == 'active'
+                                        ? Colors.blue.withOpacity(0.1)
+                                        : Colors.grey.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    widget.ticket.status,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: widget.ticket.status == 'active'
+                                          ? Colors.blue
+                                          : Colors.grey,
+                                    ),
+                                  ),
+                                ),
+                                if (widget.ticket.status != 'closed')
+                                  SizedBox(width: 10),
+                                if (widget.ticket.status != 'closed')
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.purple.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      'Queue: ${widget.ticket.queue}',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.purple,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Reported on ${formatDate(widget.ticket.date)}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black54,
+                              ),
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              widget.ticket.description,
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'Comments',
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(height: 8),
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
                               itemCount: comments.length,
                               itemBuilder: (context, index) {
                                 final comment = comments[index];
                                 return ListTile(
                                   title: Text(comment.description),
                                   subtitle: Text(
-                                      'User ID: ${comment.userId}\nPosted: ${comment.postedDate}'),
+                                    '${formatDate(comment.postedDate)}',
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                    ),
+                                  ),
                                 );
                               },
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
             ),
@@ -254,8 +303,21 @@ class _TicketDetailPageState extends State<TicketDetailPage> {
                         controller: _commentController,
                         decoration: InputDecoration(
                           labelText: 'Write a comment...',
+                          filled: true,
+                          fillColor: Colors.white,
                           border: OutlineInputBorder(),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.black),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey),
+                          ),
+                          labelStyle: TextStyle(color: Colors.black),
+                          hintStyle: TextStyle(color: Colors.black54),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 10),
                         ),
+                        cursorColor: Colors.black,
+                        style: TextStyle(color: Colors.black),
                       ),
                     ),
                   ),

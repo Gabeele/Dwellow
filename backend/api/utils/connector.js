@@ -846,6 +846,25 @@ async function getTicketsStatus(status) { // gets tickets where it matches the s
     }
 }
 
+async function updateQueue(ticket_id, new_queue)
+{
+    try {
+        await sql.connect(config);
+        const request = new sql.Request();
+        request.input('ticket_id', sql.Int, ticket_id);
+        request.input('new_queue', sql.Int, new_queue);
+
+        const result = await request.execute('UpdateTicketQueue');
+        logger.info('Ticket updated successfully:', result);
+        return result;
+    } catch (error) {
+        logger.error(`Error: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
 module.exports = {
     getUserId,
     deleteInviteCode,
@@ -885,4 +904,5 @@ module.exports = {
     getInviteCodes,
     getUsersByTeam,
     getPropertyByAddress,
+    updateQueue
 };

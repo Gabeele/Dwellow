@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const logger = require('../utils/logger');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const { generateCode, sendCodeByEmail } = require('../utils/helper');
 const { getProperties,
     createProperty,
@@ -661,7 +664,7 @@ router.post('/associate/', async (req, res) => {
  *       500:
  *         description: Server error
  */
-
+ 
 router.delete('/:propertyId/units/:unitId/invite/:code', isAdmin, async (req, res) => {
     try {
         const { propertyId, unitId, code } = req.params;
@@ -678,6 +681,63 @@ router.delete('/:propertyId/units/:unitId/invite/:code', isAdmin, async (req, re
         res.status(500).send('Error deleting invite code');
     }
 });
+
+// Set up storage engine
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, path.join(__dirname, 'uploads'));
+    },
+    filename: (req, file, cb) => {
+        // Generate a unique filename with timestamp
+        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 }, 
+    fileFilter: (req, file, cb) => {
+        const filetypes = /pdf/;
+        const mimetype = filetypes.test(file.mimetype);
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+        if (mimetype && extname) {
+            return cb(null, true);
+        } else {
+            cb('Error: Only PDFs are allowed!');
+        }
+    }
+}).single("contract"); 
+
+router.post('/contract', function (req, res) {
+    upload(req, res, function (err) {
+        //console.log(req);
+        if (err) {
+            console.error('Upload Error:', err);
+            return res.status(400).send(err);
+        }
+
+        try {
+            console.log('File:', req.file);
+            if (!req.file) {
+                console.error('No file uploaded');
+                return res.status(400).send('No file uploaded');
+            }
+
+            console.log('here');
+            const associationResult = true; // Replace with actual association logic
+
+            if (associationResult) {
+                res.send('Unit associated with user successfully');
+            } else {
+                res.status(400).send('Failed to associate unit with user or invalid code');
+            }
+        } catch (error) {
+            console.error('Error associating unit with user:', error);
+            res.status(500).send('Error associating unit with user');
+        }
+    });
+});
+
 
 
 module.exports = router;

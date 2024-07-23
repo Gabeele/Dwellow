@@ -1,9 +1,13 @@
 import unittest
-from unittest.mock import patch, MagicMock
-from client_local import run_client
+from unittest.mock import patch, AsyncMock
+import asyncio
+from client_global import run_client
 
 class TestFacilitate(unittest.TestCase):
     
+    def setUp(self):
+        self.loop = asyncio.get_event_loop()
+
     @patch('builtins.input', side_effect=[
         'The heater in the hallway isnt working',  # Initial input to trigger maintenance request
         'It is not an emergency',  # Response to "Is it an emergency (Call 911 if it is)?"
@@ -18,23 +22,38 @@ class TestFacilitate(unittest.TestCase):
         'No additional details',  # Response to "Any additional details to add?"
         'thank you'
     ])
-    def test_facilitate_standard_request(self, mock_input):
-        run_client('127.0.0.1', 65432)
+    @patch('client_global.websockets.connect', new_callable=AsyncMock)
+    def test_facilitate_standard_request(self, mock_connect, mock_input):
+        mock_websocket = AsyncMock()
+        mock_connect.return_value = mock_websocket
+        mock_websocket.recv.side_effect = ['ACK', 'connected', 'Acknowledged']
+
+        self.loop.run_until_complete(run_client(mock_websocket))
 
     @patch('builtins.input', side_effect=[
         'The heater in the hallway isnt working',  # Initial input to trigger maintenance request
         'Yes',  # Response to "Is it an emergency (Call 911 if it is)?"
         'thank you'
     ])
-    def test_facilitate_emergency_request(self, mock_input):
-        run_client('127.0.0.1', 65432)
+    @patch('client_global.websockets.connect', new_callable=AsyncMock)
+    def test_facilitate_emergency_request(self, mock_connect, mock_input):
+        mock_websocket = AsyncMock()
+        mock_connect.return_value = mock_websocket
+        mock_websocket.recv.side_effect = ['ACK', 'connected', 'Emergency services alerted']
+
+        self.loop.run_until_complete(run_client(mock_websocket))
     
     @patch('builtins.input', side_effect=[
         'Where is my parking spot?',  # Initial input for a non-maintenance request
         'thank you'
     ])
-    def test_facilitate_parking_request(self, mock_input):
-        run_client('127.0.0.1', 65432)
+    @patch('client_global.websockets.connect', new_callable=AsyncMock)
+    def test_facilitate_parking_request(self, mock_connect, mock_input):
+        mock_websocket = AsyncMock()
+        mock_connect.return_value = mock_websocket
+        mock_websocket.recv.side_effect = ['ACK', 'connected', 'Parking spot details sent']
+
+        self.loop.run_until_complete(run_client(mock_websocket))
     
     @patch('builtins.input', side_effect=[
         'There is a water leak in the kitchen',  # Initial input to trigger maintenance request
@@ -50,8 +69,13 @@ class TestFacilitate(unittest.TestCase):
         'No additional details',  # Response to "Any additional details to add?"
         'thank you'
     ])
-    def test_facilitate_water_leak_request(self, mock_input):
-        run_client('127.0.0.1', 65432)
+    @patch('client_global.websockets.connect', new_callable=AsyncMock)
+    def test_facilitate_water_leak_request(self, mock_connect, mock_input):
+        mock_websocket = AsyncMock()
+        mock_connect.return_value = mock_websocket
+        mock_websocket.recv.side_effect = ['ACK', 'connected', 'Acknowledged']
+
+        self.loop.run_until_complete(run_client(mock_websocket))
 
     @patch('builtins.input', side_effect=[
         'The lights in the living room are flickering',  # Initial input to trigger maintenance request
@@ -67,15 +91,25 @@ class TestFacilitate(unittest.TestCase):
         'No additional details',  # Response to "Any additional details to add?"
         'thank you'
     ])
-    def test_facilitate_lights_flickering_request(self, mock_input):
-        run_client('127.0.0.1', 65432)
+    @patch('client_global.websockets.connect', new_callable=AsyncMock)
+    def test_facilitate_lights_flickering_request(self, mock_connect, mock_input):
+        mock_websocket = AsyncMock()
+        mock_connect.return_value = mock_websocket
+        mock_websocket.recv.side_effect = ['ACK', 'connected', 'Acknowledged']
+
+        self.loop.run_until_complete(run_client(mock_websocket))
 
     @patch('builtins.input', side_effect=[
         'I need help with my account',  # Initial input to trigger a non-maintenance request
         'thank you'
     ])
-    def test_facilitate_account_request(self, mock_input):
-        run_client('127.0.0.1', 65432)
+    @patch('client_global.websockets.connect', new_callable=AsyncMock)
+    def test_facilitate_account_request(self, mock_connect, mock_input):
+        mock_websocket = AsyncMock()
+        mock_connect.return_value = mock_websocket
+        mock_websocket.recv.side_effect = ['ACK', 'connected', 'Account assistance provided']
+
+        self.loop.run_until_complete(run_client(mock_websocket))
 
     @patch('builtins.input', side_effect=[
         'My faucet is leaking',  # Initial input to trigger maintenance request
@@ -84,8 +118,13 @@ class TestFacilitate(unittest.TestCase):
         'Invalid input',  # Invalid response to "How long has the issue been happening for?"
         'thank you'
     ])
-    def test_facilitate_invalid_input(self, mock_input):
-        run_client('127.0.0.1', 65432)
+    @patch('client_global.websockets.connect', new_callable=AsyncMock)
+    def test_facilitate_invalid_input(self, mock_connect, mock_input):
+        mock_websocket = AsyncMock()
+        mock_connect.return_value = mock_websocket
+        mock_websocket.recv.side_effect = ['ACK', 'connected', 'Invalid input']
+
+        self.loop.run_until_complete(run_client(mock_websocket))
 
     @patch('builtins.input', side_effect=[
         'The heater in the hallway isnt working',  # Initial input to trigger maintenance request
@@ -93,10 +132,10 @@ class TestFacilitate(unittest.TestCase):
         'The heater is broken. Making some noise but Im not sure what is going on',  # Response to "What is the issue in detail?"
         '3 days'  # Early disconnect after some initial inputs
     ])
-    @patch('client.socket.socket.connect', side_effect=ConnectionResetError)
+    @patch('client_global.websockets.connect', side_effect=ConnectionResetError)
     def test_facilitate_early_disconnect(self, mock_input, mock_connect):
         with self.assertRaises(ConnectionResetError):
-            run_client('127.0.0.1', 65432)
+            self.loop.run_until_complete(run_client())
 
     @patch('builtins.input', side_effect=[
         'The heater in the hallway isnt working',  # Initial input to trigger maintenance request
@@ -104,14 +143,14 @@ class TestFacilitate(unittest.TestCase):
         'The heater is broken. Making some noise but Im not sure what is going on',  # Response to "What is the issue in detail?"
         '3 days'  # Early disconnect after some initial inputs
     ])
-    @patch('client.socket.socket.connect', side_effect=ConnectionResetError)
+    @patch('client_global.websockets.connect', side_effect=ConnectionResetError)
     def test_facilitate_reconnect_after_disconnect(self, mock_input, mock_connect):
         try:
-            run_client('127.0.0.1', 65432)
+            self.loop.run_until_complete(run_client())
         except ConnectionResetError:
             mock_connect.reset_mock()
             mock_connect.side_effect = None
-            run_client('127.0.0.1', 65432)
+            self.loop.run_until_complete(run_client())
 
 if __name__ == '__main__':
     unittest.main()
