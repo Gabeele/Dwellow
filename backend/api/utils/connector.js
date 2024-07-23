@@ -533,10 +533,11 @@ async function deleteUnit(userId, unitId) {
     }
 }
 
-async function createTicket(unitId, userId, description, length, priority, issue, photo, special) {
+async function createTicket(property_id, unitId, userId, description, length, priority, issue, photo, special) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
+        request.input('property_id', sql.Int, property_id);
         request.input('unit_id', sql.Int, unitId);
         request.input('user_id', sql.Int, userId);
         request.input('description', sql.NVarChar(sql.MAX), description);
@@ -813,6 +814,7 @@ async function createComment(ticketId, userId, description) {
     }
 }
 
+
 async function getOneComment(id) { // gets tickets where it matches the user id
     try {
         await sql.connect(config);
@@ -883,6 +885,27 @@ async function updateQueue(ticket_id, new_queue)
     }
 }
 
+async function getPropertyScore(address) {
+    try {
+        await sql.connect(config);
+        const request = new sql.Request();
+        request.input('address', sql.NVarChar(sql.MAX), address);
+        
+        const result = await request.execute('GetPropertyScore');
+        
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        //console.log(result);
+        return result;
+    } catch (error) {
+        logger.error(`Error getting score ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
 module.exports = {
     getUserId,
     deleteInviteCode,
@@ -923,5 +946,6 @@ module.exports = {
     getUsersByTeam,
     getPropertyByAddress,
     updateQueue,
-    getAnnouncementByPropertyAdmin
+    getAnnouncementByPropertyAdmin,
+    getPropertyScore
 };
