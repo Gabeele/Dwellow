@@ -18,7 +18,8 @@ const { getProperties,
     createCode,
     deleteInviteCode, 
     getUser,
-    getPropertyByAddress} = require('../utils/connector');
+    getPropertyByAddress,
+    getPropertyScore} = require('../utils/connector');
 
 /**
  * @swagger
@@ -738,6 +739,19 @@ router.post('/contract', function (req, res) {
     });
 });
 
+router.get('/score/', async (req, res) => {
+try {
+    const address = req.body.address;
+    const score = await getPropertyScore(address);
+
+    console.log(score.recordset);
+
+    logger.info(`Fetched property score`);
+    res.json(score.recordset);
+} catch (error) {
+    res.status(500).send('Error fetching property score');
+}
+});
 
 
 module.exports = router;
