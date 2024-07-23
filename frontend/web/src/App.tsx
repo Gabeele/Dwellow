@@ -30,7 +30,7 @@ const protectedRoutes = [
   { path: "/properties", component: Properties },
   { path: "/property/:id", component: Property },
   { path: "/tickets", component: Tickets },
-  { path: "/tickets/:id", component: Ticket },
+  { path: "/ticket/:id", component: Ticket },
   { path: "/contracts", component: Contracts },
   { path: "/manage", component: Manage },
   { path: "/invitations", component: Invitations },

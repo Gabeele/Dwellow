@@ -360,7 +360,7 @@ function Tickets() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 pl-0 gap-4 p-4">
           {tickets.map(({ id, description, unit_id, user_id, length, issue_area, photo_url, special_instructions, priority }) => (
-            <Link key={id} to={`/tickets/${id}`} className="w-full">
+            <Link key={id} to={`/ticket/${id}`} className="w-full">
               <Card key={id}>
                 <CardHeader>
                   <CardTitle>{description}</CardTitle>

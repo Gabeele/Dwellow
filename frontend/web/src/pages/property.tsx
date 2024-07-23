@@ -36,6 +36,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import Loading from "@/components/Loading";
 
 interface Property {
@@ -80,6 +81,7 @@ function Property() {
     const cachedUnits = localStorage.getItem(`units-${id}`);
 
     console.log(cachedUnits)
+    fetchAnnouncements();
 
     if (cachedProperty && cachedUnits) {
       setProperty(JSON.parse(cachedProperty));
@@ -124,6 +126,18 @@ function Property() {
     }
     setLoading(false);
   };
+
+  const fetchAnnouncements = async () => {
+    try {
+      const response = await API.get(`/announcements/property/${id}`);
+      if (response.data) {
+        const jsonData = await response.data;
+        console.log("Announcement data:", jsonData);
+      }
+    } catch (error) {
+      console.error("Failed to fetch announcement data:", error);
+    }
+  }
 
   const handleSaveUnit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -242,6 +256,13 @@ function Property() {
           </Alert>
           : null 
         }
+      </div>
+      <div className="my-4">
+        <h1 className="text-xl font-bold text-dwellow-dark-200">Announcements</h1>
+        <ScrollArea>
+
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </div>
       <div className="my-5 space-x-5">
         <Dialog open={isUnitDialogOpen} onOpenChange={setIsUnitDialogOpen}>

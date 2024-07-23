@@ -1,7 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const logger = require('../utils/logger');
-const { getUserAnnouncements, createAnnouncement, deleteAnnouncement, getAnnouncementById, getAnnouncementByProperty } = require('../utils/connector');
+const { getUserAnnouncements, 
+    createAnnouncement, 
+    deleteAnnouncement, 
+    getAnnouncementById, 
+    getAnnouncementByProperty,
+    getAnnouncementByPropertyAdmin } = require('../utils/connector');
 
 /**
  * @swagger
@@ -166,6 +171,17 @@ router.get('/', async (req, res) => {
     } catch (error) {
         logger.error(`Error fetching the announcement: ${error}`);
         res.status(404).send('Error fetching the announcement');
+    }
+});
+
+router.get('/property/:property_id', async (req, res) => {
+    try {
+        logger.info(`Fetching announcements for property with id ${req.params.property_id}`);
+        const announcement = await getAnnouncementByPropertyAdmin(req.params.property_id);
+        res.status(200).json(announcement.recordset);
+    } catch (error) {
+        logger.error(`Error fetching announcements: ${error}`);
+        res.status(404).send('Error fetching announcements');
     }
 });
 

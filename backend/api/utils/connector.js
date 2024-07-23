@@ -292,6 +292,24 @@ async function getAnnouncementByProperty(userId) {
     }
 }
 
+async function getAnnouncementByPropertyAdmin(propertyId) {
+    try {
+        await sql.connect(config);
+        const query = `SELECT * from announcements WHERE property_id = '${propertyId}'`;
+        const result = await sql.query(query);
+        console.log(result);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result;
+    } catch (error) {
+        logger.error(`Error fetching announcements with property_id ${propertyId}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
 async function getProperties(team_id) {
     try {
         await sql.connect(config);
@@ -904,5 +922,6 @@ module.exports = {
     getInviteCodes,
     getUsersByTeam,
     getPropertyByAddress,
-    updateQueue
+    updateQueue,
+    getAnnouncementByPropertyAdmin
 };

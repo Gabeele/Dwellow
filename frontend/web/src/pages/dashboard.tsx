@@ -127,7 +127,7 @@ function Home() {
         <div className="mt-9">
           <h1 className="text-xl font-bold text-dwellow-dark-200">Properties</h1>
           <div className="flex flex-col bg-dwellow-white-0 mt-4 p-4 rounded-lg">
-            <div className="inline-flex space-x-4">
+            <div className="grid grid-cols-5 gap-4 justify-center items-center">
               {properties.slice(0,5).map((property) => (
                 <Link key={property.id} to={`/property/${property.id}`} className="max-w-xs">
                   <DefaultCard
@@ -151,7 +151,7 @@ function Home() {
           <div className="flex flex-col bg-dwellow-white-0 mt-4 p-4 rounded-lg">
             <div className="grid grid-cols-2 gap-4 justify-center items-center">
               {tickets.slice(0,6).map((ticket) => (
-                <Link key={ticket.id} to={`/tickets/${ticket.id}`} className="w-full">
+                <Link key={ticket.id} to={`/ticket/${ticket.id}`} className="w-full">
                   <DefaultTicket
                     id={ticket.id}
                     description={ticket.description}

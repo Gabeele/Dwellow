@@ -1,6 +1,6 @@
 const express = require('express');
 const logger = require('../utils/logger');
-const { getTickets, getOneTicket, updateTicket, createTicket, deleteTicket, getOneComment, createComment, getComments, getTicketsStatus, updateQueue } = require('../utils/connector.js');
+const { getUser, getTickets, getOneTicket, updateTicket, createTicket, deleteTicket, getTicketsForTeam, getOneComment, createComment, getComments, getTicketsStatus, updateQueue } = require('../utils/connector.js');
 const router = express.Router();
 
 // Middleware to verify that the rest of the routes are only accessible to admins
