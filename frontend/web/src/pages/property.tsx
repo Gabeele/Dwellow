@@ -38,6 +38,8 @@ import {
 } from "@/components/ui/alert"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import Loading from "@/components/Loading";
+import { Textarea } from "@/components/ui/textarea";
+import CharacterCount from "@/components/CharacterCount";
 
 interface Property {
   id: number;
@@ -68,6 +70,7 @@ interface Announcement{
 function Property() {
   const [isUnitDialogOpen, setIsUnitDialogOpen] = useState(false);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const [isAnnouncementDialogOpen, setIsAnnouncementDialogOpen] = useState(false);
 
   const { id } = useParams<{ id: string }>();
   const [property, setProperty] = useState<Property | null>(null);
@@ -79,10 +82,12 @@ function Property() {
     description: "",
   });
   const [editingUnitId, setEditingUnitId] = useState<number | null>(null);
+  const [newAnnouncementTitle, setNewAnnouncementTitle] = useState("");
+  const [newAnnouncementDesc, setNewAnnouncementDesc] = useState("");
   const [alertTitle, setAlertTitle] = useState("Default");
   const [alertDescription, setAlertDescription] = useState("Description");
   const [showAlert, setShowAlert] = useState(false); // use for later
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [announcements, setAnnouncements] = useState<Announcement[] | null>([]);
   const [loading, setLoading] = useState(true);
 
   // local caching
@@ -90,8 +95,6 @@ function Property() {
     const cachedProperty = localStorage.getItem(`property-${id}`);
     const cachedUnits = localStorage.getItem(`units-${id}`);
     const cachedAnnouncements = localStorage.getItem(`announcements-${property?.id}`);
-
-    console.log(cachedUnits)
 
     if (cachedProperty && cachedUnits && cachedAnnouncements) {
       setProperty(JSON.parse(cachedProperty));
@@ -116,7 +119,11 @@ function Property() {
       setEmail("");
       setSelectedUnit("");
     }
-  }, [isUnitDialogOpen, isInviteDialogOpen]);
+    if(!isAnnouncementDialogOpen) {
+      setNewAnnouncementTitle("");
+      setNewAnnouncementDesc("");
+    }
+  }, [isUnitDialogOpen, isInviteDialogOpen, isAnnouncementDialogOpen]);
 
   const fetchData = async (id: any) => {
     try {
@@ -146,7 +153,7 @@ function Property() {
         const jsonData = await response.data;
         if (jsonData.success && Array.isArray(jsonData.data)) {
           const formattedAnnouncements = jsonData.data.map((announcements: any) => ({
-            id: announcements.id,
+            id: announcements.announcement_id,
             user_id: announcements.user_id,
             announcement_date: announcements.announcement_date,
             title: announcements.title,
@@ -155,12 +162,17 @@ function Property() {
           }));
           console.log("Announcement data:", jsonData.data);
           setAnnouncements(formattedAnnouncements);
-
-        localStorage.setItem(`announcements-${property?.id}`, JSON.stringify(formattedAnnouncements));
+          localStorage.setItem(`announcements-${property?.id}`, JSON.stringify(formattedAnnouncements));
         return formattedAnnouncements;
-        }}
+        }
+        else if(jsonData.data === null) {
+          setAnnouncements(null);
+          localStorage.setItem(`announcements-${property?.id}`, JSON.stringify(null));
+        }
+      }
       } catch (error) {
       console.error("Failed to fetch announcement data:", error);
+      return [];
     }
     return [];
   }
@@ -260,6 +272,29 @@ function Property() {
     }
   };
 
+  const handleSaveAnnouncement = async () => {
+    if (!newAnnouncementTitle || !newAnnouncementDesc) {
+      alert("Please provide a title and description.");
+      return;
+    }
+    try {
+      const response = await API.post(
+        `/announcements`,
+        { title: newAnnouncementTitle, 
+          text: newAnnouncementDesc, 
+          property_id: id }
+      );
+      console.log(`Announcement for property ${property?.id} created successfully:`, response);
+      setIsAnnouncementDialogOpen(false);
+
+      fetchAnnouncements();
+    } catch (error) {
+      console.error("Failed to create announcement:", error);
+      alert("Error creating announcement. Please try again later.");
+      return;
+    }
+  }
+
   if (loading) {
     return <Loading />;
   }
@@ -285,24 +320,71 @@ function Property() {
       </div>
       <div className="my-4">
         <h1 className="text-xl font-bold text-dwellow-dark-200">Announcements</h1>
-        <Button className="my-5">
+        <Dialog open={isAnnouncementDialogOpen} onOpenChange={setIsAnnouncementDialogOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={() => setIsAnnouncementDialogOpen(true)} className="my-5">
               <PlusIcon />
-              Add Announcement
-            </Button>
-        <div className="flex flex-col bg-dwellow-white-0 p-4 rounded-lg">
+                Add Announcement
+              </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Announcement</DialogTitle>
+              <DialogDescription>
+                Make an announcement for {property?.title}
+              </DialogDescription>
+            </DialogHeader>
+            <div>
+              <p className="text-sm font-semibold mb-1">Title</p>
+              <Input
+                id="announcementTitle"
+                type="text"
+                placeholder="Enter title"
+                maxLength={50}
+                value={newAnnouncementTitle}
+                onChange={(e) => setNewAnnouncementTitle(e.target.value)}
+              />
+              <div className="relative bottom-2">
+                <CharacterCount currentCount={newAnnouncementTitle.length} maxCount={50} />
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-semibold mb-1">Unit Description</p>
+              <Textarea
+                className="resize-none"
+                id="announcementDesc"
+                placeholder="Enter description"
+                maxLength={250}
+                rows={6}
+                value={newAnnouncementDesc}
+                onChange={(e) => setNewAnnouncementDesc(e.target.value)}
+              />
+              <div className="relative bottom-2">
+                <CharacterCount currentCount={newAnnouncementDesc.length} maxCount={250} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={handleSaveAnnouncement}>Save</Button>
+              <DialogClose asChild onClick={() => setIsAnnouncementDialogOpen(false)}>
+                <Button variant="secondary">Close</Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+          </Dialog>
+        <div className="flex flex-col bg-dwellow-white-0 px-4 rounded-lg">
           <ScrollArea>
             {announcements !== null ? (
               <div>
-                {announcements.map(({ id, title, announcement_date, text, property_id,  }) => (
+                {announcements.slice(0, 5).map(({ id, title, announcement_date, text, property_id }) => (
                   <div key={id} className="my-2 p-2 border-b">
                     <h2 className="text-lg font-semibold">{title}</h2>
-                    <p className="text-sm text-gray-600">{new Date(announcement_date).toLocaleString()}</p>
+                    <p className="text-sm text-dwellow-dark-100">{new Date(announcement_date).toLocaleString()}</p>
                     <p>{text}</p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p>No announcements</p>
+              <p className="py-10 pl-4">No announcements available</p>
             )}
             <ScrollBar orientation="horizontal" />
           </ScrollArea>

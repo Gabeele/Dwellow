@@ -87,10 +87,10 @@ router.post('/', async (req, res) => {
             return res.status(403).send('Unauthorized');
         }
         logger.info('Creating announcement');
-        const {user_id, title, text, property_id} = req.body;
-        console.log(req.body);
-        await createAnnouncement(user_id, title, text, property_id);
-        res.send('Announcement created successfully');
+        const {title, text, property_id} = req.body;
+        console.log(req.user_id);
+        await createAnnouncement(req.user_id, title, text, property_id);
+        res.status(200).send('Announcement created successfully');
     } catch (error) {
         logger.error(`Error creating announcement: ${error}`);
         res.status(404).send('Error creating announcement');
@@ -180,7 +180,6 @@ router.get('/property/:property_id', async (req, res) => {
         const announcements = await getAnnouncementByPropertyAdmin(req.params.property_id);
         res.status(200).json({
             success: true,
-            count: announcements.length,
             data: announcements
         });
     } catch (error) {
