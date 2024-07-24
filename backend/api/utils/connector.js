@@ -117,7 +117,7 @@ async function getUsersByTeam(id) {
         if (result.recordset.length === 0) {
             return null;
         }
-        return result;
+        return result.recordset;
     } catch (error) {
         logger.error(`Error fetching user with user_id ${id}: ${error}`);
         throw error;
