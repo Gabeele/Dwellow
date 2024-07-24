@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, ArrowLeftIcon, Pencil1Icon } from "@radix-ui/react-icons";
+import { PlusIcon, ArrowLeftIcon, Pencil1Icon, GearIcon } from "@radix-ui/react-icons";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -35,9 +35,18 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import Loading from "@/components/Loading";
 import { Textarea } from "@/components/ui/textarea";
 import CharacterCount from "@/components/CharacterCount";
+import { fetchProperties } from "./properties";
 
 interface Property {
   id: number;
@@ -69,6 +78,7 @@ function Property() {
   const [isUnitDialogOpen, setIsUnitDialogOpen] = useState(false);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [isAnnouncementDialogOpen, setIsAnnouncementDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -185,7 +195,10 @@ function Property() {
       setNewAnnouncementTitle("");
       setNewAnnouncementDesc("");
     }
-  }, [isUnitDialogOpen, isInviteDialogOpen, isAnnouncementDialogOpen]);
+    if(!isDeleteDialogOpen) {
+      document.body.style.pointerEvents = 'auto';
+    }
+  }, [isUnitDialogOpen, isInviteDialogOpen, isAnnouncementDialogOpen, isDeleteDialogOpen]);
 
   const handleSaveUnit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -315,6 +328,28 @@ function Property() {
     }
   };
 
+  const handleDialogClose = () => {
+    setIsDeleteDialogOpen(false);
+    // Reset pointer-events after a delay to ensure dialog close animation is complete
+    setTimeout(() => {
+      document.body.style.pointerEvents = 'auto';
+    }, 300);
+  };
+
+  const handleDeleteProperty = async () => {
+    try {
+      const response = await API.delete(`/properties/${property?.id}`);
+      console.log('Property successfully deleted');
+      handleDialogClose();
+      setLoadingProperty(true)
+      await fetchProperties();
+      navigate(`/properties`);
+    } catch (error) {
+      console.error("Failed to delete property:", error);
+    }
+    setIsDeleteDialogOpen(false);
+  };
+
   useEffect(() => {
     if (!loadingUnits && !loadingAnnouncements) {
       setLoadingProperty(false);
@@ -333,7 +368,7 @@ function Property() {
       <ArrowLeftIcon/>
     </Button>
     <div className="container mx-auto px-4 py-8">
-      <div className="flex items-center">
+      <div className="flex items-center justify-between">
         {property && (
           <div>
             <p className="font-bold text-xl">{property.title}</p>
@@ -348,6 +383,39 @@ function Property() {
           </Alert>
           : null 
         }
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="inline-flex focus-visible:ring-0" variant="ghost">
+              <GearIcon width={28} height={28}/>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem>
+              Edit Property
+            </DropdownMenuItem>
+            <DropdownMenuItem  onClick={() => setIsDeleteDialogOpen(true)} className="focus:bg-dwellow-destructive-200 focus:text-dwellow-white-0">
+              Delete Property
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Property</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this property? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={handleDeleteProperty} variant="destructive">Yes, Delete</Button>
+            <DialogClose asChild>
+              <Button variant="secondary" onClick={handleDialogClose}>Cancel</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       </div>
       <div className="my-4">
         <h1 className="text-xl font-bold text-dwellow-dark-200">Announcements</h1>

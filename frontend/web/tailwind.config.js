@@ -35,6 +35,10 @@ module.exports = {
           100:'#737782',
           200:'#1C1C22',
         },
+        'dwellow-destructive': {
+          100:'#EF3E3E',
+          200:'#C80000'
+        },
         fontFamily: {
           inter: ["Inter", "sans-serif"]
         },

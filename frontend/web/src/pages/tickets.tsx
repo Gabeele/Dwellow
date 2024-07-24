@@ -29,6 +29,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import API from "@/utils/Api";
 import CharacterCount from "@/components/CharacterCount";
 import Loading from "@/components/Loading";
@@ -90,7 +91,7 @@ export const fetchTickets = async () => {
           time_updated: ticket.time_updated,
           queue: ticket.queue,
           time_resolved: ticket.time_resolved,
-          property_id: ticket.property_id
+          property_id: ticket.property_id || `0000`
         }));
         localStorage.setItem("tickets", JSON.stringify(formattedTickets));
         console.log("fetched tickets");
@@ -221,6 +222,13 @@ function Tickets() {
       setNewTicketLength("");
     }
   }, [dialogOpen]);
+
+  function truncateText(text:string, maxLength:number) {
+    if (text.length <= maxLength) {
+      return text;
+    }
+    return text.substring(0, maxLength) + ' [...]';
+  }
 
   if (loading) {
     return <Loading />;
@@ -364,18 +372,24 @@ function Tickets() {
           </DialogContent>
         </Dialog>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 pl-0 gap-4 p-4">
-          {tickets.map(({ id, description, unit_id, user_id, length, issue_area, photo_url, special_instructions, priority, property_id }) => (
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 pl-0 gap-4 p-4">
+          {tickets.map(({ id, description, unit_id, user_id, length, issue_area, photo_url, special_instructions, 
+            priority, status, time_created, time_updated, queue, time_resolved, property_id }) => (
             <Link key={id} to={`/ticket/${id}`} className="w-full">
-              <Card key={id}>
-                <CardHeader>
-                  <CardTitle>{description}</CardTitle>
-                  <CardDescription>{special_instructions}</CardDescription>
+              <Card className="relative h-[230px]" key={id}>
+                <CardDescription className="absolute left-3 top-3">{issue_area}</CardDescription>
+                <Badge className="absolute top-3 right-3">{status}</Badge>
+                <CardHeader className="mt-6">
+                  <CardTitle>{truncateText(description, 25)}</CardTitle>
+                  <CardDescription>{new Date(time_created).toLocaleString()}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="mt-4">{issue_area} Units</p>
+                  <p className="mb-2 -mt-4">{truncateText(special_instructions, 25)}</p>
                 </CardContent>
-                <CardFooter>{unit_id}</CardFooter>
+                <div className="absolute bottom-8 w-full border-t-2">
+                  <CardDescription className="absolute left-3 mt-1">{property_id}</CardDescription>
+                  <CardDescription className="absolute right-3 mt-1">Unit {unit_id}</CardDescription>
+                </div>
               </Card>
             </Link>
           ))}
