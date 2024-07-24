@@ -515,11 +515,10 @@ async function deleteUnit(userId, unitId) {
     }
 }
 
-async function createTicket(property_id, unitId, userId, description, length, priority, issue, photo, special) {
+async function createTicket(unitId, userId, description, length, priority, issue, photo, special) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
-        request.input('property_id', sql.Int, property_id);
         request.input('unit_id', sql.Int, unitId);
         request.input('user_id', sql.Int, userId);
         request.input('description', sql.NVarChar(sql.MAX), description);
