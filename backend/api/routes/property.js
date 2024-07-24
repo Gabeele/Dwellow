@@ -67,7 +67,7 @@ const isAdmin = (req, res, next) => {
 router.get('/', isAdmin, async (req, res) => {
     try {
         const user = await getUser(req.user_id);
-        console.log (user.team_id);
+        //console.log (user.team_id);
         const properties = await getProperties(user.recordset[0].team_id);
 
         logger.info('Fetched all properties');

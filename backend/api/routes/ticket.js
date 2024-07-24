@@ -66,10 +66,12 @@ router.get('/', async (req, res) => {
 
     try {
         const user = await getUser(req.user_id);
-        const team_id = user.recordset[0].team_id;
 
-        if(isAdmin)
+        //console.log(req.role);
+
+        if(req.role === 'admin')
         {
+            const team_id = user.recordset[0].team_id;
             const ticket = await getTicketsForTeam(team_id);
 
             if (!ticket) {
