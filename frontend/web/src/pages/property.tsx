@@ -56,6 +56,15 @@ interface Unit {
   phone_number: string;
 }
 
+interface Announcement{
+  id: number;
+  user_id: number;
+  announcement_date: string;
+  title: string;
+  text: string;
+  property_id: number;
+}
+
 function Property() {
   const [isUnitDialogOpen, setIsUnitDialogOpen] = useState(false);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
@@ -73,22 +82,25 @@ function Property() {
   const [alertTitle, setAlertTitle] = useState("Default");
   const [alertDescription, setAlertDescription] = useState("Description");
   const [showAlert, setShowAlert] = useState(false); // use for later
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
 
   // local caching
   useEffect(() => {
     const cachedProperty = localStorage.getItem(`property-${id}`);
     const cachedUnits = localStorage.getItem(`units-${id}`);
+    const cachedAnnouncements = localStorage.getItem(`announcements-${property?.id}`);
 
     console.log(cachedUnits)
-    fetchAnnouncements();
 
-    if (cachedProperty && cachedUnits) {
+    if (cachedProperty && cachedUnits && cachedAnnouncements) {
       setProperty(JSON.parse(cachedProperty));
       setUnits(JSON.parse(cachedUnits));
+      setAnnouncements(JSON.parse(cachedAnnouncements));
       setLoading(false);
     } else {
       fetchData(id);
+      fetchAnnouncements();
     }
   }, [id]);
 
@@ -130,13 +142,27 @@ function Property() {
   const fetchAnnouncements = async () => {
     try {
       const response = await API.get(`/announcements/property/${id}`);
-      if (response.data) {
+      if (response.status === 200) {
         const jsonData = await response.data;
-        console.log("Announcement data:", jsonData);
-      }
-    } catch (error) {
+        if (jsonData.success && Array.isArray(jsonData.data)) {
+          const formattedAnnouncements = jsonData.data.map((announcements: any) => ({
+            id: announcements.id,
+            user_id: announcements.user_id,
+            announcement_date: announcements.announcement_date,
+            title: announcements.title,
+            text: announcements.text,
+            property_id: announcements.property_id
+          }));
+          console.log("Announcement data:", jsonData.data);
+          setAnnouncements(formattedAnnouncements);
+
+        localStorage.setItem(`announcements-${property?.id}`, JSON.stringify(formattedAnnouncements));
+        return formattedAnnouncements;
+        }}
+      } catch (error) {
       console.error("Failed to fetch announcement data:", error);
     }
+    return [];
   }
 
   const handleSaveUnit = async (e: React.FormEvent) => {
@@ -259,11 +285,30 @@ function Property() {
       </div>
       <div className="my-4">
         <h1 className="text-xl font-bold text-dwellow-dark-200">Announcements</h1>
-        <ScrollArea>
-
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+        <Button className="my-5">
+              <PlusIcon />
+              Add Announcement
+            </Button>
+        <div className="flex flex-col bg-dwellow-white-0 p-4 rounded-lg">
+          <ScrollArea>
+            {announcements !== null ? (
+              <div>
+                {announcements.map(({ id, title, announcement_date, text, property_id,  }) => (
+                  <div key={id} className="my-2 p-2 border-b">
+                    <h2 className="text-lg font-semibold">{title}</h2>
+                    <p className="text-sm text-gray-600">{new Date(announcement_date).toLocaleString()}</p>
+                    <p>{text}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p>No announcements</p>
+            )}
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+        </div>
       </div>
+      <h1 className="text-xl font-bold text-dwellow-dark-200">Units</h1>
       <div className="my-5 space-x-5">
         <Dialog open={isUnitDialogOpen} onOpenChange={setIsUnitDialogOpen}>
           <DialogTrigger asChild>

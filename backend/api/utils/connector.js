@@ -301,7 +301,7 @@ async function getAnnouncementByPropertyAdmin(propertyId) {
         if (result.recordset.length === 0) {
             return null;
         }
-        return result;
+        return result.recordset;
     } catch (error) {
         logger.error(`Error fetching announcements with property_id ${propertyId}: ${error}`);
         throw error;

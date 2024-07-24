@@ -177,8 +177,12 @@ router.get('/', async (req, res) => {
 router.get('/property/:property_id', async (req, res) => {
     try {
         logger.info(`Fetching announcements for property with id ${req.params.property_id}`);
-        const announcement = await getAnnouncementByPropertyAdmin(req.params.property_id);
-        res.status(200).json(announcement.recordset);
+        const announcements = await getAnnouncementByPropertyAdmin(req.params.property_id);
+        res.status(200).json({
+            success: true,
+            count: announcements.length,
+            data: announcements
+        });
     } catch (error) {
         logger.error(`Error fetching announcements: ${error}`);
         res.status(404).send('Error fetching announcements');
