@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { PlusIcon } from "@radix-ui/react-icons";
 import {
   Dialog,
@@ -30,6 +31,7 @@ import {
 } from "@/components/ui/card";
 import API from "@/utils/Api";
 import CharacterCount from "@/components/CharacterCount";
+import Loading from "@/components/Loading";
 
 interface Property {
   id: number;
@@ -61,7 +63,51 @@ interface Ticket {
   status: string;
   time_created: string;
   time_updated: string;
+  queue: number;
+  time_resolved: string;
+  property_id: number;
 }
+
+export const fetchTickets = async () => {
+  try {
+    const response = await API.get("/ticket");
+    if (response.status === 200) {
+      const jsonData = await response.data;
+      console.log(jsonData)
+      if (jsonData.success && Array.isArray(jsonData.data)) {
+        const formattedTickets = jsonData.data.map((ticket: any) => ({
+          id: ticket.ticket_id,
+          description: ticket.description,
+          unit_id: ticket.unit_id,
+          user_id: ticket.user_id,
+          length: ticket.length,
+          issue_area: ticket.issue_area,
+          photo_url: ticket.photo_url,
+          special_instructions: ticket.special_instructions,
+          priority: ticket.priority,
+          status: ticket.status,
+          time_created: ticket.time_created,
+          time_updated: ticket.time_updated,
+          queue: ticket.queue,
+          time_resolved: ticket.time_resolved,
+          property_id: ticket.property_id
+        }));
+        localStorage.setItem("tickets", JSON.stringify(formattedTickets));
+        console.log("fetched tickets");
+        return formattedTickets;
+      } else {
+        console.error("No tickets found or invalid data structure");
+        return [];
+      }
+    } else {
+      console.error("Failed to fetch tickets, status code:", response.status);
+      return [];
+    }
+  } catch (error: any) {
+    console.error("Failed to fetch tickets:", error.message);
+    return [];
+  }
+};
 
 function Tickets() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -80,13 +126,18 @@ function Tickets() {
   const [newTicketPhotoURL, setNewTicketPhotoURL] = useState("");
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const cachedTickets = localStorage.getItem("tickets");
     if (cachedTickets) {
       setTickets(JSON.parse(cachedTickets));
+      setLoading(false);
     } else {
-      fetchTickets();
+      fetchTickets().then((data) => {
+        setTickets(data);
+        setLoading(false);
+      })
     }
   }, []);
 
@@ -127,44 +178,6 @@ function Tickets() {
     }
   };
 
-  const fetchTickets = async () => {
-    try {
-      const response = await API.get("/ticket");
-      if (response.status === 200) {
-        const jsonData = await response.data;
-        console.log(jsonData)
-        if (jsonData.success && Array.isArray(jsonData.data)) {
-          const formattedTickets = jsonData.data.map((ticket: any) => ({
-            id: ticket.ticket_id,
-            description: ticket.description,
-            unit_id: ticket.unit_id,
-            user_id: ticket.user_id,
-            length: ticket.length,
-            issue_area: ticket.issue_area,
-            photo_url: ticket.photo_url,
-            special_instructions: ticket.special_instructions,
-            priority: ticket.priority,
-            time_created: ticket.time_created,
-            time_updated: ticket.time_updated,
-          }));
-          setTickets(formattedTickets);
-          localStorage.setItem("tickets", JSON.stringify(formattedTickets));
-          console.log("fetched tickets");
-          return formattedTickets;
-        } else {
-          console.error("No tickets found or invalid data structure");
-          return [];
-        }
-      } else {
-        console.error("Failed to fetch tickets, status code:", response.status);
-        return [];
-      }
-    } catch (error: any) {
-      console.error("Failed to fetch tickets:", error.message);
-      return [];
-    }
-  };
-
   const handlePropertyChange = (propertyId: string) => {
     const property = properties.find(p => p.id.toString() === propertyId);
     if (property) {
@@ -188,10 +201,10 @@ function Tickets() {
       const response = await API.post(
         `/ticket`,
         { unit_id: selectedUnit, user_id: userId, description: newTicketTitle, length: newTicketLength, priority: newTicketPriority, 
-          issue_area: newTicketIssueArea, photo_url: newTicketPhotoURL, special_instructions: newTicketDesc }
+          issue_area: newTicketIssueArea, photo_url: newTicketPhotoURL, special_instructions: newTicketDesc, queue: 0, property_id: selectedPropertyId }
       );
       console.log("Ticket created successfully:", response);
-
+      fetchTickets();
     } catch (error) {
       console.error("Failed to create ticket:", error);
     }
@@ -209,8 +222,12 @@ function Tickets() {
     }
   }, [dialogOpen]);
 
+  if (loading) {
+    return <Loading />;
+  }
+
   return (
-    <div className="">
+    <>
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-dwellow-dark-200">Tickets</h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -347,23 +364,24 @@ function Tickets() {
           </DialogContent>
         </Dialog>
 
-
         <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 pl-0 gap-4 p-4">
-          {tickets.map(({ id, description, unit_id, user_id, length, issue_area, photo_url, special_instructions, priority }) => (
-            <Card key={id}>
-              <CardHeader>
-                <CardTitle>{description}</CardTitle>
-                <CardDescription>{special_instructions}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="mt-4">{issue_area} Units</p>
-              </CardContent>
-              <CardFooter>{unit_id}</CardFooter>
-            </Card>
+          {tickets.map(({ id, description, unit_id, user_id, length, issue_area, photo_url, special_instructions, priority, property_id }) => (
+            <Link key={id} to={`/ticket/${id}`} className="w-full">
+              <Card key={id}>
+                <CardHeader>
+                  <CardTitle>{description}</CardTitle>
+                  <CardDescription>{special_instructions}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="mt-4">{issue_area} Units</p>
+                </CardContent>
+                <CardFooter>{unit_id}</CardFooter>
+              </Card>
+            </Link>
           ))}
         </div>
       </main>
-    </div>
+    </>
   );
 }
 

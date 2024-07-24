@@ -1,7 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const logger = require('../utils/logger');
-const { getUserAnnouncements, createAnnouncement, deleteAnnouncement, getAnnouncementById, getAnnouncementByProperty } = require('../utils/connector');
+const { getUserAnnouncements, 
+    createAnnouncement, 
+    deleteAnnouncement, 
+    getAnnouncementById, 
+    getAnnouncementByProperty,
+    getAnnouncementByPropertyAdmin } = require('../utils/connector');
 
 /**
  * @swagger
@@ -82,10 +87,10 @@ router.post('/', async (req, res) => {
             return res.status(403).send('Unauthorized');
         }
         logger.info('Creating announcement');
-        const {user_id, title, text, property_id} = req.body;
-        console.log(req.body);
-        await createAnnouncement(user_id, title, text, property_id);
-        res.send('Announcement created successfully');
+        const {title, text, property_id} = req.body;
+        console.log(req.user_id);
+        await createAnnouncement(req.user_id, title, text, property_id);
+        res.status(200).send('Announcement created successfully');
     } catch (error) {
         logger.error(`Error creating announcement: ${error}`);
         res.status(404).send('Error creating announcement');
@@ -166,6 +171,20 @@ router.get('/', async (req, res) => {
     } catch (error) {
         logger.error(`Error fetching the announcement: ${error}`);
         res.status(404).send('Error fetching the announcement');
+    }
+});
+
+router.get('/property/:property_id', async (req, res) => {
+    try {
+        logger.info(`Fetching announcements for property with id ${req.params.property_id}`);
+        const announcements = await getAnnouncementByPropertyAdmin(req.params.property_id);
+        res.status(200).json({
+            success: true,
+            data: announcements
+        });
+    } catch (error) {
+        logger.error(`Error fetching announcements: ${error}`);
+        res.status(404).send('Error fetching announcements');
     }
 });
 

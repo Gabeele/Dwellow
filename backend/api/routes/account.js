@@ -71,7 +71,9 @@ router.get('/', async (req, res) => {
 router.get('/:team_id', async (req, res) => {
     //console.log("hello")
         try {
-            const { team_id } = req.params;
+            const id = await getUser(req.user_id);
+            const team_id = id.recordset[0].team_id;
+
             console.log (team_id);
 
             const user = await getUsersByTeam(team_id);
@@ -82,7 +84,10 @@ router.get('/:team_id', async (req, res) => {
             }
     
             logger.info(`Get Account: User ${team_id} information accessed.`); // TODO: We should return the user infromation here as json or somehting. IDK what is returned back. (Also update the comments)
-            res.status(200).json(user.recordset);
+            res.status(200).json({
+                success: true,
+                data: user
+            });
         } catch (error) {
             logger.error(`Error getting account information for users of team ${team_id}: ${error.message}`);
             res.status(500).json({ error: 'Internal Server Error' });
