@@ -167,7 +167,7 @@ function Home() {
                   id={ticket.id}
                   description={ticket.description}
                   special_instructions={ticket.special_instructions}
-                  time_created={ticket.time_created}
+                  time_created={new Date(ticket.time_created).toLocaleString()}
                   status={ticket.status}
                 />
               </Link>
