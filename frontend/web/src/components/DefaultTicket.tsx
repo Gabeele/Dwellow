@@ -33,7 +33,7 @@ function DefaultTicket({ id, description, special_instructions, time_created, st
       <CardHeader className="p-4 pt-2">
         <div className="inline-flex w-full">
           <CardTitle className="text-lg">{truncatedDescription}</CardTitle>
-          <Badge variant="default" className="ml-auto mr-0">{status}</Badge>
+          <Badge variant="active" className="ml-auto mr-0">{status}</Badge>
         </div>
         <CardDescription>{time_created}</CardDescription>
         <CardDescription>{special_instructions}</CardDescription>
