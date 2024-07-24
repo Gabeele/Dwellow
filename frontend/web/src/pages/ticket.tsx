@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 import API from "../utils/Api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PlusIcon, Pencil1Icon, GearIcon } from "@radix-ui/react-icons";
+import { PlusIcon, Pencil1Icon, GearIcon, ArrowLeftIcon } from "@radix-ui/react-icons";
 import { Input } from "@/components/ui/input";
 import Loading from "@/components/Loading";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,6 +36,7 @@ interface Comment {
 }
 
 function Ticket() {
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const [ticket, setTickets] = useState<Ticket[]>([]);
   const [comments, setComments] = useState<Comment[] | null>([]);
@@ -121,6 +122,9 @@ function Ticket() {
 
   return (
     <>
+    <Button className="absolute top-12" onClick={() => navigate(`/tickets`)}>
+      <ArrowLeftIcon/>
+    </Button>
     <div className="container mx-auto px-4 py-8">
       {ticket.map(({ ticket_id, description, unit_id, user_id, length, issue_area, photo_url, special_instructions, priority, 
       status, time_created, time_updated, queue, time_resolved, property_id }) => (

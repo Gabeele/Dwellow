@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 import API from "../utils/Api";
 import {
@@ -11,8 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { PlusIcon } from "@radix-ui/react-icons";
-import { Pencil1Icon } from "@radix-ui/react-icons";
+import { PlusIcon, ArrowLeftIcon, Pencil1Icon } from "@radix-ui/react-icons";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -72,6 +71,7 @@ function Property() {
   const [isAnnouncementDialogOpen, setIsAnnouncementDialogOpen] = useState(false);
 
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [property, setProperty] = useState<Property| null>(null);
   const [units, setUnits] = useState<Unit[]>([]);
   const [email, setEmail] = useState("");
@@ -329,6 +329,9 @@ function Property() {
 
   return (
     <>
+    <Button className="absolute top-12" onClick={() => navigate(`/properties`)}>
+      <ArrowLeftIcon/>
+    </Button>
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center">
         {property && (
