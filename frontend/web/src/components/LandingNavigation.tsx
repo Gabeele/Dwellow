@@ -57,21 +57,18 @@ function LandingNavigation() {
       <div className="absolute right-0 flex space-x-4 mr-4">
         <Link
           to="/login"
-          className="mr-2 mt-1 text-dwellow-white-200 font-medium"
-        >
+          className="mr-2 mt-1 text-dwellow-white-200 font-medium">
           Log in
         </Link>
         <Link
           to="/reviews"
-          className="mr-2 mt-1 text-dwellow-white-200 font-medium"
-        >
+          className="mr-2 mt-1 text-dwellow-white-200 font-medium">
           Apartment Reviews
         </Link>
         <Link to="/register/admin">
           <Button
             variant="outline"
-            className="text-dwellow-white-200 bg-dwellow-dark-200 hover:bg-dwellow-dark-100 hover:text-dwellow-white-200 font-medium"
-          >
+            className="text-dwellow-white-200 bg-dwellow-dark-200 hover:bg-dwellow-dark-100 hover:text-dwellow-white-200 font-medium">
             Get Started
           </Button>
         </Link>
@@ -82,8 +79,7 @@ function LandingNavigation() {
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
-  React.ComponentPropsWithoutRef<"a">
->(({ className, title, children, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<"a">>(({ className, title, children, ...props }, ref) => {
   return (
     <li>
       <NavigationMenuLink asChild>

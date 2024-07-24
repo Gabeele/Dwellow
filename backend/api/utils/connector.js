@@ -117,7 +117,7 @@ async function getUsersByTeam(id) {
         if (result.recordset.length === 0) {
             return null;
         }
-        return result;
+        return result.recordset;
     } catch (error) {
         logger.error(`Error fetching user with user_id ${id}: ${error}`);
         throw error;
@@ -284,6 +284,24 @@ async function getAnnouncementByProperty(userId) {
             return null;
         }
         return result;
+    } catch (error) {
+        logger.error(`Error fetching announcements with property_id ${propertyId}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+async function getAnnouncementByPropertyAdmin(propertyId) {
+    try {
+        await sql.connect(config);
+        const query = `SELECT * from announcements WHERE property_id = '${propertyId}'`;
+        const result = await sql.query(query);
+        console.log(result);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result.recordset;
     } catch (error) {
         logger.error(`Error fetching announcements with property_id ${propertyId}: ${error}`);
         throw error;
@@ -626,6 +644,40 @@ async function getOneTicket(id) { // gets tickets where it matches the user id
     }
 }
 
+async function getTicketsForTeam(team_id) { // gets tickets where it matches team id
+    try {
+        await sql.connect(config);
+        const query = `
+        SELECT DISTINCT t.*
+        FROM [Dwellow].[dbo].[tickets] t
+        JOIN (
+            SELECT * FROM [Dwellow].[dbo].[properties] p
+            JOIN (SELECT property_id, tenant_id FROM [Dwellow].[dbo].[units]) u ON p.id = u.property_id
+            JOIN (SELECT user_id FROM [Dwellow].[dbo].[users]) us ON u.tenant_id = us.user_id
+            WHERE p.team_id = ${team_id}) e ON t.user_id = e.user_id
+
+        UNION
+
+        SELECT DISTINCT t.*
+        FROM [Dwellow].[dbo].[tickets] t
+        JOIN (
+            SELECT p.*, user_id FROM [Dwellow].[dbo].[properties] p
+            JOIN (SELECT * FROM [Dwellow].[dbo].[users] r WHERE team_id = ${team_id}) us ON p.team_id = us.team_id) e ON t.user_id = e.user_id`;
+        
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result.recordset;
+    } catch (error) {
+        console.error(`Error fetching tickets for team_id ${team_id}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+
 async function associateUnitWithUser(user_id, code) {
     try {
 
@@ -888,9 +940,11 @@ module.exports = {
     getComments,
     getTicketsStatus,
     getAnnouncementByProperty,
+    getTicketsForTeam,
     getInviteCodes,
     getUsersByTeam,
     getPropertyByAddress,
     updateQueue,
+    getAnnouncementByPropertyAdmin,
     getPropertyScore
 };

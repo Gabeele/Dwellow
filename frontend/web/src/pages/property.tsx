@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 import API from "../utils/Api";
 import {
@@ -11,8 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { PlusIcon } from "@radix-ui/react-icons";
-import { Pencil1Icon } from "@radix-ui/react-icons";
+import { PlusIcon, ArrowLeftIcon, Pencil1Icon, GearIcon } from "@radix-ui/react-icons";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -36,7 +35,18 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import Loading from "@/components/Loading";
+import { Textarea } from "@/components/ui/textarea";
+import CharacterCount from "@/components/CharacterCount";
+import { fetchProperties } from "./properties";
 
 interface Property {
   id: number;
@@ -55,12 +65,24 @@ interface Unit {
   phone_number: string;
 }
 
+interface Announcement{
+  id: number;
+  user_id: number;
+  announcement_date: string;
+  title: string;
+  text: string;
+  property_id: number;
+}
+
 function Property() {
   const [isUnitDialogOpen, setIsUnitDialogOpen] = useState(false);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const [isAnnouncementDialogOpen, setIsAnnouncementDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const { id } = useParams<{ id: string }>();
-  const [property, setProperty] = useState<Property | null>(null);
+  const navigate = useNavigate();
+  const [property, setProperty] = useState<Property| null>(null);
   const [units, setUnits] = useState<Unit[]>([]);
   const [email, setEmail] = useState("");
   const [selectedUnit, setSelectedUnit] = useState("");
@@ -69,24 +91,91 @@ function Property() {
     description: "",
   });
   const [editingUnitId, setEditingUnitId] = useState<number | null>(null);
+  const [announcements, setAnnouncements] = useState<Announcement[] | null>([]);
+  const [newAnnouncementTitle, setNewAnnouncementTitle] = useState("");
+  const [newAnnouncementDesc, setNewAnnouncementDesc] = useState("");
   const [alertTitle, setAlertTitle] = useState("Default");
   const [alertDescription, setAlertDescription] = useState("Description");
   const [showAlert, setShowAlert] = useState(false); // use for later
-  const [loading, setLoading] = useState(true);
 
-  // local caching
+  const [loadingProperty, setLoadingProperty] = useState(true);
+  const [loadingUnits, setLoadingUnits] = useState(true);
+  const [loadingAnnouncements, setLoadingAnnouncements] = useState(true);
+
+   const fetchData = async (id: any) => {
+    try {
+      const response = await API.get(`/properties/${id}/units`);
+      if (response.status === 200) {
+        const jsonData = await response.data;
+        console.log("Property data:", jsonData);
+        setProperty(jsonData.property);
+        setUnits(jsonData.units || []);
+        localStorage.setItem(`property-${id}`, JSON.stringify(jsonData.property));
+        localStorage.setItem(`units-${id}`, JSON.stringify(jsonData.units || []));
+        setLoadingUnits(false);
+      } else {
+        console.error("Failed to fetch property and/or unit data, status code:", response.status);
+        if (response.status === 401) {
+          setTimeout(() => fetchData(id), 2000);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch property data:", error);
+    }
+  };
+
+  const fetchAnnouncements = async () => {
+    try {
+      const response = await API.get(`/announcements/property/${id}`);
+      if (response.status === 200) {
+        const jsonData = await response.data;
+        if (jsonData.success && Array.isArray(jsonData.data)) {
+          const formattedAnnouncements = jsonData.data.map((announcement: any) => ({
+            id: announcement.announcement_id,
+            user_id: announcement.user_id,
+            announcement_date: announcement.announcement_date,
+            title: announcement.title,
+            text: announcement.text,
+            property_id: announcement.property_id
+          }));
+          console.log("Announcement data:", jsonData.data);
+          setAnnouncements(formattedAnnouncements);
+          localStorage.setItem(`announcements-${id}`, JSON.stringify(formattedAnnouncements));
+          setLoadingAnnouncements(false);
+        } else if (jsonData.data === null) {
+          setAnnouncements(null);
+          localStorage.setItem(`announcements-${id}`, JSON.stringify(null));
+          setLoadingAnnouncements(false);
+        }
+      } else {
+        console.error("Failed to fetch announcement data, status code:", response.status);
+        if (response.status === 401) {
+          setTimeout(fetchAnnouncements, 2000);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch announcement data:", error);
+    }
+  };
+
   useEffect(() => {
     const cachedProperty = localStorage.getItem(`property-${id}`);
     const cachedUnits = localStorage.getItem(`units-${id}`);
+    const cachedAnnouncements = localStorage.getItem(`announcements-${id}`);
 
-    console.log(cachedUnits)
-
-    if (cachedProperty && cachedUnits) {
+    if (cachedProperty && cachedUnits && cachedAnnouncements) {
       setProperty(JSON.parse(cachedProperty));
       setUnits(JSON.parse(cachedUnits));
-      setLoading(false);
+      setAnnouncements(JSON.parse(cachedAnnouncements));
+      
+      setLoadingUnits(false);
+      setLoadingAnnouncements(false);
     } else {
-      fetchData(id);
+      const fetchAllData = async () => {
+        await fetchData(id);
+        await fetchAnnouncements();
+      };
+      fetchAllData();
     }
   }, [id]);
 
@@ -102,28 +191,14 @@ function Property() {
       setEmail("");
       setSelectedUnit("");
     }
-  }, [isUnitDialogOpen, isInviteDialogOpen]);
-
-  const fetchData = async (id: any) => {
-    try {
-      const response = await API.get(`/properties/${id}/units`);
-      if (response.data) {
-        const jsonData = await response.data;
-        console.log("Property data:", jsonData);
-        setProperty(jsonData.property);
-        setUnits(jsonData.units || []);
-
-        // store things in cache
-        localStorage.setItem(`property-${id}`, JSON.stringify(jsonData.property));
-        localStorage.setItem(`units-${id}`, JSON.stringify(jsonData.units || []));
-      } else {
-        console.error("No data found");
-      }
-    } catch (error) {
-      console.error("Failed to fetch property data:", error);
+    if(!isAnnouncementDialogOpen) {
+      setNewAnnouncementTitle("");
+      setNewAnnouncementDesc("");
     }
-    setLoading(false);
-  };
+    if(!isDeleteDialogOpen) {
+      document.body.style.pointerEvents = 'auto';
+    }
+  }, [isUnitDialogOpen, isInviteDialogOpen, isAnnouncementDialogOpen, isDeleteDialogOpen]);
 
   const handleSaveUnit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -220,13 +295,80 @@ function Property() {
     }
   };
 
-  if (loading) {
+  const handleSaveAnnouncement = async () => {
+    if (!newAnnouncementTitle || !newAnnouncementDesc) {
+      alert("Please provide a title and description.");
+      return;
+    }
+    try {
+      const response = await API.post(
+        `/announcements`,
+        { title: newAnnouncementTitle, 
+          text: newAnnouncementDesc, 
+          property_id: id }
+      );
+      console.log(`Announcement for property ${id} created successfully:`, response);
+      setIsAnnouncementDialogOpen(false);
+
+      fetchAnnouncements();
+    } catch (error) {
+      console.error("Failed to create announcement:", error);
+      alert("Error creating announcement. Please try again later.");
+      return;
+    }
+  }
+
+  const handleDeleteAnnouncement = async (announcementId: number) => {
+    try {
+      const response = await API.delete(`/announcements/${announcementId}`);
+      console.log(`Announcement ${announcementId} deleted successfully:`, response);
+      fetchAnnouncements();
+    } catch (error) {
+      console.error("Failed to delete announcement:", error);
+    }
+  };
+
+  const handleDialogClose = () => {
+    setIsDeleteDialogOpen(false);
+    // Reset pointer-events after a delay to ensure dialog close animation is complete
+    setTimeout(() => {
+      document.body.style.pointerEvents = 'auto';
+    }, 300);
+  };
+
+  const handleDeleteProperty = async () => {
+    try {
+      const response = await API.delete(`/properties/${property?.id}`);
+      console.log('Property successfully deleted');
+      handleDialogClose();
+      setLoadingProperty(true)
+      await fetchProperties();
+      navigate(`/properties`);
+    } catch (error) {
+      console.error("Failed to delete property:", error);
+    }
+    setIsDeleteDialogOpen(false);
+  };
+
+  useEffect(() => {
+    if (!loadingUnits && !loadingAnnouncements) {
+      setLoadingProperty(false);
+    }
+  }, [loadingUnits, loadingAnnouncements]);
+
+  const isLoading = loadingProperty || loadingUnits || loadingAnnouncements;
+
+  if (isLoading) {
     return <Loading />;
   }
 
   return (
     <>
-      <div className="flex items-center">
+    <Button className="absolute top-12" onClick={() => navigate(`/properties`)}>
+      <ArrowLeftIcon/>
+    </Button>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex items-center justify-between">
         {property && (
           <div>
             <p className="font-bold text-xl">{property.title}</p>
@@ -241,7 +383,115 @@ function Property() {
           </Alert>
           : null 
         }
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="inline-flex focus-visible:ring-0" variant="ghost">
+              <GearIcon width={28} height={28}/>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem>
+              Edit Property
+            </DropdownMenuItem>
+            <DropdownMenuItem  onClick={() => setIsDeleteDialogOpen(true)} className="focus:bg-dwellow-destructive-200 focus:text-dwellow-white-0">
+              Delete Property
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Property</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this property? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={handleDeleteProperty} variant="destructive">Yes, Delete</Button>
+            <DialogClose asChild>
+              <Button variant="secondary" onClick={handleDialogClose}>Cancel</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       </div>
+      <div className="my-4">
+        <h1 className="text-xl font-bold text-dwellow-dark-200">Announcements</h1>
+        <Dialog open={isAnnouncementDialogOpen} onOpenChange={setIsAnnouncementDialogOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={() => setIsAnnouncementDialogOpen(true)} className="my-5">
+              <PlusIcon />
+                Add Announcement
+              </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Announcement</DialogTitle>
+              <DialogDescription>
+                Make an announcement for {property?.title}
+              </DialogDescription>
+            </DialogHeader>
+            <div>
+              <p className="text-sm font-semibold mb-1">Title</p>
+              <Input
+                id="announcementTitle"
+                type="text"
+                placeholder="Enter title"
+                maxLength={50}
+                value={newAnnouncementTitle}
+                onChange={(e) => setNewAnnouncementTitle(e.target.value)}
+              />
+              <div className="relative bottom-2">
+                <CharacterCount currentCount={newAnnouncementTitle.length} maxCount={50} />
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-semibold mb-1">Unit Description</p>
+              <Textarea
+                className="resize-none"
+                id="announcementDesc"
+                placeholder="Enter description"
+                maxLength={250}
+                rows={6}
+                value={newAnnouncementDesc}
+                onChange={(e) => setNewAnnouncementDesc(e.target.value)}
+              />
+              <div className="relative bottom-2">
+                <CharacterCount currentCount={newAnnouncementDesc.length} maxCount={250} />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button onClick={handleSaveAnnouncement}>Save</Button>
+              <DialogClose asChild onClick={() => setIsAnnouncementDialogOpen(false)}>
+                <Button variant="secondary">Close</Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+          </Dialog>
+        <div className="flex flex-col bg-dwellow-white-0 px-4 rounded-lg">
+          {announcements !== null ? (
+            <div>
+              {announcements.slice(0, 5).map(({ id, title, announcement_date, text, property_id }) => (
+                <div key={id} className="my-2 p-2 border-b">
+                  <div className="relative">
+                    <h2 className="text-lg font-semibold">{title}</h2>
+                    <Button className="absolute right-0" variant={"destructive"} onClick={() => handleDeleteAnnouncement(id)}>
+                      Delete
+                    </Button>
+                  </div>
+                  <p className="text-sm text-dwellow-dark-100">{new Date(announcement_date).toLocaleString()}</p>
+                  <p>{text}</p>
+                </div>
+              ))}
+            </div>
+            ) : (
+              <p className="py-10 pl-4">No announcements available</p>
+            )}
+        </div>
+      </div>
+      <h1 className="text-xl font-bold text-dwellow-dark-200">Units</h1>
       <div className="my-5 space-x-5">
         <Dialog open={isUnitDialogOpen} onOpenChange={setIsUnitDialogOpen}>
           <DialogTrigger asChild>
@@ -388,8 +638,12 @@ function Property() {
                 <TableCell className="flex space-x-4">
                   {editingUnitId === unit.id ? (
                     <>
-                      <Button onClick={handleSaveEditedUnit}>Save</Button>
-                      <Button variant="outline" onClick={handleCancelEdit}>Cancel</Button>
+                      <Button className="mr-[7.4px]" onClick={handleSaveEditedUnit}>
+                        Save
+                      </Button>
+                      <Button variant={"outline"} onClick={handleCancelEdit}>
+                        Cancel
+                      </Button>
                     </>
                   ) : (
                     <>
@@ -412,6 +666,7 @@ function Property() {
           )}
         </TableBody>
       </Table>
+    </div>
     </>
   );
 }
