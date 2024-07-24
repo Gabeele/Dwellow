@@ -66,10 +66,12 @@ router.get('/', async (req, res) => {
 
     try {
         const user = await getUser(req.user_id);
-        const team_id = user.recordset[0].team_id;
 
-        if(isAdmin)
+        //console.log(req.role);
+
+        if(req.role === 'admin')
         {
+            const team_id = user.recordset[0].team_id;
             const ticket = await getTicketsForTeam(team_id);
 
             if (!ticket) {
@@ -267,11 +269,11 @@ router.delete('/:ticket_id', async (req, res) => {
 router.post('/', async (req, res) => {
     try {
 
-        const {property_id, unit_id, user_id, description, length, priority, issue_area, photo_url, special_instructions } = req.body;
+        const {unit_id, userId, description, length, priority, issue_area, photo_url, special_instructions } = req.body;
 
         console.log(req.body);
 
-        const newticket = await createTicket(property_id, unit_id, user_id, description, length, priority, issue_area, photo_url, special_instructions);
+        const newticket = await createTicket(unit_id, userId, description, length, priority, issue_area, photo_url, special_instructions);
         if (newticket) {
             logger.info(`User with ID: ${req.user_id} created a new ticket with ID: ${newticket.ticket_id}`);
             res.status(201).json(newticket);
