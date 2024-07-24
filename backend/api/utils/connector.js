@@ -441,6 +441,24 @@ async function getProperty(user_id, propertyId) {
     }
 }
 
+
+async function getPropertyForGuest() {
+    try {
+        await sql.connect(config);
+        const query = `Select address from properties`;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result.recordset;
+    } catch (error) {
+        logger.error(`Error fetching properties and units with user_id ${user_id}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
 async function getUnits(user_id, property_id) {
     try {
         await sql.connect(config);
@@ -946,5 +964,6 @@ module.exports = {
     getPropertyByAddress,
     updateQueue,
     getAnnouncementByPropertyAdmin,
-    getPropertyScore
+    getPropertyScore,
+    getPropertyForGuest
 };

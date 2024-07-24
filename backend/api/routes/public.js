@@ -1,6 +1,6 @@
 const express = require('express');
 const logger = require('../utils/logger');
-const { createUser, checkEmail } = require('../utils/connector.js');
+const { createUser, checkEmail, getPropertyScore, getPropertyForGuest } = require('../utils/connector.js');
 const router = express.Router();
 const { decodeToken } = require('../utils/authenticate');
 
@@ -85,5 +85,42 @@ router.post('/account', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
+router.get('/guest', async (req, res) => {
+    try {
+
+        const properties = await getPropertyForGuest();
+
+        logger.info('Fetched all properties');
+
+        res.json({
+            success: true,
+            count: properties.length,
+            data: properties
+        });
+    } catch (error) {
+        logger.error(`Error fetching properties: ${error}`);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching properties',
+            error: error.message
+        });
+    }
+});
+
+
+router.get('/score', async (req, res) => {
+    try {
+        const address = req.body.address;
+        const score = await getPropertyScore(address);
+    
+        console.log(score.recordset);
+    
+        logger.info(`Fetched property score`);
+        res.json(score.recordset);
+    } catch (error) {
+        res.status(500).send('Error fetching property score');
+    }
+    });
 
 module.exports = router;
