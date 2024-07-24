@@ -10,9 +10,11 @@ const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async () => {
+    setIsAuthenticating(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
       console.log("Login successful");
@@ -20,22 +22,24 @@ const Login: React.FC = () => {
     } catch (error: any) {
       console.error("Login error:", error.message);
       if (
-        error.message == "Firebase: Error (auth/user-not-found)." ||
-        error.message == "Firebase: Error (auth/wrong-password)."
+        error.message === "Firebase: Error (auth/user-not-found)." ||
+        error.message === "Firebase: Error (auth/wrong-password)."
       ) {
         setErrorMessage("Invalid email or password");
+      } else {
+        setErrorMessage("An error occurred during login. Please try again.");
       }
+      setIsAuthenticating(false);
     }
   };
 
   return (
     <div>
-      <LandingNavigation/>
+      <LandingNavigation />
       <div className="flex justify-center flex-col items-center h-screen bg-dwellow-white-200">
         <div className="bg-dwellow-white-100 p-8 rounded shadow px-20 pt-8">
           <h1 className="text-3xl font-bold mb-8 text-dwellow-dark-200 flex justify-center items-center">
             Log into Dwellow
-            
           </h1>
           {errorMessage && (
             <div className="mb-4 text-center text-red-500">{errorMessage}</div>
@@ -67,8 +71,9 @@ const Login: React.FC = () => {
             <Button
               className="bg-dwellow-dark-200 text-xl p-6 pt-4 pb-4"
               onClick={handleLogin}
+              disabled={isAuthenticating}
             >
-              Login
+              {isAuthenticating ? "Logging in..." : "Login"}
             </Button>
           </div>
         </div>
