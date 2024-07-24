@@ -36,7 +36,6 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert"
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import Loading from "@/components/Loading";
 import { Textarea } from "@/components/ui/textarea";
 import CharacterCount from "@/components/CharacterCount";
@@ -73,7 +72,7 @@ function Property() {
   const [isAnnouncementDialogOpen, setIsAnnouncementDialogOpen] = useState(false);
 
   const { id } = useParams<{ id: string }>();
-  const [property, setProperty] = useState<Property | null>(null);
+  const [property, setProperty] = useState<Property| null>(null);
   const [units, setUnits] = useState<Unit[]>([]);
   const [email, setEmail] = useState("");
   const [selectedUnit, setSelectedUnit] = useState("");
@@ -82,28 +81,91 @@ function Property() {
     description: "",
   });
   const [editingUnitId, setEditingUnitId] = useState<number | null>(null);
+  const [announcements, setAnnouncements] = useState<Announcement[] | null>([]);
   const [newAnnouncementTitle, setNewAnnouncementTitle] = useState("");
   const [newAnnouncementDesc, setNewAnnouncementDesc] = useState("");
   const [alertTitle, setAlertTitle] = useState("Default");
   const [alertDescription, setAlertDescription] = useState("Description");
   const [showAlert, setShowAlert] = useState(false); // use for later
-  const [announcements, setAnnouncements] = useState<Announcement[] | null>([]);
-  const [loading, setLoading] = useState(true);
 
-  // local caching
+  const [loadingProperty, setLoadingProperty] = useState(true);
+  const [loadingUnits, setLoadingUnits] = useState(true);
+  const [loadingAnnouncements, setLoadingAnnouncements] = useState(true);
+
+   const fetchData = async (id: any) => {
+    try {
+      const response = await API.get(`/properties/${id}/units`);
+      if (response.status === 200) {
+        const jsonData = await response.data;
+        console.log("Property data:", jsonData);
+        setProperty(jsonData.property);
+        setUnits(jsonData.units || []);
+        localStorage.setItem(`property-${id}`, JSON.stringify(jsonData.property));
+        localStorage.setItem(`units-${id}`, JSON.stringify(jsonData.units || []));
+        setLoadingUnits(false);
+      } else {
+        console.error("Failed to fetch property and/or unit data, status code:", response.status);
+        if (response.status === 401) {
+          setTimeout(() => fetchData(id), 2000);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch property data:", error);
+    }
+  };
+
+  const fetchAnnouncements = async () => {
+    try {
+      const response = await API.get(`/announcements/property/${id}`);
+      if (response.status === 200) {
+        const jsonData = await response.data;
+        if (jsonData.success && Array.isArray(jsonData.data)) {
+          const formattedAnnouncements = jsonData.data.map((announcement: any) => ({
+            id: announcement.announcement_id,
+            user_id: announcement.user_id,
+            announcement_date: announcement.announcement_date,
+            title: announcement.title,
+            text: announcement.text,
+            property_id: announcement.property_id
+          }));
+          console.log("Announcement data:", jsonData.data);
+          setAnnouncements(formattedAnnouncements);
+          localStorage.setItem(`announcements-${id}`, JSON.stringify(formattedAnnouncements));
+          setLoadingAnnouncements(false);
+        } else if (jsonData.data === null) {
+          setAnnouncements(null);
+          localStorage.setItem(`announcements-${id}`, JSON.stringify(null));
+          setLoadingAnnouncements(false);
+        }
+      } else {
+        console.error("Failed to fetch announcement data, status code:", response.status);
+        if (response.status === 401) {
+          setTimeout(fetchAnnouncements, 2000);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch announcement data:", error);
+    }
+  };
+
   useEffect(() => {
     const cachedProperty = localStorage.getItem(`property-${id}`);
     const cachedUnits = localStorage.getItem(`units-${id}`);
-    const cachedAnnouncements = localStorage.getItem(`announcements-${property?.id}`);
+    const cachedAnnouncements = localStorage.getItem(`announcements-${id}`);
 
     if (cachedProperty && cachedUnits && cachedAnnouncements) {
       setProperty(JSON.parse(cachedProperty));
       setUnits(JSON.parse(cachedUnits));
       setAnnouncements(JSON.parse(cachedAnnouncements));
-      setLoading(false);
+      
+      setLoadingUnits(false);
+      setLoadingAnnouncements(false);
     } else {
-      fetchData(id);
-      fetchAnnouncements();
+      const fetchAllData = async () => {
+        await fetchData(id);
+        await fetchAnnouncements();
+      };
+      fetchAllData();
     }
   }, [id]);
 
@@ -124,58 +186,6 @@ function Property() {
       setNewAnnouncementDesc("");
     }
   }, [isUnitDialogOpen, isInviteDialogOpen, isAnnouncementDialogOpen]);
-
-  const fetchData = async (id: any) => {
-    try {
-      const response = await API.get(`/properties/${id}/units`);
-      if (response.data) {
-        const jsonData = await response.data;
-        console.log("Property data:", jsonData);
-        setProperty(jsonData.property);
-        setUnits(jsonData.units || []);
-
-        // store things in cache
-        localStorage.setItem(`property-${id}`, JSON.stringify(jsonData.property));
-        localStorage.setItem(`units-${id}`, JSON.stringify(jsonData.units || []));
-      } else {
-        console.error("No data found");
-      }
-    } catch (error) {
-      console.error("Failed to fetch property data:", error);
-    }
-    setLoading(false);
-  };
-
-  const fetchAnnouncements = async () => {
-    try {
-      const response = await API.get(`/announcements/property/${id}`);
-      if (response.status === 200) {
-        const jsonData = await response.data;
-        if (jsonData.success && Array.isArray(jsonData.data)) {
-          const formattedAnnouncements = jsonData.data.map((announcements: any) => ({
-            id: announcements.announcement_id,
-            user_id: announcements.user_id,
-            announcement_date: announcements.announcement_date,
-            title: announcements.title,
-            text: announcements.text,
-            property_id: announcements.property_id
-          }));
-          console.log("Announcement data:", jsonData.data);
-          setAnnouncements(formattedAnnouncements);
-          localStorage.setItem(`announcements-${property?.id}`, JSON.stringify(formattedAnnouncements));
-        return formattedAnnouncements;
-        }
-        else if(jsonData.data === null) {
-          setAnnouncements(null);
-          localStorage.setItem(`announcements-${property?.id}`, JSON.stringify(null));
-        }
-      }
-      } catch (error) {
-      console.error("Failed to fetch announcement data:", error);
-      return [];
-    }
-    return [];
-  }
 
   const handleSaveUnit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -284,7 +294,7 @@ function Property() {
           text: newAnnouncementDesc, 
           property_id: id }
       );
-      console.log(`Announcement for property ${property?.id} created successfully:`, response);
+      console.log(`Announcement for property ${id} created successfully:`, response);
       setIsAnnouncementDialogOpen(false);
 
       fetchAnnouncements();
@@ -295,7 +305,25 @@ function Property() {
     }
   }
 
-  if (loading) {
+  const handleDeleteAnnouncement = async (announcementId: number) => {
+    try {
+      const response = await API.delete(`/announcements/${announcementId}`);
+      console.log(`Announcement ${announcementId} deleted successfully:`, response);
+      fetchAnnouncements();
+    } catch (error) {
+      console.error("Failed to delete announcement:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (!loadingUnits && !loadingAnnouncements) {
+      setLoadingProperty(false);
+    }
+  }, [loadingUnits, loadingAnnouncements]);
+
+  const isLoading = loadingProperty || loadingUnits || loadingAnnouncements;
+
+  if (isLoading) {
     return <Loading />;
   }
 
@@ -372,22 +400,24 @@ function Property() {
           </DialogContent>
           </Dialog>
         <div className="flex flex-col bg-dwellow-white-0 px-4 rounded-lg">
-          <ScrollArea>
-            {announcements !== null ? (
-              <div>
-                {announcements.slice(0, 5).map(({ id, title, announcement_date, text, property_id }) => (
-                  <div key={id} className="my-2 p-2 border-b">
+          {announcements !== null ? (
+            <div>
+              {announcements.slice(0, 5).map(({ id, title, announcement_date, text, property_id }) => (
+                <div key={id} className="my-2 p-2 border-b">
+                  <div className="relative">
                     <h2 className="text-lg font-semibold">{title}</h2>
-                    <p className="text-sm text-dwellow-dark-100">{new Date(announcement_date).toLocaleString()}</p>
-                    <p>{text}</p>
+                    <Button className="absolute right-0" variant={"destructive"} onClick={() => handleDeleteAnnouncement(id)}>
+                      Delete
+                    </Button>
                   </div>
-                ))}
-              </div>
+                  <p className="text-sm text-dwellow-dark-100">{new Date(announcement_date).toLocaleString()}</p>
+                  <p>{text}</p>
+                </div>
+              ))}
+            </div>
             ) : (
               <p className="py-10 pl-4">No announcements available</p>
             )}
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
         </div>
       </div>
       <h1 className="text-xl font-bold text-dwellow-dark-200">Units</h1>

@@ -66,8 +66,8 @@ function Home() {
         setLoadingUser(false);
       } else {
         console.error("Failed to fetch user data, status code:", response.status);
-        if (response.status !== 401) {
-          setTimeout(getUser, 2000); // Retry fetching user data if status is not 401
+        if (response.status === 401) {
+          setTimeout(getUser, 2000);
         }
       }
     } catch (error: any) {
@@ -84,12 +84,6 @@ function Home() {
       getUser();
     }
   }, []);
-
-  useEffect(() => {
-    if (user.length > 0) {
-      setName(user[0].fullName);
-    }
-  }, [user]);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -127,6 +121,7 @@ function Home() {
 
     if (user.length > 0) {
       fetchAllData();
+      setName(user[0].fullName);
     }
   }, [user]);
 
