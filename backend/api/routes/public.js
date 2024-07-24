@@ -109,9 +109,10 @@ router.get('/guest', async (req, res) => {
 });
 
 
-router.get('/score', async (req, res) => {
+router.post('/score', async (req, res) => {
     try {
-        const address = req.body.address;
+        const address = req.body.address;        
+        console.log(address);
         const score = await getPropertyScore(address);
     
         console.log(score.recordset);
