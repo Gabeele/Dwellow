@@ -102,21 +102,25 @@ function Ticket() {
     setCommentsLoading(false);
   };
 
-  const handleComment = async() => {
-    try {
-      const response = await API.post(
-        `/ticket/${id}/comments`,
-        {
-          description: newComment,
-        }
-      );
-      console.log("Comment posted successfully:", response);
-      fetchComments(id);
-      setNewComment("");
-    } catch (error) {
-      console.error("Failed to post comment:", error);
+  const handleComment = async () => {
+    if (newComment.trim() !== "") {
+      try {
+        const response = await API.post(
+          `/ticket/${id}/comments`,
+          {
+            description: newComment,
+          }
+        );
+        console.log("Comment posted successfully:", response);
+        fetchComments(id);
+        setNewComment("");
+      } catch (error) {
+        console.error("Failed to post comment:", error);
+      }
+    } else {
+      alert("Comment cannot be empty!");
     }
-  }
+  };
 
   const isLoading = ticketLoading || commentsLoading
 
