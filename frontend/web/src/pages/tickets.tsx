@@ -216,7 +216,7 @@ function Tickets() {
       const response = await API.post(
         `/ticket`,
         { unit_id: selectedUnit, user_id: userId, description: newTicketTitle, length: newTicketLength, priority: newTicketPriority, 
-          issue_area: newTicketIssueArea, photo_url: newTicketPhotoURL, special_instructions: newTicketDesc, queue: 0, property_id: selectedPropertyId }
+          issue_area: newTicketIssueArea, photo_url: newTicketPhotoURL, special_instructions: newTicketDesc, property_id: selectedPropertyId }
       );
       console.log("Ticket created successfully:", response);
       fetchTickets().then(({ allTickets, activeTickets, closedTickets }) => {
@@ -390,6 +390,11 @@ function Tickets() {
           </DialogContent>
         </Dialog>
 
+        <h1 className="text-xl font-bold text-dwellow-dark-200 mt-4">Queue</h1>
+        <div className="flex flex-col bg-dwellow-white-0 mt-4 p-4 rounded-lg">
+          
+        </div>
+
         <h1 className="text-xl font-bold text-dwellow-dark-200 mt-4">Open Tickets</h1>
         <div className="flex flex-col bg-dwellow-white-0 mt-4 p-4 rounded-lg">
           {activeTickets.length === 0 ? (
@@ -421,29 +426,36 @@ function Tickets() {
             </div>
           )}
         </div>
-
         <h1 className="text-xl font-bold text-dwellow-dark-200 mt-4">Closed Tickets</h1>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 pl-0 gap-4 p-4">
-          {closedTickets.map(({ id, description, unit_id, user_id, length, issue_area, photo_url, special_instructions, 
-            priority, status, time_created, time_updated, queue, time_resolved, property_id }) => (
-            <Link key={id} to={`/ticket/${id}`} className="w-full">
-              <Card className="relative h-[230px]" key={id}>
-                <CardDescription className="absolute left-3 top-3">{issue_area}</CardDescription>
-                <Badge className="absolute top-3 right-3">{status}</Badge>
-                <CardHeader className="mt-6">
-                  <CardTitle>{truncateText(description, 25)}</CardTitle>
-                  <CardDescription>{formatDateTime(new Date(time_created))}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="mb-2 -mt-4">{truncateText(special_instructions, 25)}</p>
-                </CardContent>
-                <div className="absolute bottom-8 w-full border-t-2">
-                  <CardDescription className="absolute left-3 mt-1">{property_id}</CardDescription>
-                  <CardDescription className="absolute right-3 mt-1">Unit {unit_id}</CardDescription>
-                </div>
-              </Card>
-            </Link>
-          ))}
+        <div className="flex flex-col bg-dwellow-white-0 mt-4 p-4 rounded-lg">
+        {closedTickets.length === 0 ? (
+            <div className="flex items-center justify-center h-[230px] text-center text-gray-500">
+              <p>No closed tickets</p>
+            </div>
+          ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 pl-0 gap-4 p-4">
+            {closedTickets.map(({ id, description, unit_id, user_id, length, issue_area, photo_url, special_instructions, 
+              priority, status, time_created, time_updated, queue, time_resolved, property_id }) => (
+              <Link key={id} to={`/ticket/${id}`} className="w-full">
+                <Card className="relative h-[230px]" key={id}>
+                  <CardDescription className="absolute left-3 top-3">{issue_area}</CardDescription>
+                  <Badge className="absolute top-3 right-3">{status}</Badge>
+                  <CardHeader className="mt-6">
+                    <CardTitle>{truncateText(description, 25)}</CardTitle>
+                    <CardDescription>{formatDateTime(new Date(time_created))}</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="mb-2 -mt-4">{truncateText(special_instructions, 25)}</p>
+                  </CardContent>
+                  <div className="absolute bottom-8 w-full border-t-2">
+                    <CardDescription className="absolute left-3 mt-1">{property_id}</CardDescription>
+                    <CardDescription className="absolute right-3 mt-1">Unit {unit_id}</CardDescription>
+                  </div>
+                </Card>
+              </Link>
+            ))}
+          </div>
+          )}
         </div>
       </main>
     </>
