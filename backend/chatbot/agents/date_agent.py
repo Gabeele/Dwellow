@@ -15,8 +15,3 @@ class DateAgent:
             return parsed_date.strftime('%Y-%m-%d %H:%M:%S')
         except Exception as e:
             return f"Error parsing date: {e}"
-
-# Example usage:
-# date_agent = DateAgent()
-# result = date_agent.parse_date("tomorrow at 3 PM")
-# print(result)

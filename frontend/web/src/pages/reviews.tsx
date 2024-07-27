@@ -10,31 +10,30 @@ const Component: React.FC = () => {
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
 
   useEffect(() => {
-    if (searchTerm.length > 0) {
-      const fetchSuggestions = async () => {
-        try {
-          const response = await API.get(`/get-property?search=${searchTerm}`);
-          const data = await response.data;
-          setSuggestions(data.properties);
-        } catch (error) {
-          console.error("Error fetching properties:", error);
-        }
-      };
-      fetchSuggestions();
-    } else {
-      setSuggestions([]);
-    }
-  }, [searchTerm]);
+    const fetchProperties = async () => {
+      try {
+        const response = await API.get("/public/guest");
+        const data = await response.data;
+        setSuggestions(data.data);
+      } catch (error) {
+        console.error("Error fetching properties:", error);
+      }
+    };
+    fetchProperties();
+  }, []);
 
   const handleSelect = async (item: any) => {
-    setSearchTerm(item.name);
+    setSearchTerm(item.address);
     setSuggestions([]);
     try {
-      const response = await API.get(`/review/${item.id}`);
+      const response = await API.get(
+        `/public/score/${encodeURIComponent(item.address)}`
+      );
       const data = await response.data;
-      setSelectedProperty(data);
+      console.log(data[0]);
+      setSelectedProperty(data[0]);
     } catch (error) {
-      console.error("Error fetching property reviews:", error);
+      console.error("Error fetching property score:", error);
     }
   };
 
@@ -66,17 +65,23 @@ const Component: React.FC = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full max-w-3xl px-6 py-4 text-lg rounded-full bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               />
-              {suggestions.length > 0 && (
+              {searchTerm.length > 0 && (
                 <div className="absolute top-full left-0 right-0 bg-white shadow-lg rounded-lg mt-2 z-10">
-                  {suggestions.map((item) => (
-                    <div
-                      key={item.id}
-                      className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
-                      onClick={() => handleSelect(item)}
-                    >
-                      {item.name}
-                    </div>
-                  ))}
+                  {suggestions
+                    .filter((item) =>
+                      item.address
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase())
+                    )
+                    .map((item, index) => (
+                      <div
+                        key={index}
+                        className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
+                        onClick={() => handleSelect(item)}
+                      >
+                        {item.address}
+                      </div>
+                    ))}
                 </div>
               )}
             </div>
@@ -101,36 +106,92 @@ const Component: React.FC = () => {
             </Card>
           </div>
         </section>
+        <section className="py-12 md:py-16 lg:py-20">
+          <div className="container mx-auto px-4 md:px-6">
+            <Card className="max-w-3xl mx-auto">
+              <CardHeader>
+                <CardTitle>How Scores Are Calculated</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-black mb-4">
+                  Our scoring system helps tenants make informed decisions by
+                  evaluating properties based on various criteria. Here's how we
+                  calculate the scores:
+                </p>
+                <ul className="list-disc list-inside space-y-2 text-black">
+                  <li>
+                    <strong>Average Response Time:</strong> This score measures
+                    the average time taken by the property administration to
+                    respond to tenant inquiries and maintenance requests. A
+                    shorter response time indicates more efficient
+                    communication.
+                  </li>
+                  <li>
+                    <strong>Amount of Open Tickets:</strong> This metric
+                    reflects the number of unresolved maintenance or service
+                    requests. Fewer open tickets suggest that the property
+                    management is proactive and efficient in addressing tenant
+                    issues.
+                  </li>
+                  <li>
+                    <strong>Average Length of Tenancy:</strong> This score
+                    represents the average duration that tenants stay at a
+                    property. Longer tenancies often indicate tenant
+                    satisfaction and good property management.
+                  </li>
+                  <li>
+                    <strong>Walk Score:</strong> This score evaluates the
+                    walkability of the property’s location, considering factors
+                    like proximity to shops, parks, and public transport.
+                  </li>
+                  <li>
+                    <strong>Communication Quality:</strong> This score assesses
+                    the clarity, helpfulness, and frequency of communication
+                    from property management. Good communication helps ensure
+                    that tenants feel heard and supported.
+                  </li>
+                  <li>
+                    <strong>Overall Grade:</strong> This is a composite score
+                    that combines all the individual metrics to give an overall
+                    rating of the property. It provides a quick summary of the
+                    property's performance across various aspects.
+                  </li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+        <section className="py-12 md:py-16 lg:py-20 bg-gray-100">
+          <div className="container mx-auto px-4 md:px-6 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-primary">
+              Join the Dwellow Network
+            </h2>
+            <p className="text-lg md:text-xl mb-8 text-gray-700">
+              Ensure your property stands out by joining the Dwellow network.
+              Get rated on criteria like response time, communication quality,
+              and tenant satisfaction. Improve your property management and
+              attract quality tenants.
+            </p>
+            <button className="px-6 py-4 text-lg rounded-full bg-primary text-white hover:bg-primary-dark transition duration-300">
+              Talk to Your Property Admin Today
+            </button>
+          </div>
+        </section>
         {selectedProperty && (
           <section className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 py-12 md:py-16 lg:py-20">
             <div className="space-y-6">
               <h1 className="text-3xl md:text-4xl font-bold">
-                {selectedProperty.name}
+                {selectedProperty.title}
               </h1>
+              <p className="text-lg text-gray-700">
+                {selectedProperty.description}
+              </p>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-muted p-4 rounded-lg">
                   <div className="text-2xl font-bold">
-                    {selectedProperty.walkScore}
+                    {selectedProperty.PropertyScore}
                   </div>
-                  <div className="text-muted-foreground">Walk Score</div>
-                </div>
-                <div className="bg-muted p-4 rounded-lg">
-                  <div className="text-2xl font-bold">
-                    {selectedProperty.responseTime}
-                  </div>
-                  <div className="text-muted-foreground">Response Time</div>
-                </div>
-                <div className="bg-muted p-4 rounded-lg">
-                  <div className="text-2xl font-bold">
-                    {selectedProperty.communication}
-                  </div>
-                  <div className="text-muted-foreground">Communication</div>
-                </div>
-                <div className="bg-muted p-4 rounded-lg">
-                  <div className="text-2xl font-bold">
-                    {selectedProperty.overallGrade}
-                  </div>
-                  <div className="text-muted-foreground">Overall Grade</div>
+                  <div className="text-muted-foreground">Score</div>
                 </div>
               </div>
             </div>
