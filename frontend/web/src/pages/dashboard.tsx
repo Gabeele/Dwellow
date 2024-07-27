@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { fetchProperties } from "./properties";
 import { fetchTickets } from "./tickets";
 import Loading from "@/components/Loading";
+import { formatDateTime } from "@/utils/FormatDateTime";
 
 interface User {
   email: string;
@@ -89,7 +90,9 @@ function Home() {
     const fetchAllData = async () => {
       const cachedProperties = localStorage.getItem("properties");
       const cachedTickets = localStorage.getItem("tickets");
+      const cachedActiveTickets = localStorage.getItem("active-tickets");
 
+      // Fetch properties
       if (cachedProperties) {
         setProperties(JSON.parse(cachedProperties));
         setLoadingProperties(false);
@@ -104,14 +107,21 @@ function Home() {
         }
       }
 
-      if (cachedTickets) {
-        setTickets(JSON.parse(cachedTickets));
+      // Fetch tickets
+      if (cachedActiveTickets) {
+        setTickets(JSON.parse(cachedActiveTickets));
+        setLoadingTickets(false);
+      } else if (cachedTickets) {
+        const allTickets = JSON.parse(cachedTickets);
+        const filteredTickets = allTickets.filter((ticket: Ticket) => ticket.status === "active");
+        setTickets(filteredTickets);
         setLoadingTickets(false);
       } else {
         try {
-          const ticketsData = await fetchTickets();
-          setTickets(ticketsData);
-          localStorage.setItem("tickets", JSON.stringify(ticketsData));
+          const { allTickets, activeTickets } = await fetchTickets();
+          localStorage.setItem("tickets", JSON.stringify(allTickets)); // store all tickets
+          localStorage.setItem("active-tickets", JSON.stringify(activeTickets)); // store active tickets
+          setTickets(activeTickets);
           setLoadingTickets(false);
         } catch (error) {
           console.error("Failed to fetch tickets:", error);
@@ -167,7 +177,7 @@ function Home() {
                   id={ticket.id}
                   description={ticket.description}
                   special_instructions={ticket.special_instructions}
-                  time_created={new Date(ticket.time_created).toLocaleString()}
+                  time_created={formatDateTime(new Date(ticket.time_created))}
                   status={ticket.status}
                 />
               </Link>

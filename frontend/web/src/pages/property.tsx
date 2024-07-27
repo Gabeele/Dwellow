@@ -47,6 +47,7 @@ import Loading from "@/components/Loading";
 import { Textarea } from "@/components/ui/textarea";
 import CharacterCount from "@/components/CharacterCount";
 import { fetchProperties } from "./properties";
+import { formatDateTime } from "@/utils/FormatDateTime";
 
 interface Property {
   id: number;
@@ -339,7 +340,7 @@ function Property() {
   const handleDeleteProperty = async () => {
     try {
       const response = await API.delete(`/properties/${property?.id}`);
-      console.log('Property successfully deleted');
+      console.log('Property successfully deleted:', response);
       handleDialogClose();
       setLoadingProperty(true)
       await fetchProperties();
@@ -481,7 +482,7 @@ function Property() {
                       Delete
                     </Button>
                   </div>
-                  <p className="text-sm text-dwellow-dark-100">{new Date(announcement_date).toLocaleString()}</p>
+                  <p className="text-sm text-dwellow-dark-100">{formatDateTime(new Date(announcement_date))}</p>
                   <p>{text}</p>
                 </div>
               ))}

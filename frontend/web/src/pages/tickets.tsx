@@ -33,6 +33,7 @@ import { Badge } from "@/components/ui/badge";
 import API from "@/utils/Api";
 import CharacterCount from "@/components/CharacterCount";
 import Loading from "@/components/Loading";
+import { formatDateTime } from '../utils/FormatDateTime';
 
 interface Property {
   id: number;
@@ -74,7 +75,6 @@ export const fetchTickets = async () => {
     const response = await API.get("/ticket");
     if (response.status === 200) {
       const jsonData = await response.data;
-      console.log(jsonData)
       if (jsonData.success && Array.isArray(jsonData.data)) {
         const formattedTickets = jsonData.data.map((ticket: any) => ({
           id: ticket.ticket_id,
@@ -94,24 +94,31 @@ export const fetchTickets = async () => {
           property_id: ticket.property_id || `0000`
         }));
         localStorage.setItem("tickets", JSON.stringify(formattedTickets));
-        console.log("fetched tickets");
-        return formattedTickets;
+        const activeTickets = formattedTickets.filter((ticket: { status: string; }) => ticket.status === "active");
+        localStorage.setItem("active-tickets", JSON.stringify(activeTickets));
+
+        const closedTickets = formattedTickets.filter((ticket: { status: string; }) => ticket.status === "closed");
+        localStorage.setItem("closed-tickets", JSON.stringify(closedTickets));
+
+        return { allTickets: formattedTickets, activeTickets, closedTickets };
       } else {
         console.error("No tickets found or invalid data structure");
-        return [];
+        return { allTickets: [], activeTickets: [], closedTickets: [] };
       }
     } else {
       console.error("Failed to fetch tickets, status code:", response.status);
-      return [];
+      return { allTickets: [], activeTickets: [], closedTickets: [] };
     }
   } catch (error: any) {
     console.error("Failed to fetch tickets:", error.message);
-    return [];
+    return { allTickets: [], activeTickets: [], closedTickets: [] };
   }
 };
 
 function Tickets() {
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [activeTickets, setActiveTickets] = useState<Ticket[]>([]);
+  const [closedTickets, setClosedTickets] = useState<Ticket[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   let [userId] = useState("");
 
@@ -131,14 +138,21 @@ function Tickets() {
 
   useEffect(() => {
     const cachedTickets = localStorage.getItem("tickets");
-    if (cachedTickets) {
+    const cachedActiveTickets = localStorage.getItem("active-tickets");
+    const cachedClosedTickets = localStorage.getItem("closed-tickets");
+
+    if (cachedTickets && cachedActiveTickets && cachedClosedTickets) {
       setTickets(JSON.parse(cachedTickets));
+      setActiveTickets(JSON.parse(cachedActiveTickets));
+      setClosedTickets(JSON.parse(cachedClosedTickets));
       setLoading(false);
     } else {
-      fetchTickets().then((data) => {
-        setTickets(data);
+      fetchTickets().then(({ allTickets, activeTickets, closedTickets }) => {
+        setTickets(allTickets);
+        setActiveTickets(activeTickets);
+        setClosedTickets(closedTickets);
         setLoading(false);
-      })
+      });
     }
   }, []);
 
@@ -189,7 +203,7 @@ function Tickets() {
   };
 
   const handleCreateTicket = async () => {
-    try{
+    try {
       const res = await API.get("/account");
       if (res.status === 200) {
         const jsonData = await res.data;
@@ -205,7 +219,11 @@ function Tickets() {
           issue_area: newTicketIssueArea, photo_url: newTicketPhotoURL, special_instructions: newTicketDesc, queue: 0, property_id: selectedPropertyId }
       );
       console.log("Ticket created successfully:", response);
-      fetchTickets();
+      fetchTickets().then(({ allTickets, activeTickets, closedTickets }) => {
+        setTickets(allTickets);
+        setActiveTickets(activeTickets);
+        setClosedTickets(closedTickets);
+      });
     } catch (error) {
       console.error("Failed to create ticket:", error);
     }
@@ -223,7 +241,7 @@ function Tickets() {
     }
   }, [dialogOpen]);
 
-  function truncateText(text:string, maxLength:number) {
+  function truncateText(text: string, maxLength: number) {
     if (text.length <= maxLength) {
       return text;
     }
@@ -372,8 +390,41 @@ function Tickets() {
           </DialogContent>
         </Dialog>
 
+        <h1 className="text-xl font-bold text-dwellow-dark-200 mt-4">Open Tickets</h1>
+        <div className="flex flex-col bg-dwellow-white-0 mt-4 p-4 rounded-lg">
+          {activeTickets.length === 0 ? (
+            <div className="flex items-center justify-center h-[230px] text-center text-gray-500">
+              <p>No active tickets</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 pl-0 gap-4 p-4">
+              {activeTickets.map(({ id, description, unit_id, user_id, length, issue_area, photo_url, special_instructions, 
+                priority, status, time_created, time_updated, queue, time_resolved, property_id }) => (
+                <Link key={id} to={`/ticket/${id}`} className="w-full">
+                  <Card className="relative h-[230px]" key={id}>
+                    <CardDescription className="absolute left-3 top-3">{issue_area}</CardDescription>
+                    <Badge className="absolute top-3 right-3">{status}</Badge>
+                    <CardHeader className="mt-6">
+                      <CardTitle>{truncateText(description, 25)}</CardTitle>
+                      <CardDescription>{formatDateTime(new Date(time_created))}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="mb-2 -mt-4">{truncateText(special_instructions, 25)}</p>
+                    </CardContent>
+                    <div className="absolute bottom-8 w-full border-t-2">
+                      <CardDescription className="absolute left-3 mt-1">{property_id}</CardDescription>
+                      <CardDescription className="absolute right-3 mt-1">Unit {unit_id}</CardDescription>
+                    </div>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <h1 className="text-xl font-bold text-dwellow-dark-200 mt-4">Closed Tickets</h1>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 pl-0 gap-4 p-4">
-          {tickets.map(({ id, description, unit_id, user_id, length, issue_area, photo_url, special_instructions, 
+          {closedTickets.map(({ id, description, unit_id, user_id, length, issue_area, photo_url, special_instructions, 
             priority, status, time_created, time_updated, queue, time_resolved, property_id }) => (
             <Link key={id} to={`/ticket/${id}`} className="w-full">
               <Card className="relative h-[230px]" key={id}>
@@ -381,7 +432,7 @@ function Tickets() {
                 <Badge className="absolute top-3 right-3">{status}</Badge>
                 <CardHeader className="mt-6">
                   <CardTitle>{truncateText(description, 25)}</CardTitle>
-                  <CardDescription>{new Date(time_created).toLocaleString()}</CardDescription>
+                  <CardDescription>{formatDateTime(new Date(time_created))}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <p className="mb-2 -mt-4">{truncateText(special_instructions, 25)}</p>

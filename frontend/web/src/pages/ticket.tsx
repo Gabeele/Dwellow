@@ -8,6 +8,7 @@ import { PlusIcon, Pencil1Icon, GearIcon, ArrowLeftIcon } from "@radix-ui/react-
 import { Input } from "@/components/ui/input";
 import Loading from "@/components/Loading";
 import { Textarea } from "@/components/ui/textarea";
+import { formatDateTime } from "@/utils/FormatDateTime";
 
 interface Ticket {
   ticket_id: number;
@@ -134,8 +135,8 @@ function Ticket() {
             <h1 className="font-bold text-2xl">{description}</h1>
             <p className="text-dwellow-dark-100 text-xs">Ticket {ticket_id}</p>
           </div>
-          <p className="text-sm text-dwellow-dark-100">Created: {new Date(time_created).toLocaleString()}</p>
-          <p className="text-sm text-dwellow-dark-100">Last Updated: {new Date(time_updated).toLocaleString()}</p>
+          <p className="text-sm text-dwellow-dark-100">Created: {formatDateTime(new Date(time_created))}</p>
+          <p className="text-sm text-dwellow-dark-100">Last Updated: {formatDateTime(new Date(time_updated))}</p>
           <p className="mt-3 p-2 w-full h-24 rounded-md border border-dwellow-dark-100">{special_instructions}</p>
           <div>
             <h1 className="mt-4 font-bold text-xl">Attachments</h1>
@@ -161,7 +162,7 @@ function Ticket() {
             {comments?.map(({ comment_id, ticket_id, user_id, description, posted_date }) => (
               <div key={comment_id} className="my-4">
                 <p>{user_id}</p>
-                <p className="text-sm text-dwellow-dark-100">{new Date(posted_date).toLocaleString()}</p>
+                <p className="text-sm text-dwellow-dark-100">{formatDateTime(new Date(posted_date))}</p>
                 <p>{description}</p>
               </div>
             ))}
