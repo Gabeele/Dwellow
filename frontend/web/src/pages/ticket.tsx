@@ -163,9 +163,13 @@ function Ticket() {
             </Textarea>
             <Button className="ml-4 mr-2" onClick={handleComment}>Comment</Button>
           </div>
-          <div>
-            {comments?.map(({ full_name, comment_id, ticket_id, user_id, description, posted_date }) => (
-              <div key={comment_id} className="my-4">
+          <div className="bg-dwellow-white-100">
+            {comments?.sort((a, b) => {
+              const dateA = new Date(a.posted_date).getTime();
+              const dateB = new Date(b.posted_date).getTime();
+              return dateB - dateA;
+              }).map(({ full_name, comment_id, ticket_id, user_id, description, posted_date }) => (
+              <div key={comment_id} className="my-2 p-3">
                 <p className="font-semibold">{full_name}</p>
                 <p className="text-sm text-dwellow-dark-100">{formatDateTime(new Date(posted_date))}</p>
                 <p>{description}</p>
