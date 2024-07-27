@@ -34,6 +34,7 @@ interface Comment {
   user_id: number;
   description: string;
   posted_date: string;
+  full_name: string;
 }
 
 function Ticket() {
@@ -62,6 +63,7 @@ function Ticket() {
       fetchComments(id);
     }
   }, [id]);
+  
 
   const fetchTickets = async (id: any) => {
     try {
@@ -110,6 +112,7 @@ function Ticket() {
       );
       console.log("Comment posted successfully:", response);
       fetchComments(id);
+      setNewComment("");
     } catch (error) {
       console.error("Failed to post comment:", error);
     }
@@ -141,7 +144,7 @@ function Ticket() {
           </div>
           <p className="text-sm text-dwellow-dark-100">Created: {formatDateTime(new Date(time_created))}</p>
           <p className="text-sm text-dwellow-dark-100">Last Updated: {formatDateTime(new Date(time_updated))}</p>
-          <p className="mt-3 p-2 w-full h-24 rounded-md border border-dwellow-dark-100">{special_instructions}</p>
+          <p className="mt-3 p-2 w-full h-24 rounded-md border bg-dwellow-white-100 border-dwellow-dark-100">{special_instructions}</p>
           <div>
             <h1 className="mt-4 font-bold text-xl">Attachments</h1>
             <p className="mt-3 p-2">Add attachments here somehow</p>
@@ -160,12 +163,12 @@ function Ticket() {
               rows={2}
               >
             </Textarea>
-            <Button onClick={handleComment}>Comment</Button>
+            <Button className="ml-4 mr-2" onClick={handleComment}>Comment</Button>
           </div>
           <div>
-            {comments?.map(({ comment_id, ticket_id, user_id, description, posted_date }) => (
+            {comments?.map(({ full_name, comment_id, ticket_id, user_id, description, posted_date }) => (
               <div key={comment_id} className="my-4">
-                <p>{user_id}</p>
+                <p>{full_name}</p>
                 <p className="text-sm text-dwellow-dark-100">{formatDateTime(new Date(posted_date))}</p>
                 <p>{description}</p>
               </div>
