@@ -70,7 +70,6 @@ function Ticket() {
       const response = await API.get(`/ticket/${id}`);
       if (response.data) {
         const jsonData = await response.data;
-        console.log("Ticket data:", jsonData);
         setTickets(jsonData);
         
         // store things in cache
@@ -89,7 +88,6 @@ function Ticket() {
       const response = await API.get(`/ticket/${id}/comments`);
       if (response.data) {
         const jsonData = await response.data;
-        console.log("Comment data:", jsonData);
         setComments(jsonData);
 
         localStorage.setItem(`comments-${id}`, JSON.stringify(jsonData));
@@ -111,7 +109,6 @@ function Ticket() {
             description: newComment,
           }
         );
-        console.log("Comment posted successfully:", response);
         fetchComments(id);
         setNewComment("");
       } catch (error) {
@@ -172,7 +169,7 @@ function Ticket() {
           <div>
             {comments?.map(({ full_name, comment_id, ticket_id, user_id, description, posted_date }) => (
               <div key={comment_id} className="my-4">
-                <p>{full_name}</p>
+                <p className="font-semibold">{full_name}</p>
                 <p className="text-sm text-dwellow-dark-100">{formatDateTime(new Date(posted_date))}</p>
                 <p>{description}</p>
               </div>
