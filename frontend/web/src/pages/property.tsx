@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, ArrowLeftIcon, Pencil1Icon, GearIcon } from "@radix-ui/react-icons";
+import { PlusIcon, ArrowLeftIcon, Pencil1Icon, GearIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -553,13 +553,29 @@ function Property() {
         <div className="flex flex-col bg-dwellow-white-0 px-4 rounded-lg">
           {announcements !== null ? (
             <div>
-              {announcements.slice(0, 5).map(({ id, title, announcement_date, text, property_id }) => (
+              {announcements.sort((a, b) => {
+              const dateA = new Date(a.announcement_date).getTime();
+              const dateB = new Date(b.announcement_date).getTime();
+              return dateB - dateA;
+              }).slice(0, 5).map(({ id, title, announcement_date, text, property_id }) => (
                 <div key={id} className="my-2 p-2 border-b">
                   <div className="relative">
-                    <h2 className="text-lg font-semibold">{title}</h2>
-                    <Button className="absolute right-0" variant={"destructive"} onClick={() => handleDeleteAnnouncement(id)}>
-                      Delete
-                    </Button>
+                    <h2 className="text-lg font-semibold inline-flex">{title}</h2>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button className="absolute inline-flex right-0 focus-visible:ring-0" variant="link">
+                          <DotsHorizontalIcon width={18} height={18}/>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem>
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem  onClick={() => handleDeleteAnnouncement(id)} className="focus:bg-dwellow-destructive-200 focus:text-dwellow-white-0">
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                   <p className="text-sm text-dwellow-dark-100">{formatDateTime(new Date(announcement_date))}</p>
                   <p>{text}</p>
