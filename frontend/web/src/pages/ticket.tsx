@@ -50,9 +50,6 @@ function Ticket() {
     const cachedTicket = localStorage.getItem(`ticket-${id}`);
     const cachedComments = localStorage.getItem(`comments-${id}`)
 
-    console.log(cachedTicket)
-    console.log(cachedComments)
-    
     if (cachedTicket && cachedComments) {
       setTickets(JSON.parse(cachedTicket));
       setComments(JSON.parse(cachedComments));
