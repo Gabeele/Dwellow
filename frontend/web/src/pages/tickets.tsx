@@ -212,7 +212,6 @@ function Tickets() {
           console.log(`User ID: ${userId}`);
         }
       }
-
       const response = await API.post(
         `/ticket`,
         { unit_id: selectedUnit, user_id: userId, description: newTicketTitle, length: newTicketLength, priority: newTicketPriority, 
@@ -227,6 +226,7 @@ function Tickets() {
     } catch (error) {
       console.error("Failed to create ticket:", error);
     }
+    setDialogOpen(false);
   };
 
   useEffect(() => {
@@ -251,6 +251,10 @@ function Tickets() {
   if (loading) {
     return <Loading />;
   }
+
+  const badgeVariant = (status: string) => {
+    return status === "active" ? "active" : "closed";
+  };
 
   return (
     <>
@@ -408,7 +412,7 @@ function Tickets() {
                 <Link key={id} to={`/ticket/${id}`} className="w-full">
                   <Card className="relative h-[230px]" key={id}>
                     <CardDescription className="absolute left-3 top-3">{issue_area}</CardDescription>
-                    <Badge className="absolute top-3 right-3">{status}</Badge>
+                    <Badge variant={badgeVariant(status)} className="absolute top-3 right-3">{status}</Badge>
                     <CardHeader className="mt-6">
                       <CardTitle>{truncateText(description, 25)}</CardTitle>
                       <CardDescription>{formatDateTime(new Date(time_created))}</CardDescription>
@@ -439,7 +443,7 @@ function Tickets() {
               <Link key={id} to={`/ticket/${id}`} className="w-full">
                 <Card className="relative h-[230px]" key={id}>
                   <CardDescription className="absolute left-3 top-3">{issue_area}</CardDescription>
-                  <Badge className="absolute top-3 right-3">{status}</Badge>
+                  <Badge variant={badgeVariant(status)} className="absolute top-3 right-3">{status}</Badge>
                   <CardHeader className="mt-6">
                     <CardTitle>{truncateText(description, 25)}</CardTitle>
                     <CardDescription>{formatDateTime(new Date(time_created))}</CardDescription>

@@ -121,6 +121,10 @@ function Ticket() {
     return <Loading />;
   }
 
+  const badgeVariant = (status: string) => {
+    return status === "active" ? "active" : "closed";
+  };
+
   return (
     <>
     <Button className="absolute top-12" onClick={() => navigate(`/tickets`)}>
@@ -130,7 +134,7 @@ function Ticket() {
       {ticket.map(({ ticket_id, description, unit_id, user_id, length, issue_area, photo_url, special_instructions, priority, 
       status, time_created, time_updated, queue, time_resolved, property_id }) => (
         <div key={ticket_id}>
-          <Badge className="mb-3" variant="active">{status}</Badge>
+          <Badge className="mb-3" variant={badgeVariant(status)}>{status}</Badge>
           <div className="flex">
             <h1 className="font-bold text-2xl">{description}</h1>
             <p className="text-dwellow-dark-100 text-xs">Ticket {ticket_id}</p>
