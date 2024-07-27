@@ -80,7 +80,7 @@ const Login: React.FC = () => {
         <p className="text-center mt-4 text-dwellow-dark-200 text-sm font-semibold">
           Don't have an account?{" "}
           <a
-            href="/register"
+            href="/register/admin"
             className="text-dwellow-dark-200 font-semibold hover:underline"
           >
             Create Account
