@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import Loading from "@/components/Loading";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDateTime } from "@/utils/FormatDateTime";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
 
 interface Ticket {
   ticket_id: number;
@@ -116,6 +117,32 @@ function Ticket() {
     }
   };
 
+  const handleStatusChange = async (s: any, t: Ticket[]) => {
+    try {
+      const res = await API.put(`/ticket/${id}`, {
+        ticket_id: id,
+        unit_id: t[0].unit_id,
+        user_id: t[0].user_id, 
+        description: t[0].description,
+        length: t[0].length,
+        priority: t[0].priority,
+        issue_area: t[0].issue_area,
+        photo_url: t[0].photo_url,
+        special_instructions: t[0].special_instructions,
+        status: s,
+      });
+      t[0].status = s;
+      console.log(t[0])
+      setTicketLoading(true);
+      await fetchTickets(id);
+      localStorage.setItem(`ticket-${id}`, JSON.stringify(t));
+      setTicketLoading(false);
+    } catch (error) {
+      console.error("Failed to change ticket status:", error);
+      fetchTickets(id);
+    }
+  }
+
   const isLoading = ticketLoading || commentsLoading
 
   if (isLoading) {
@@ -135,7 +162,21 @@ function Ticket() {
       {ticket.map(({ ticket_id, description, unit_id, user_id, length, issue_area, photo_url, special_instructions, priority, 
       status, time_created, time_updated, queue, time_resolved, property_id }) => (
         <div key={ticket_id}>
-          <Badge className="mb-3" variant={badgeVariant(status)}>{status}</Badge>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="link" className="hover:no-underline">
+                <Badge className="mb-3" variant={badgeVariant(status)}>{status}</Badge>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="space-y-4">
+              <DropdownMenuItem className="bg-dwellow-white-100" onClick={() => handleStatusChange("active", ticket)}>
+                <Badge variant="active">active</Badge>
+              </DropdownMenuItem>
+              <DropdownMenuItem  onClick={() => handleStatusChange("closed", ticket)}>
+                <Badge variant="closed">closed</Badge>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <div className="flex">
             <h1 className="font-bold text-2xl">{description}</h1>
             <p className="text-dwellow-dark-100 text-xs">Ticket {ticket_id}</p>

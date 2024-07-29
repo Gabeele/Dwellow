@@ -129,6 +129,13 @@ function Properties() {
     }));
   };
 
+  function truncateText(text: string, maxLength: number) {
+    if (text.length <= maxLength) {
+      return text;
+    }
+    return text.substring(0, maxLength) + '...';
+  }
+
   if (loading) {
     return <Loading />;
   }
@@ -219,16 +226,17 @@ function Properties() {
         <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 pl-0 gap-4 p-4">
           {properties.map(({ id, title, address, units, photo, description }) => (
             <Link key={id} to={`/property/${id}`} className="max-w-xs">
-              <Card>
+              <Card className="h-96 overflow-hidden">
                 <CardHeader>
-                  <CardTitle>{title}</CardTitle>
-                  <CardDescription>{address}</CardDescription>
+                  <CardTitle className="truncate">{title}</CardTitle>
+                  <CardDescription className="truncate">{address}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <img className="w-full" src={photo} alt={`Property ${id}`} />
-                  <p className="mt-4">{units} Units</p>
+                  <img className="w-full h-32 object-cover" src={photo} alt={`Property ${id}`} />
+                  <p className="mt-2 mb-2">{units} Units</p>
+                  <p>{truncateText(description, 55)}</p>
                 </CardContent>
-                <CardFooter>{description}</CardFooter>
+                <CardFooter></CardFooter>
               </Card>
             </Link>
           ))}
