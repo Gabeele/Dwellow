@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Carousel } from "@/components/ui/carousel";
+import { Link } from "react-scroll";
 import {
   Settings,
   Users,
@@ -43,14 +44,14 @@ const Landing: React.FC = () => {
                 Get Started
               </Button>
             </a>
-            <a href="#About">
+            <Link to="About" smooth={true} duration={500}>
               <Button
                 variant="outline"
                 className="bg-dwellow-white-200 hover:bg-gray-300"
               >
                 Learn More
               </Button>
-            </a>
+            </Link>
           </div>
         </div>
       </div>
