@@ -245,7 +245,7 @@ function Tickets() {
     if (text.length <= maxLength) {
       return text;
     }
-    return text.substring(0, maxLength) + ' [...]';
+    return text.substring(0, maxLength) + '...';
   }
 
   if (loading) {
@@ -418,7 +418,7 @@ function Tickets() {
                       <CardDescription>{formatDateTime(new Date(time_created))}</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <p className="mb-2 -mt-4">{truncateText(special_instructions, 25)}</p>
+                      <p className="mb-2 -mt-4 truncate">{special_instructions}</p>
                     </CardContent>
                     <div className="absolute bottom-8 w-full border-t-2">
                       <CardDescription className="absolute left-3 mt-1">{property_id}</CardDescription>
@@ -449,7 +449,7 @@ function Tickets() {
                     <CardDescription>{formatDateTime(new Date(time_created))}</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="mb-2 -mt-4">{truncateText(special_instructions, 25)}</p>
+                    <p className="mb-2 -mt-4 truncate">{special_instructions}</p>
                   </CardContent>
                   <div className="absolute bottom-8 w-full border-t-2">
                     <CardDescription className="absolute left-3 mt-1">{property_id}</CardDescription>
