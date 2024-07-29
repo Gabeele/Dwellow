@@ -157,6 +157,7 @@ function Properties() {
                 name="title"
                 type="text"
                 placeholder="Enter title"
+                maxLength={50}
                 value={newProperty.title}
                 onChange={handleInputChange}
               />
@@ -168,6 +169,7 @@ function Properties() {
                 name="address"
                 type="text"
                 placeholder="Enter address"
+                maxLength={50}
                 value={newProperty.address}
                 onChange={handleInputChange}
               />
@@ -179,6 +181,7 @@ function Properties() {
                 name="description"
                 type="text"
                 placeholder="Enter description"
+                maxLength={100}
                 value={newProperty.description}
                 onChange={handleInputChange}
               />

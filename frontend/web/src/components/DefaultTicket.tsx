@@ -28,12 +28,14 @@ function DefaultTicket({ id, description, special_instructions, time_created, st
 
   const truncatedDescription = truncateText(description, 60);
 
+  const badgeVariant = status === "active" ? "active" : "closed";
+
   return (
     <Card className="flex flex-col w-full h-[100px] rounded-lg hover:bg-dwellow-white-200 hover:cursor-pointer" onClick={handleOnClick}>
       <CardHeader className="p-4 pt-2">
         <div className="inline-flex w-full">
           <CardTitle className="text-lg">{truncatedDescription}</CardTitle>
-          <Badge variant="active" className="ml-auto mr-0">{status}</Badge>
+          <Badge variant={badgeVariant} className="ml-auto mr-0">{status}</Badge>
         </div>
         <CardDescription>{time_created}</CardDescription>
         <CardDescription>{special_instructions}</CardDescription>

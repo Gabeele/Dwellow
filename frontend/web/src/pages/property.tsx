@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, ArrowLeftIcon, Pencil1Icon, GearIcon } from "@radix-ui/react-icons";
+import { PlusIcon, ArrowLeftIcon, Pencil1Icon, GearIcon, DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -47,6 +47,7 @@ import Loading from "@/components/Loading";
 import { Textarea } from "@/components/ui/textarea";
 import CharacterCount from "@/components/CharacterCount";
 import { fetchProperties } from "./properties";
+import { formatDateTime } from "@/utils/FormatDateTime";
 
 interface Property {
   id: number;
@@ -97,6 +98,11 @@ function Property() {
   const [alertTitle, setAlertTitle] = useState("Default");
   const [alertDescription, setAlertDescription] = useState("Description");
   const [showAlert, setShowAlert] = useState(false); // use for later
+
+  const [isEditingProperty, setIsEditingProperty] = useState(false);
+  const [editingPropertyName, setEditingPropertyName] = useState<string>("");
+  const [editingPropertyAddress, setEditingPropertyAddress] = useState<string>("");
+  const [editingPropertyDesc, setEditingPropertyDesc] = useState<string>("");
 
   const [loadingProperty, setLoadingProperty] = useState(true);
   const [loadingUnits, setLoadingUnits] = useState(true);
@@ -179,6 +185,14 @@ function Property() {
     }
   }, [id]);
 
+  useEffect(() => {
+    if (property) {
+      setEditingPropertyName(property.title);
+      setEditingPropertyAddress(property.address);
+      setEditingPropertyDesc(property.description);
+    }
+  }, [property]);
+
   // sets values to default or null if any dialog gets closed
   useEffect(() => {
     if (!isUnitDialogOpen) {
@@ -231,7 +245,7 @@ function Property() {
     setNewUnit(unit);
   };
 
-  const handleCancelEdit = () => {
+  const handleCancelEditUnit = () => {
     setEditingUnitId(null);
     setNewUnit({
       unit: "",
@@ -336,10 +350,46 @@ function Property() {
     }, 300);
   };
 
+  const handleSaveProperty = async () => {
+    console.log("Updating property:", editingPropertyName, editingPropertyAddress, editingPropertyDesc);
+
+    try {
+      const putResponse = await API.put(`/properties/${id}`, {
+        title: editingPropertyName,
+        address: editingPropertyAddress,
+        description: editingPropertyDesc,
+      });
+      console.log("Property updated successfully:", putResponse);
+      setProperty({
+        ...property!,
+        title: editingPropertyName,
+        address: editingPropertyAddress,
+        description: editingPropertyDesc,
+      });
+      setIsEditingProperty(false);
+
+      setLoadingProperty(true);
+      await fetchData(id);
+      await fetchProperties();
+      setLoadingProperty(false);
+    } catch (error) {
+      console.error("Error during update or refresh property:", error);
+    }
+  };
+
+  const handleCancelEditProperty = () => {
+    if(property) {
+      setIsEditingProperty(false);
+      setEditingPropertyName(property?.title);
+      setEditingPropertyAddress(property?.address);
+      setEditingPropertyDesc(property?.description);
+    }
+  };
+
   const handleDeleteProperty = async () => {
     try {
       const response = await API.delete(`/properties/${property?.id}`);
-      console.log('Property successfully deleted');
+      console.log('Property successfully deleted:', response);
       handleDialogClose();
       setLoadingProperty(true)
       await fetchProperties();
@@ -369,11 +419,41 @@ function Property() {
     </Button>
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between">
-        {property && (
+      {isEditingProperty ? (
+          <div className="space-y-4 w-full">
+            <Input
+              placeholder="Property Title"
+              maxLength={50}
+              value={editingPropertyName}
+              onChange={(e) => setEditingPropertyName(e.target.value)}
+            />
+            <Input
+              placeholder="Property Address"
+              maxLength={50}
+              value={editingPropertyAddress}
+              onChange={(e) => setEditingPropertyAddress(e.target.value)}
+            />
+            <Textarea
+            className="resize-none"
+              placeholder="Property Description"
+              maxLength={100}
+              rows={2}
+              value={editingPropertyDesc}
+              onChange={(e) => setEditingPropertyDesc(e.target.value)}
+            />
+            <div className="float-right space-x-4">
+              <Button onClick={handleSaveProperty}>Save</Button>
+              <Button variant="outline" onClick={handleCancelEditProperty}>
+                Cancel
+              </Button>
+            </div>
+            
+          </div>
+        ) : (
           <div>
-            <p className="font-bold text-xl">{property.title}</p>
-            <p>{property.address}</p>
-            <p>{property.description}</p>
+            <h2 className="text-xl font-bold">{property?.title}</h2>
+            <p>{property?.address}</p>
+            <p>{property?.description}</p>
           </div>
         )}
         { showAlert ? 
@@ -390,7 +470,7 @@ function Property() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setIsEditingProperty(true)}>
               Edit Property
             </DropdownMenuItem>
             <DropdownMenuItem  onClick={() => setIsDeleteDialogOpen(true)} className="focus:bg-dwellow-destructive-200 focus:text-dwellow-white-0">
@@ -473,15 +553,31 @@ function Property() {
         <div className="flex flex-col bg-dwellow-white-0 px-4 rounded-lg">
           {announcements !== null ? (
             <div>
-              {announcements.slice(0, 5).map(({ id, title, announcement_date, text, property_id }) => (
+              {announcements.sort((a, b) => {
+              const dateA = new Date(a.announcement_date).getTime();
+              const dateB = new Date(b.announcement_date).getTime();
+              return dateB - dateA;
+              }).slice(0, 5).map(({ id, title, announcement_date, text, property_id }) => (
                 <div key={id} className="my-2 p-2 border-b">
                   <div className="relative">
-                    <h2 className="text-lg font-semibold">{title}</h2>
-                    <Button className="absolute right-0" variant={"destructive"} onClick={() => handleDeleteAnnouncement(id)}>
-                      Delete
-                    </Button>
+                    <h2 className="text-lg font-semibold inline-flex">{title}</h2>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button className="absolute inline-flex right-0 focus-visible:ring-0" variant="link">
+                          <DotsHorizontalIcon width={18} height={18}/>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent>
+                        <DropdownMenuItem>
+                          Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem  onClick={() => handleDeleteAnnouncement(id)} className="focus:bg-dwellow-destructive-200 focus:text-dwellow-white-0">
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                  <p className="text-sm text-dwellow-dark-100">{new Date(announcement_date).toLocaleString()}</p>
+                  <p className="text-sm text-dwellow-dark-100">{formatDateTime(new Date(announcement_date))}</p>
                   <p>{text}</p>
                 </div>
               ))}
@@ -514,6 +610,7 @@ function Property() {
                 name="unit"
                 type="text"
                 placeholder="Enter unit"
+                maxLength={10}
                 value={newUnit.unit || ""}
                 onChange={handleInputChange}
               />
@@ -525,6 +622,7 @@ function Property() {
                 name="description"
                 type="text"
                 placeholder="Enter description"
+                maxLength={30}
                 value={newUnit.description || ""}
                 onChange={handleInputChange}
               />
@@ -612,6 +710,7 @@ function Property() {
                       id="unit"
                       name="unit"
                       type="text"
+                      maxLength={10}
                       value={newUnit.unit || ""}
                       onChange={handleInputChange}
                     />
@@ -625,6 +724,7 @@ function Property() {
                       id="description"
                       name="description"
                       type="text"
+                      maxLength={30}
                       value={newUnit.description || ""}
                       onChange={handleInputChange}
                     />
@@ -641,7 +741,7 @@ function Property() {
                       <Button className="mr-[7.4px]" onClick={handleSaveEditedUnit}>
                         Save
                       </Button>
-                      <Button variant={"outline"} onClick={handleCancelEdit}>
+                      <Button variant={"outline"} onClick={handleCancelEditUnit}>
                         Cancel
                       </Button>
                     </>
