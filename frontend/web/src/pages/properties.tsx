@@ -56,12 +56,47 @@ export const fetchProperties = async () => {
         return [];
       }
     } else {
-      console.error("Failed to fetch properties, status code:", response.status);
+      console.error(
+        "Failed to fetch properties, status code:",
+        response.status
+      );
       return [];
     }
   } catch (error: any) {
     console.error("Failed to fetch properties:", error.message);
     return [];
+  }
+};
+
+const updateTicketStatus = async (ticketId: number, status: string) => {
+  try {
+    const response = await API.put(`/tickets/${ticketId}`, { status });
+    if (response.status === 200) {
+      return response.data;
+    } else {
+      console.error("Failed to update ticket status:", response.status);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error updating ticket status:", error);
+    return null;
+  }
+};
+
+const updateTicketQueue = async (ticketId: number, newQueue: number) => {
+  try {
+    const response = await API.post(`/tickets/${ticketId}/queue`, {
+      new_queue: newQueue,
+    });
+    if (response.status === 201) {
+      return response.data;
+    } else {
+      console.error("Failed to update ticket queue:", response.status);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error updating ticket queue:", error);
+    return null;
   }
 };
 
@@ -133,7 +168,7 @@ function Properties() {
     if (text.length <= maxLength) {
       return text;
     }
-    return text.substring(0, maxLength) + '...';
+    return text.substring(0, maxLength) + "...";
   }
 
   if (loading) {
@@ -154,8 +189,7 @@ function Properties() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add New Property</DialogTitle>
-              <DialogDescription>
-              </DialogDescription>
+              <DialogDescription></DialogDescription>
             </DialogHeader>
             <div>
               <p className="text-sm font-semibold mb-1">Property Name</p>
@@ -224,22 +258,30 @@ function Properties() {
           </DialogContent>
         </Dialog>
         <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 pl-0 gap-4 p-4">
-          {properties.map(({ id, title, address, units, photo, description }) => (
-            <Link key={id} to={`/property/${id}`} className="max-w-xs">
-              <Card className="h-96 overflow-hidden">
-                <CardHeader>
-                  <CardTitle className="truncate">{title}</CardTitle>
-                  <CardDescription className="truncate">{address}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <img className="w-full h-32 object-cover" src={photo} alt={`Property ${id}`} />
-                  <p className="mt-2 mb-2">{units} Units</p>
-                  <p>{truncateText(description, 55)}</p>
-                </CardContent>
-                <CardFooter></CardFooter>
-              </Card>
-            </Link>
-          ))}
+          {properties.map(
+            ({ id, title, address, units, photo, description }) => (
+              <Link key={id} to={`/property/${id}`} className="max-w-xs">
+                <Card className="h-96 overflow-hidden">
+                  <CardHeader>
+                    <CardTitle className="truncate">{title}</CardTitle>
+                    <CardDescription className="truncate">
+                      {address}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <img
+                      className="w-full h-32 object-cover"
+                      src={photo}
+                      alt={`Property ${id}`}
+                    />
+                    <p className="mt-2 mb-2">{units} Units</p>
+                    <p>{truncateText(description, 55)}</p>
+                  </CardContent>
+                  <CardFooter></CardFooter>
+                </Card>
+              </Link>
+            )
+          )}
         </div>
       </main>
     </>
