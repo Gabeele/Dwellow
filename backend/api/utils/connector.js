@@ -848,7 +848,12 @@ async function getOneComment(id) { // gets tickets where it matches the user id
 async function getComments(id) { // gets tickets where it matches the user id
     try {
         await sql.connect(config);
-        const query = `SELECT * FROM comments WHERE ticket_id = '${id}'`;
+        const query = `
+            SELECT comments.*, users.full_name
+            FROM comments
+            INNER JOIN users ON comments.user_id = users.user_id
+            WHERE comments.ticket_id = '${id}'
+        `;
         const result = await sql.query(query);
         if (result.recordset.length === 0) {
             return null;

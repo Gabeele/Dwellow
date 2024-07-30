@@ -73,7 +73,7 @@ class Facilitator:
 
     async def create_ticket_in_db(self, ticket_data):
         try:
-            unit_id = self.session.user_id 
+            unit_id = self.session.unit_id 
             user_id = self.session.user_id
             description = ticket_data.get("issue_detail")
             length = ticket_data.get("duration")

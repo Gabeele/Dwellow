@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Link } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
+import { Link } from "react-scroll";
 import { cn } from "@/lib/utils";
 import {
   NavigationMenu,
@@ -14,38 +15,38 @@ import { Button } from "./ui/button";
 function LandingNavigation() {
   return (
     <div className="sticky top-0 z-10 flex items-center justify-between p-3 bg-dwellow-dark-200">
-      <Link
+      <RouterLink
         to="/"
         className="absolute left-4 text-2xl font-bold text-dwellow-white-200"
       >
         Dwellow
-      </Link>
+      </RouterLink>
       <div className="flex-1 flex justify-center">
         <NavigationMenu>
           <NavigationMenuList className="flex space-x-14">
             <NavigationMenuItem>
-              <Link to="/">
+              <Link to="PageTop" smooth={true} duration={500} className="cursor-pointer">
                 <NavigationMenuLink className="text-dwellow-white-200 font-medium">
                   Home
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <Link to="">
+              <Link to="About" smooth={true} duration={500} className="cursor-pointer">
                 <NavigationMenuLink className="text-dwellow-white-200 font-medium">
                   About
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <Link to="">
+              <Link to="Features" smooth={true} duration={500} className="cursor-pointer">
                 <NavigationMenuLink className="text-dwellow-white-200 font-medium">
                   Features
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <Link to="">
+              <Link to="Contact" smooth={true} duration={500} className="cursor-pointer">
                 <NavigationMenuLink className="text-dwellow-white-200 font-medium">
                   Contact
                 </NavigationMenuLink>
@@ -55,23 +56,26 @@ function LandingNavigation() {
         </NavigationMenu>
       </div>
       <div className="absolute right-0 flex space-x-4 mr-4">
-        <Link
+        <RouterLink
           to="/login"
-          className="mr-2 mt-1 text-dwellow-white-200 font-medium">
+          className="mr-2 mt-1 text-dwellow-white-200 font-medium"
+        >
           Log in
-        </Link>
-        <Link
+        </RouterLink>
+        <RouterLink
           to="/reviews"
-          className="mr-2 mt-1 text-dwellow-white-200 font-medium">
+          className="mr-2 mt-1 text-dwellow-white-200 font-medium"
+        >
           Apartment Reviews
-        </Link>
-        <Link to="/register/admin">
+        </RouterLink>
+        <RouterLink to="/register/admin">
           <Button
             variant="outline"
-            className="text-dwellow-white-200 bg-dwellow-dark-200 hover:bg-dwellow-dark-100 hover:text-dwellow-white-200 font-medium">
+            className="text-dwellow-white-200 bg-dwellow-dark-200 hover:bg-dwellow-dark-100 hover:text-dwellow-white-200 font-medium"
+          >
             Get Started
           </Button>
-        </Link>
+        </RouterLink>
       </div>
     </div>
   );
@@ -79,7 +83,8 @@ function LandingNavigation() {
 
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
-  React.ComponentPropsWithoutRef<"a">>(({ className, title, children, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<"a">
+>(({ className, title, children, ...props }, ref) => {
   return (
     <li>
       <NavigationMenuLink asChild>

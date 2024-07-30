@@ -8,6 +8,8 @@ import { PlusIcon, Pencil1Icon, GearIcon, ArrowLeftIcon } from "@radix-ui/react-
 import { Input } from "@/components/ui/input";
 import Loading from "@/components/Loading";
 import { Textarea } from "@/components/ui/textarea";
+import { formatDateTime } from "@/utils/FormatDateTime";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
 
 interface Ticket {
   ticket_id: number;
@@ -33,6 +35,7 @@ interface Comment {
   user_id: number;
   description: string;
   posted_date: string;
+  full_name: string;
 }
 
 function Ticket() {
@@ -48,9 +51,6 @@ function Ticket() {
     const cachedTicket = localStorage.getItem(`ticket-${id}`);
     const cachedComments = localStorage.getItem(`comments-${id}`)
 
-    console.log(cachedTicket)
-    console.log(cachedComments)
-    
     if (cachedTicket && cachedComments) {
       setTickets(JSON.parse(cachedTicket));
       setComments(JSON.parse(cachedComments));
@@ -61,13 +61,13 @@ function Ticket() {
       fetchComments(id);
     }
   }, [id]);
+  
 
   const fetchTickets = async (id: any) => {
     try {
       const response = await API.get(`/ticket/${id}`);
       if (response.data) {
         const jsonData = await response.data;
-        console.log("Ticket data:", jsonData);
         setTickets(jsonData);
         
         // store things in cache
@@ -86,7 +86,6 @@ function Ticket() {
       const response = await API.get(`/ticket/${id}/comments`);
       if (response.data) {
         const jsonData = await response.data;
-        console.log("Comment data:", jsonData);
         setComments(jsonData);
 
         localStorage.setItem(`comments-${id}`, JSON.stringify(jsonData));
@@ -99,18 +98,48 @@ function Ticket() {
     setCommentsLoading(false);
   };
 
-  const handleComment = async() => {
+  const handleComment = async () => {
+    if (newComment.trim() !== "") {
+      try {
+        const response = await API.post(
+          `/ticket/${id}/comments`,
+          {
+            description: newComment,
+          }
+        );
+        fetchComments(id);
+        setNewComment("");
+      } catch (error) {
+        console.error("Failed to post comment:", error);
+      }
+    } else {
+      alert("Comment cannot be empty!");
+    }
+  };
+
+  const handleStatusChange = async (s: any, t: Ticket[]) => {
     try {
-      const response = await API.post(
-        `/ticket/${id}/comments`,
-        {
-          description: newComment,
-        }
-      );
-      console.log("Comment posted successfully:", response);
-      fetchComments(id);
+      const res = await API.put(`/ticket/${id}`, {
+        ticket_id: id,
+        unit_id: t[0].unit_id,
+        user_id: t[0].user_id, 
+        description: t[0].description,
+        length: t[0].length,
+        priority: t[0].priority,
+        issue_area: t[0].issue_area,
+        photo_url: t[0].photo_url,
+        special_instructions: t[0].special_instructions,
+        status: s,
+      });
+      t[0].status = s;
+      console.log(t[0])
+      setTicketLoading(true);
+      await fetchTickets(id);
+      localStorage.setItem(`ticket-${id}`, JSON.stringify(t));
+      setTicketLoading(false);
     } catch (error) {
-      console.error("Failed to post comment:", error);
+      console.error("Failed to change ticket status:", error);
+      fetchTickets(id);
     }
   }
 
@@ -119,6 +148,10 @@ function Ticket() {
   if (isLoading) {
     return <Loading />;
   }
+
+  const badgeVariant = (status: string) => {
+    return status === "active" ? "active" : "closed";
+  };
 
   return (
     <>
@@ -129,14 +162,28 @@ function Ticket() {
       {ticket.map(({ ticket_id, description, unit_id, user_id, length, issue_area, photo_url, special_instructions, priority, 
       status, time_created, time_updated, queue, time_resolved, property_id }) => (
         <div key={ticket_id}>
-          <Badge className="mb-3" variant="active">{status}</Badge>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="link" className="hover:no-underline">
+                <Badge className="mb-3" variant={badgeVariant(status)}>{status}</Badge>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="space-y-4">
+              <DropdownMenuItem className="bg-dwellow-white-100" onClick={() => handleStatusChange("active", ticket)}>
+                <Badge variant="active">active</Badge>
+              </DropdownMenuItem>
+              <DropdownMenuItem  onClick={() => handleStatusChange("closed", ticket)}>
+                <Badge variant="closed">closed</Badge>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <div className="flex">
             <h1 className="font-bold text-2xl">{description}</h1>
             <p className="text-dwellow-dark-100 text-xs">Ticket {ticket_id}</p>
           </div>
-          <p className="text-sm text-dwellow-dark-100">Created: {new Date(time_created).toLocaleString()}</p>
-          <p className="text-sm text-dwellow-dark-100">Last Updated: {new Date(time_updated).toLocaleString()}</p>
-          <p className="mt-3 p-2 w-full h-24 rounded-md border border-dwellow-dark-100">{special_instructions}</p>
+          <p className="text-sm text-dwellow-dark-100">Created: {formatDateTime(new Date(time_created))}</p>
+          <p className="text-sm text-dwellow-dark-100">Last Updated: {formatDateTime(new Date(time_updated))}</p>
+          <p className="mt-3 p-2 w-full h-24 rounded-md border bg-dwellow-white-100 border-dwellow-dark-100">{special_instructions}</p>
           <div>
             <h1 className="mt-4 font-bold text-xl">Attachments</h1>
             <p className="mt-3 p-2">Add attachments here somehow</p>
@@ -155,13 +202,17 @@ function Ticket() {
               rows={2}
               >
             </Textarea>
-            <Button onClick={handleComment}>Comment</Button>
+            <Button className="ml-4 mr-2" onClick={handleComment}>Comment</Button>
           </div>
           <div>
-            {comments?.map(({ comment_id, ticket_id, user_id, description, posted_date }) => (
-              <div key={comment_id} className="my-4">
-                <p>{user_id}</p>
-                <p className="text-sm text-dwellow-dark-100">{new Date(posted_date).toLocaleString()}</p>
+            {comments?.sort((a, b) => {
+              const dateA = new Date(a.posted_date).getTime();
+              const dateB = new Date(b.posted_date).getTime();
+              return dateB - dateA;
+              }).map(({ full_name, comment_id, ticket_id, user_id, description, posted_date }) => (
+              <div key={comment_id} className="bg-dwellow-white-100 my-3 p-3 shadow-sm">
+                <p className="font-semibold">{full_name}</p>
+                <p className="text-sm text-dwellow-dark-100">{formatDateTime(new Date(posted_date))}</p>
                 <p>{description}</p>
               </div>
             ))}
