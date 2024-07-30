@@ -14,15 +14,12 @@ const AdminScreenshots: React.FC = () => {
         <div className="flex flex-col md:flex-row items-center justify-between mb-8">
           <div className="flex flex-col items-center text-center relative p-1 bg-gradient-to-r from-green-600 to-dwellow-dark-300  rounded-lg shadow-lg mb-8 md:mb-0 w-full md:w-1/2 lg:w-1/3">
             <div className="bg-dwellow-dark-200  rounded-lg p-6 shadow-md w-full h-full flex flex-col justify-center items-center">
-              <h3 className="text-xl font-bold">
-                Real-time insights at your fingertips
-              </h3>
+              <h3 className="text-xl font-bold">Update your Tickets</h3>
               <p className="mt-2">
-                Data syncs across your team instantly. Real-time access, with
-                99.9% uptime. Lorem ipsum dolor sit amet consectetur adipiscing
-                elit. Ex nesciunt quia quibusdam, voluptatem aliquid autem,
-                magnam, doloremque voluptatibus odio esse pariatur harum odit
-                neque qui earum nam praesentium sint ullam!
+                Manage a ticket with comments, queuing, and status changes all
+                in one place. Push these right to your tenants and staff.
+                Allowing for a powerful communication tool that keeps everyone
+                in the loop.
               </p>
             </div>
           </div>
@@ -46,13 +43,11 @@ const AdminScreenshots: React.FC = () => {
           </div>
           <div className="flex flex-col items-center text-center relative p-1 bg-gradient-to-r from-green-600 to-dwellow-dark-300  rounded-lg shadow-lg mb-8 md:mb-0 w-full md:w-1/2 lg:w-1/3 order-2 md:order-1">
             <div className="bg-dwellow-dark-200  rounded-lg p-6 shadow-md w-full h-full flex flex-col justify-center items-center">
-              <h3 className="text-xl font-bold">Connect all our contacts</h3>
+              <h3 className="text-xl font-bold">Manage Properties and More</h3>
               <p className="mt-2">
-                Sync with your calendar apps and contacts. Google, Outlook,
-                ProtonMail, and more. Lorem ipsum dolor sit amet consectetur
-                adipiscing elit. Ex nesciunt quia quibusdam, voluptatem aliquid
-                autem, magnam, doloremque voluptatibus odio esse pariatur harum
-                odit neque qui earum nam praesentium sint ullam!
+                Manage multiple properties, units, tenants, and team-staff to
+                track everything! View quick assess information from the
+                dashboard.
               </p>
             </div>
           </div>
@@ -63,13 +58,11 @@ const AdminScreenshots: React.FC = () => {
           <div className="flex flex-col items-center text-center relative p-1 bg-gradient-to-r from-green-600 to-dwellow-dark-300  rounded-lg shadow-lg mb-8 md:mb-0 w-full md:w-1/2 lg:w-1/3">
             <div className="bg-dwellow-dark-200  rounded-lg p-6 shadow-md w-full h-full flex flex-col justify-center items-center">
               <h3 className="text-xl font-bold">
-                Dashboards for all businesses
+                Assign Tenants and Push Announcements
               </h3>
               <p className="mt-2">
-                Lorem ipsum dolor sit amet consectetur adipiscing elit. Ex
-                nesciunt quia quibusdam, voluptatem aliquid autem, magnam,
-                doloremque voluptatibus odio esse pariatur harum odit neque qui
-                earum nam praesentium sint ullam!
+                Utilize the invite code feature to invite a tenant to Dwellow.
+                Send announcements to all tenants of a property with ease!
               </p>
             </div>
           </div>

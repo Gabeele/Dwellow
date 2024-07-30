@@ -11,8 +11,8 @@ const ContactUs: React.FC = () => {
               What are you waiting for?
             </h1>
             <p className="text-white mb-6">
-              Get your beautiful and effective website up and running in a snap
-              with Dwellow today.
+              Get started with Dwellow and improve your tenant relations while
+              managing your properties more efficiently.
             </p>
             <div className="flex justify-center md:justify-end">
               <a href="mailto:hello@dwellow.ca">

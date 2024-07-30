@@ -17,7 +17,9 @@ const MobileScreenshots: React.FC = () => {
             alt="Mobile Screenshot 1"
             className="w-64 rounded-lg shadow-lg"
           />
-          <figcaption className="text-white mt-2">Kiwi Chatbot</figcaption>
+          <figcaption className="text-white mt-2">
+            View Tickets and Announcements
+          </figcaption>
         </figure>
         <figure className="text-center">
           <img
@@ -25,7 +27,9 @@ const MobileScreenshots: React.FC = () => {
             alt="Mobile Screenshot 2"
             className="w-64 rounded-lg shadow-lg"
           />
-          <figcaption className="text-white mt-2">Ticket Management</figcaption>
+          <figcaption className="text-white mt-2">
+            Talk to Kiwi, your AI chatbot
+          </figcaption>
         </figure>
         <figure className="text-center">
           <img
@@ -33,7 +37,9 @@ const MobileScreenshots: React.FC = () => {
             alt="Mobile Screenshot 3"
             className="w-64 rounded-lg shadow-lg"
           />
-          <figcaption className="text-white mt-2">More Features</figcaption>
+          <figcaption className="text-white mt-2">
+            View a ticket in detail
+          </figcaption>
         </figure>
       </div>
     </section>

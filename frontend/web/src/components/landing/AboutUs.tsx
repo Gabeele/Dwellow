@@ -7,8 +7,8 @@ const AboutUs: React.FC = () => {
         About Us
       </h1>
       <p className="mt-6 text-center text-white text-lg leading-relaxed px-4 md:px-16">
-        Welcome to Dwellow, the ultimate apartment management solution designed
-        to simplify your property management needs. Our platform offers a
+        Dwellow is the ultimate apartment management solution designed to
+        simplify your property management needs. Our platform offers a
         comprehensive suite of tools to handle maintenance requests, manage
         tenants, users, properties, resource networks, contacts, and more. With
         our online web admin portal, you can manage your properties and units
