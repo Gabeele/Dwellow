@@ -57,22 +57,19 @@ export const fetchTickets = async () => {
           property_title: ticket.property_title,
           tenant_name: ticket.tenant_name,
         }));
-        localStorage.setItem("tickets", JSON.stringify(formattedTickets));
+
         const pendingTickets = formattedTickets.filter(
           (ticket: { status: string }) => ticket.status === "pending"
         );
-        localStorage.setItem("pending-tickets", JSON.stringify(pendingTickets));
 
         const closedTickets = formattedTickets.filter(
           (ticket: { status: string }) => ticket.status === "closed"
         );
-        localStorage.setItem("closed-tickets", JSON.stringify(closedTickets));
 
         const queuedTickets = formattedTickets.filter(
           (ticket: { status: string; queue: number | null }) =>
             ticket.status === "active" && ticket.queue !== null
         );
-        localStorage.setItem("queued-tickets", JSON.stringify(queuedTickets));
 
         return {
           allTickets: formattedTickets,
@@ -119,35 +116,16 @@ function Tickets() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const cachedTickets = localStorage.getItem("tickets");
-    const cachedPendingTickets = localStorage.getItem("pending-tickets");
-    const cachedClosedTickets = localStorage.getItem("closed-tickets");
-    const cachedQueuedTickets = localStorage.getItem("queued-tickets");
-
     fetchMaxQueue();
-
-    if (
-      cachedTickets &&
-      cachedPendingTickets &&
-      cachedClosedTickets &&
-      cachedQueuedTickets
-    ) {
-      setTickets(JSON.parse(cachedTickets));
-      setPendingTickets(JSON.parse(cachedPendingTickets));
-      setClosedTickets(JSON.parse(cachedClosedTickets));
-      setQueuedTickets(JSON.parse(cachedQueuedTickets));
-      setLoading(false);
-    } else {
-      fetchTickets().then(
-        ({ allTickets, pendingTickets, closedTickets, queuedTickets }) => {
-          setTickets(allTickets);
-          setPendingTickets(pendingTickets);
-          setClosedTickets(closedTickets);
-          setQueuedTickets(queuedTickets);
-          setLoading(false);
-        }
-      );
-    }
+    fetchTickets().then(
+      ({ allTickets, pendingTickets, closedTickets, queuedTickets }) => {
+        setTickets(allTickets);
+        setPendingTickets(pendingTickets);
+        setClosedTickets(closedTickets);
+        setQueuedTickets(queuedTickets);
+        setLoading(false);
+      }
+    );
   }, []);
 
   const fetchMaxQueue = async () => {
@@ -155,7 +133,6 @@ function Tickets() {
       const response = await API.get("/ticket/max-queue");
       if (response.status === 200) {
         const jsonData = response.data;
-
         const resolvedData = await jsonData;
         if ((resolvedData as any).max !== undefined) {
           setMaxQueue(resolvedData.max);
@@ -174,12 +151,7 @@ function Tickets() {
   };
 
   useEffect(() => {
-    const cachedProperties = localStorage.getItem("properties");
-    if (cachedProperties) {
-      setProperties(JSON.parse(cachedProperties));
-    } else {
-      fetchProperties().then(setProperties);
-    }
+    fetchProperties().then(setProperties);
   }, []);
 
   const handleUpdate = () => {

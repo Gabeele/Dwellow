@@ -23,7 +23,7 @@ class API {
 
     if (user) {
       const token = await user.getIdToken();
-      headers.set("Authorization", `${token}`);
+      headers.set("Authorization", `Bearer ${token}`);
     }
 
     // Prepend the base URL to the endpoint
