@@ -552,6 +552,9 @@ async function deleteUnit(userId, unitId) {
 }
 
 async function createTicket(unitId, userId, description, length, priority, issue, photo, special) {
+
+    console.log(unitId, userId, description, length, priority, issue, photo, special)
+
     try {
         await sql.connect(config);
         const request = new sql.Request();
