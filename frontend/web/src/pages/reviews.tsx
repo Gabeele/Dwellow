@@ -274,30 +274,35 @@ export default function Component() {
           <div className="flex flex-col items-center text-center relative p-1 bg-gradient-to-r from-green-600 to-gray-300 rounded-lg shadow-lg h-60 w-80 m-4">
             <div className="bg-gray-100 rounded-lg p-6 shadow-md w-full h-full flex flex-col justify-center items-center">
               <h3 className="text-xl font-bold text-black mb-2">
-                Review Process
+                How are Reviews Made?
               </h3>
               <p className="text-black">
-                Learn how we ensure that reviews are genuine and reliable.
+                Review scoring is done based on quantitative data collected from
+                our databases, like average resolution time and ticket to unit
+                ratio.
               </p>
             </div>
           </div>
           <div className="flex flex-col items-center text-center relative p-1 bg-gradient-to-r from-green-600 to-gray-300 rounded-lg shadow-lg h-60 w-80 m-4">
             <div className="bg-gray-100 rounded-lg p-6 shadow-md w-full h-full flex flex-col justify-center items-center">
               <h3 className="text-xl font-bold text-black mb-2">
-                Rating System
+                How do I Interpret Scores?
               </h3>
               <p className="text-black">
-                Understand our rating system and how scores are calculated.
+                Scores are calculated based on ratios, averages, and comparisons
+                between properties in the Dwellow network.
               </p>
             </div>
           </div>
           <div className="flex flex-col items-center text-center relative p-1 bg-gradient-to-r from-green-600 to-gray-300 rounded-lg shadow-lg h-60 w-80 m-4">
             <div className="bg-gray-100 rounded-lg p-6 shadow-md w-full h-full flex flex-col justify-center items-center">
               <h3 className="text-xl font-bold text-black mb-2">
-                User Feedback
+                How is Feedback Incorporated?
               </h3>
               <p className="text-black">
-                Find out how we collect and incorporate user feedback.
+                This rating reflects property management efficiency, not tenant
+                sentiment, offering an objective view of service quality without
+                personal bias.
               </p>
             </div>
           </div>
