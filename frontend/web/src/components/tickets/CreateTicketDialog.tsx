@@ -44,7 +44,7 @@ const CreateTicketDialog: React.FC<CreateTicketDialogProps> = ({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [units, setUnits] = useState<Unit[]>([]);
   const [selectedProperty, setSelectedProperty] = useState("");
-  const [selectedUnit, setSelectedUnit] = useState<string>("");
+  const [selectedUnit, setSelectedUnit] = useState<number | null>(null);
   const [selectedPropertyId, setSelectedPropertyId] = useState<number | null>(
     null
   );
@@ -91,7 +91,7 @@ const CreateTicketDialog: React.FC<CreateTicketDialogProps> = ({
     if (property) {
       setSelectedProperty(property.title);
       setSelectedPropertyId(property.id);
-      setSelectedUnit("");
+      setSelectedUnit(null);
     }
   };
 
@@ -126,7 +126,7 @@ const CreateTicketDialog: React.FC<CreateTicketDialogProps> = ({
     if (!dialogOpen) {
       setSelectedProperty("");
       setSelectedPropertyId(null);
-      setSelectedUnit("");
+      setSelectedUnit(null);
       setNewTicketTitle("");
       setNewTicketDesc("");
       setNewTicketPriority("");
@@ -207,16 +207,20 @@ const CreateTicketDialog: React.FC<CreateTicketDialogProps> = ({
               </SelectContent>
             </Select>
             {selectedProperty && (
-              <Select onValueChange={setSelectedUnit}>
+              <Select
+                onValueChange={(value) => setSelectedUnit(parseInt(value, 10))}
+              >
                 <SelectTrigger className="mt-2">
                   <SelectValue placeholder="Select Unit">
-                    {selectedUnit || "Select Unit"}
+                    {selectedUnit
+                      ? units.find((unit) => unit.id === selectedUnit)?.unit
+                      : "Select Unit"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {units.length > 0 ? (
                     units.map((unit) => (
-                      <SelectItem key={unit.id} value={unit.unit}>
+                      <SelectItem key={unit.id} value={unit.id.toString()}>
                         {unit.unit}
                       </SelectItem>
                     ))

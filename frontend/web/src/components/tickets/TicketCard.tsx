@@ -159,9 +159,7 @@ const TicketCard: React.FC<TicketCardProps> = ({
             </div>
             {queue !== null && (
               <div className="flex justify-between items-center text-sm text-muted-foreground mt-2">
-                <span>
-                  Queue Position: {queue}/{maxQueue}
-                </span>
+                <span>Queue Position: {queue}</span>
               </div>
             )}
           </Card>
