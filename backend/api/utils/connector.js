@@ -335,7 +335,7 @@ async function getProperties(team_id) {
 }
 
 async function getPropertyByAddress(address) {
-    try {    
+    try {
         console.log(address);
         await sql.connect(config);
         const query = `SELECT * from properties where address like '${address}'`;
@@ -661,27 +661,22 @@ async function getOneTicket(id) { // gets tickets where it matches the user id
         await sql.close();
     }
 }
-
-async function getTicketsForTeam(team_id) { // gets tickets where it matches team id
+async function getTicketsForTeam(team_id) {
     try {
         await sql.connect(config);
         const query = `
-        SELECT DISTINCT t.*
-        FROM [Dwellow].[dbo].[tickets] t
-        JOIN (
-            SELECT * FROM [Dwellow].[dbo].[properties] p
-            JOIN (SELECT property_id, tenant_id FROM [Dwellow].[dbo].[units]) u ON p.id = u.property_id
-            JOIN (SELECT user_id FROM [Dwellow].[dbo].[users]) us ON u.tenant_id = us.user_id
-            WHERE p.team_id = ${team_id}) e ON t.user_id = e.user_id
+            SELECT DISTINCT t.ticket_id, t.unit_id, u.unit, t.user_id, created_by_user.full_name AS created_by, tenant_user.full_name AS tenant_name, 
+                            t.description, t.length, t.priority, t.issue_area, t.photo_url, t.special_instructions, 
+                            t.status, t.time_created, t.time_updated, t.queue, t.time_resolved, 
+                            p.id AS property_id, p.title AS property_title
+            FROM [Dwellow].[dbo].[tickets] t
+            JOIN [Dwellow].[dbo].[units] u ON t.unit_id = u.id
+            JOIN [Dwellow].[dbo].[properties] p ON u.property_id = p.id
+            JOIN [Dwellow].[dbo].[users] created_by_user ON t.user_id = created_by_user.user_id
+            JOIN [Dwellow].[dbo].[users] tenant_user ON u.tenant_id = tenant_user.user_id
+            WHERE p.team_id = ${team_id};
+        `;
 
-        UNION
-
-        SELECT DISTINCT t.*
-        FROM [Dwellow].[dbo].[tickets] t
-        JOIN (
-            SELECT p.*, user_id FROM [Dwellow].[dbo].[properties] p
-            JOIN (SELECT * FROM [Dwellow].[dbo].[users] r WHERE team_id = ${team_id}) us ON p.team_id = us.team_id) e ON t.user_id = e.user_id`;
-        
         const result = await sql.query(query);
         if (result.recordset.length === 0) {
             return null;
@@ -694,6 +689,8 @@ async function getTicketsForTeam(team_id) { // gets tickets where it matches tea
         await sql.close();
     }
 }
+
+
 
 
 async function associateUnitWithUser(user_id, code) {
@@ -747,8 +744,7 @@ async function associateUserWithInviteCode(user_id, code) {
     }
 }
 
-async function getInviteCodes(property_id)
-{
+async function getInviteCodes(property_id) {
     try {
         console.log(property_id);
 
@@ -883,33 +879,66 @@ async function getTicketsStatus(status) { // gets tickets where it matches the s
     }
 }
 
-async function updateQueue(ticket_id, new_queue)
-{
+async function updateQueue(ticket_id, new_queue, user_id) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
         request.input('ticket_id', sql.Int, ticket_id);
         request.input('new_queue', sql.Int, new_queue);
+        request.input('user_id', sql.Int, user_id);
 
         const result = await request.execute('UpdateTicketQueue');
-        logger.info('Ticket updated successfully:', result);
-        return result;
+        if (result.rowsAffected[0] > 0) {
+            logger.info(`Queue updated successfully for ticket_id ${ticket_id}:`, result);
+            return true;
+        } else {
+            logger.warn(`No ticket found with ticket_id ${ticket_id} to update.`);
+            return false;
+        }
     } catch (error) {
-        logger.error(`Error: ${error}`);
+        logger.error(`Error updating queue for ticket_id ${ticket_id}: ${error}`);
         throw error;
     } finally {
         await sql.close();
     }
 }
 
+async function getMaxQueue(user_id) {
+    try {
+        await sql.connect(config);
+        const request = new sql.Request();
+        request.input('user_id', sql.Int, user_id);
+
+        const result = await request.query(`
+            SELECT MAX(queue) as maxQueue
+            FROM [Dwellow].[dbo].[tickets]
+            WHERE queue IS NOT NULL AND unit_id IN (
+                SELECT u.id
+                FROM [Dwellow].[dbo].[teams] t
+                JOIN [Dwellow].[dbo].[units] u ON t.property_id = u.property_id
+                WHERE t.user_id = @user_id
+            )
+        `);
+
+        return result.recordset[0].maxQueue || 0;
+    } catch (error) {
+        console.error(`Error fetching max queue: ${error.message}`);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+};
+
+
+
 async function getPropertyScore(address) {
     try {
         await sql.connect(config);
         const request = new sql.Request();
         request.input('address', sql.NVarChar(sql.MAX), address);
-        
+
         const result = await request.execute('GetPropertyScore');
-        
+
         if (result.recordset.length === 0) {
             return null;
         }
@@ -965,5 +994,6 @@ module.exports = {
     updateQueue,
     getAnnouncementByPropertyAdmin,
     getPropertyScore,
-    getPropertyForGuest
+    getPropertyForGuest,
+    getMaxQueue
 };

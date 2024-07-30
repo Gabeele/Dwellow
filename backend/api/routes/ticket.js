@@ -1,6 +1,6 @@
 const express = require('express');
 const logger = require('../utils/logger');
-const { getUser, getTickets, getOneTicket, updateTicket, createTicket, deleteTicket, getTicketsForTeam, getOneComment, createComment, getComments, getTicketsStatus, updateQueue } = require('../utils/connector.js');
+const { getMaxQueue, getUser, getTickets, getOneTicket, updateTicket, createTicket, deleteTicket, getTicketsForTeam, getOneComment, createComment, getComments, getTicketsStatus, updateQueue } = require('../utils/connector.js');
 const router = express.Router();
 
 // Middleware to verify that the rest of the routes are only accessible to admins
@@ -16,52 +16,21 @@ const isAdmin = (req, res, next) => {
     next();
 };
 
-/**
- * @swagger
- * /Ticket:
- *   get:
- *     tags: [Ticket]
- *     summary: Get the current ticket's Ticket information.
- *     description: Retrieves detailed information about the authenticated ticket's Ticket.
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: The Ticket information has been retrieved successfully.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               tickets:
- *                 id:
- *                   type: integer
- *                   example: 1
- *                   description: The ticket's ID.
- *                 email:
- *                   type: string
- *                   example: "ticket@example.com"
- *                   description: The ticket's email address.
- *                 ticketType:
- *                   type: string
- *                   example: "tenant"
- *                   description: The type of the ticket (e.g., admin, tenant).
- *                 fullName:
- *                   type: string
- *                   example: "John Doe"
- *                   description: The full name of the ticket.
- *                 phoneNumber:
- *                   type: string
- *                   example: "+1234567890"
- *                   description: The phone number of the ticket.
- *       400:
- *         description: No ticket found with the provided ID.
- *       401:
- *         description: Unauthorized. The ticket is not authenticated.
- *       500:
- *         description: Internal server error. An unexpected error occurred.
- */
+
+router.get('/max-queue', async (req, res) => {
+    try {
+        const user_id = req.user_id;
+        const result = await getMaxQueue(user_id);
+        res.status(200).json({ Max: result });
+    } catch (error) {
+        logger.error(`Error fetching max queue: ${error}`);
+        res.status(500).send('Error fetching max queue');
+    }
+});
+
+
 router.get('/', async (req, res) => {
-//console.log("hello")
+    //console.log("hello")
     const id = req.user_id;
 
     try {
@@ -69,8 +38,7 @@ router.get('/', async (req, res) => {
 
         //console.log(req.role);
 
-        if(req.role === 'admin')
-        {
+        if (req.role === 'admin') {
             const team_id = user.recordset[0].team_id;
             const ticket = await getTicketsForTeam(team_id);
 
@@ -104,68 +72,27 @@ router.get('/', async (req, res) => {
 
 router.get('/:ticket_id', async (req, res) => {
     //console.log("hello")
-        try {
-            const id = req.params.ticket_id;
-    
-            const ticket = await getOneTicket(id);
-    
-            if (!ticket) {
-                logger.warn(`Get Ticket: No ticket found with id ${id}`);
-                return res.status(400).json({ message: `No ticket found with id ${id}` });
-            }
-    
-            logger.info(`Get Ticket: ticket ${id} information accessed.`); // TODO: We should return the ticket infromation here as json or somehting. IDK what is returned back. (Also update the comments)
-            res.status(200).json(ticket.recordset);
-        } catch (error) {
-            logger.error(`Error getting Ticket information for ticket ${id}: ${error.message}`);
-            res.status(500).json({ error: 'Internal Server Error' });
-        }
-    });
+    try {
+        const id = req.params.ticket_id;
 
-/**
- * @swagger
- * /Ticket:
- *   put:
- *     tags: [Ticket]
- *     summary: Update the current ticket's Ticket information.
- *     description: Allows authenticated tickets to update their Ticket information.
- *     consumes:
- *      - application/json
- *     parameters:
- *      - in: body
- *        name: ticket
- *        description: The ticket object to update.
- *        schema:
- *          type: objects
- *          required: [email, ticketType, fullName, phoneNumber]
- *          tickets:
- *            email:
- *              type: string
- *              description: The new email address of the ticket.
- *            ticketType:
- *              type: string
- *              description: The new type of the ticket (e.g., admin, tenant).
- *            fullName:
- *              type: string
- *              description: The full name of the ticket.
- *            phoneNumber:
- *              type: string
- *              description: The new phone number of the ticket.
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: The Ticket has been updated successfully.
- *       400:
- *         description: Bad request. Possible reasons include invalid input data or attempting to update to an already used email.
- *       401:
- *         description: Unauthorized. ticket is not authenticated or does not have permission to update the Ticket.
- *       500:
- *         description: Internal server error. An unexpected error occurred.
- */
+        const ticket = await getOneTicket(id);
+
+        if (!ticket) {
+            logger.warn(`Get Ticket: No ticket found with id ${id}`);
+            return res.status(400).json({ message: `No ticket found with id ${id}` });
+        }
+
+        logger.info(`Get Ticket: ticket ${id} information accessed.`); // TODO: We should return the ticket infromation here as json or somehting. IDK what is returned back. (Also update the comments)
+        res.status(200).json(ticket.recordset);
+    } catch (error) {
+        logger.error(`Error getting Ticket information for ticket ${id}: ${error.message}`);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 router.put('/:ticket_id', async (req, res) => {
 
-    const {unit_id, user_id, description, length, priority, issue_area, photo_url, special_instructions, status } = req.body;
+    const { unit_id, user_id, description, length, priority, issue_area, photo_url, special_instructions, status } = req.body;
     const ticket_id = req.params.ticket_id;
 
     try {
@@ -180,7 +107,7 @@ router.put('/:ticket_id', async (req, res) => {
         logger.info(`Update Ticket: ticket ${ticket_id} attempting update.`);
 
         // Update the Ticket
-        const updated = await updateTicket( ticket_id, unit_id, user_id, description, length, priority, issue_area, photo_url, special_instructions, status);
+        const updated = await updateTicket(ticket_id, unit_id, user_id, description, length, priority, issue_area, photo_url, special_instructions, status);
 
         if (updated) {
             logger.info(`Update Ticket: ticket ${ticket_id} Ticket updated.`);
@@ -198,25 +125,48 @@ router.put('/:ticket_id', async (req, res) => {
 }
 );
 
-/**
- * @swagger
- * /Ticket:
- *   delete:
- *     tags: [Ticket]
- *     summary: Delete the current ticket's Ticket.
- *     description: Permanently deletes the authenticated ticket's Ticket. This action cannot be undone.
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: The Ticket has been deleted successfully.
- *       400:
- *         description: No ticket found with the provided ID, or the ticket cannot be deleted (e.g., due to constraints).
- *       401:
- *         description: Unauthorized. The ticket is not authenticated or does not have permission to delete the Ticket.
- *       500:
- *         description: Internal server error. An unexpected error occurred.
- */
+router.put('/status/:ticket_id', async (req, res) => {
+    const { status, time_resolved } = req.body;
+    const ticket_id = req.params.ticket_id;
+
+    try {
+        const ticketResult = await getOneTicket(ticket_id);
+        if (!ticketResult) {
+            logger.warn(`Update Ticket: No ticket found with id ${ticket_id}`);
+            return res.status(400).json({ message: `No ticket found with id ${ticket_id}` });
+        }
+
+        const ticket = ticketResult.recordset[0];
+        logger.info(`Update Ticket: ticket ${ticket_id} attempting update.`);
+
+        const updated = await updateTicket(
+            ticket_id,
+            ticket.unit_id,
+            ticket.user_id,
+            ticket.description,
+            ticket.length,
+            ticket.priority,
+            ticket.issue_area,
+            ticket.photo_url,
+            ticket.special_instructions,
+            status,
+            time_resolved
+        );
+
+        if (updated) {
+            logger.info(`Update Ticket: ticket ${ticket_id} Ticket updated.`);
+            res.status(200).json({ message: 'Ticket updated successfully' });
+        } else {
+            logger.warn(`Update Ticket: Error updating ticket ${ticket_id} Ticket.`);
+            res.status(400).json({ message: 'Error updating ticket Ticket' });
+        }
+    } catch (error) {
+        logger.error(`Error updating Ticket for ticket ${ticket_id}: ${error.message}`);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
 router.delete('/:ticket_id', async (req, res) => {
 
     try {
@@ -239,41 +189,15 @@ router.delete('/:ticket_id', async (req, res) => {
     }
 });
 
-/**
- * @swagger
- * /tickets:
- *   post:
- *     tags: [Ticket]
- *     summary: Create a new ticket
- *     description: Only admins can create a new ticket. The user ID is taken from the user session.
- *     parameters:
- *       - in: body
- *         name: body
- *         description: ticket object that needs to be added
- *         required: true
- *         schema:
- *           type: object
- *           required:
- *             - address
- *           tickets:
- *             address:
- *               type: string
- *     responses:
- *       201:
- *         description: ticket created successfully
- *       403:
- *         description: Unauthorized access
- *       500:
- *         description: Server error
- */
+
 router.post('/', async (req, res) => {
     try {
 
-        const {unit_id, userId, description, length, priority, issue_area, photo_url, special_instructions } = req.body;
+        const { unit_id, description, length, priority, issue_area, photo_url, special_instructions } = req.body;
 
         console.log(req.body);
 
-        const newticket = await createTicket(unit_id, userId, description, length, priority, issue_area, photo_url, special_instructions);
+        const newticket = await createTicket(unit_id, req.user_id, description, length, priority, issue_area, photo_url, special_instructions);
         if (newticket) {
             logger.info(`User with ID: ${req.user_id} created a new ticket with ID: ${newticket.ticket_id}`);
             res.status(201).json(newticket);
@@ -291,8 +215,8 @@ router.post('/', async (req, res) => {
 router.post('/:ticket_id/comments', async (req, res) => {
     try {
 
-        const {description} = req.body;
-        
+        const { description } = req.body;
+
         const ticket_id = req.params.ticket_id;
         const user_id = req.user_id;
 
@@ -315,24 +239,23 @@ router.post('/:ticket_id/comments', async (req, res) => {
 
 router.post('/:ticket_id/queue', async (req, res) => {
     try {
-
-        const {new_queue} = req.body;
-        
+        const { new_queue } = req.body;
         const ticket_id = req.params.ticket_id;
 
-        console.log(ticket_id);
-
-        const update = await updateQueue(ticket_id, new_queue);
+        // Update the ticket queue with the retrieved team_id
+        const update = await updateQueue(ticket_id, new_queue, req.user_id);
         if (update) {
-            res.status(201).json(update);
+            res.status(201).json({ message: 'Queue updated successfully' });
         } else {
-            res.status(400).send('Failed to update ticket');
+            res.status(400).send('Failed to update ticket queue');
         }
     } catch (error) {
         logger.error(`Error: ${error}`);
-        res.status(500).send('Error creating comment');
+        res.status(500).send('Error updating queue');
     }
 });
+
+
 
 router.get('/:ticket_id/comments/:comment_id', async (req, res) => { // can change to delete
 
@@ -358,43 +281,43 @@ router.get('/:ticket_id/comments/:comment_id', async (req, res) => { // can chan
 
 router.get('/:ticket_id/comments', async (req, res) => {
     //console.log("hello")
-        try {
-            const id = req.params.ticket_id;
-    
-            const ticket = await getComments(id);
-    
-            if (!ticket) {
-                logger.warn(`Get Comment: No ticket found with id ${id}`);
-                return res.status(400).json({ message: `No Comment found with id ${id}` });
-            }
-    
-            logger.info(`Get Comment: ticket ${id} information accessed.`); // TODO: We should return the ticket infromation here as json or somehting. IDK what is returned back. (Also update the comments)
-            res.status(200).json(ticket.recordset);
-        } catch (error) {
-            logger.error(`Error getting Comment information for ticket ${id}: ${error.message}`);
-            res.status(500).json({ error: 'Internal Server Error' });
-        }
-    });
+    try {
+        const id = req.params.ticket_id;
 
-    router.get('/status/:status', async (req, res) => {
-        //console.log("hello")
-            try {
-                const status = req.params.status;
-        
-                const ticket = await getTicketsStatus(status);
-        
-                if (!ticket) {
-                    logger.warn(`Get Ticket: No ticket found`);
-                    return res.status(400).json({ message: `No Ticket found` });
-                }
-        
-                logger.info(`Get Ticket: information accessed.`); // TODO: We should return the ticket infromation here as json or somehting. IDK what is returned back. (Also update the comments)
-                res.status(200).json(ticket.recordset);
-            } catch (error) {
-                logger.error(`Error getting Ticket information for Ticket: ${error.message}`);
-                res.status(500).json({ error: 'Internal Server Error' });
-            }
-        });
+        const ticket = await getComments(id);
+
+        if (!ticket) {
+            logger.warn(`Get Comment: No ticket found with id ${id}`);
+            return res.status(400).json({ message: `No Comment found with id ${id}` });
+        }
+
+        logger.info(`Get Comment: ticket ${id} information accessed.`); // TODO: We should return the ticket infromation here as json or somehting. IDK what is returned back. (Also update the comments)
+        res.status(200).json(ticket.recordset);
+    } catch (error) {
+        logger.error(`Error getting Comment information for ticket ${id}: ${error.message}`);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+router.get('/status/:status', async (req, res) => {
+    //console.log("hello")
+    try {
+        const status = req.params.status;
+
+        const ticket = await getTicketsStatus(status);
+
+        if (!ticket) {
+            logger.warn(`Get Ticket: No ticket found`);
+            return res.status(400).json({ message: `No Ticket found` });
+        }
+
+        logger.info(`Get Ticket: information accessed.`); // TODO: We should return the ticket infromation here as json or somehting. IDK what is returned back. (Also update the comments)
+        res.status(200).json(ticket.recordset);
+    } catch (error) {
+        logger.error(`Error getting Ticket information for Ticket: ${error.message}`);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 
 
