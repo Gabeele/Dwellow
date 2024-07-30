@@ -1,4 +1,6 @@
 import React from "react";
+
+import { Button } from "@/components/ui/button";
 import LandingNavigation from "../components/LandingNavigation";
 import FakeBusinessScroll from "../components/landing/AutoScroll";
 import AboutUs from "../components/landing/AboutUs";
@@ -7,7 +9,6 @@ import MobileScreenshots from "../components/landing/MobileScreenshots";
 import AdminScreenshots from "../components/landing/AdminScreenshots";
 import DemoVideo from "../components/landing/DemoVideo";
 import ContactUs from "../components/landing/ContactUs";
-import { Button } from "@/components/ui/button";
 
 const Landing: React.FC = () => {
   return (

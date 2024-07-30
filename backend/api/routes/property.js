@@ -301,6 +301,7 @@ router.post('/', isAdmin, async (req, res) => {
  */
 router.put('/:propertyId', isAdmin, async (req, res) => {
     try {
+        const user = await getUser(req.user_id);
         const property_id = req.params.propertyId;
         const {title, address, description, photo_url, team_id=user.recordset[0].team_id } = req.body;
         console.log(req.body);
