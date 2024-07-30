@@ -7,28 +7,30 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { formatDateTime } from "../..//utils/FormatDateTime";
+import { formatDateTime } from "../../utils/FormatDateTime";
 
 interface TicketCardProps {
   id: number;
   description: string;
-  unit_id: number;
+  unit: string;
   status: string;
   time_created: string;
   special_instructions: string;
   issue_area: string;
-  property_id: string;
+  property_title: string;
+  tenant_name: string;
 }
 
 const TicketCard: React.FC<TicketCardProps> = ({
   id,
   description,
-  unit_id,
+  unit,
   status,
   time_created,
   special_instructions,
   issue_area,
-  property_id,
+  property_title,
+  tenant_name,
 }) => {
   const truncateText = (text: string, maxLength: number) => {
     if (text.length <= maxLength) {
@@ -48,15 +50,17 @@ const TicketCard: React.FC<TicketCardProps> = ({
           <Badge variant={badgeVariant(status)}>{status}</Badge>
         </div>
         <h3 className="text-lg font-semibold mb-1">
-          {truncateText(description, 25)}
+          {sentenceCaseText(truncateText(description, 25))}
         </h3>
         <p className="text-sm text-muted-foreground mb-1">
           {formatDateTime(new Date(time_created))}
         </p>
-        <p className="text-sm mb-2">{special_instructions}</p>
         <div className="flex justify-between items-center text-sm text-muted-foreground">
-          <span>{property_id}</span>
-          <span>Unit {unit_id}</span>
+          <span>{property_title}</span>
+          <span>Unit {unit}</span>
+        </div>
+        <div className="flex justify-between items-center text-sm text-muted-foreground">
+          <span>Tenant: {tenant_name}</span>
         </div>
       </Card>
     </Link>
@@ -64,3 +68,7 @@ const TicketCard: React.FC<TicketCardProps> = ({
 };
 
 export default TicketCard;
+
+const sentenceCaseText = (text: string) => {
+  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+};

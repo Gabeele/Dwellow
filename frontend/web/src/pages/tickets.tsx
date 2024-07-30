@@ -23,8 +23,10 @@ interface Property {
 interface Ticket {
   id: number;
   description: string;
-  unit_id: number;
+  unit: string;
   user_id: number;
+  created_by: string;
+  tenant_name: string;
   length: string;
   issue_area: string;
   photo_url: string;
@@ -33,9 +35,10 @@ interface Ticket {
   status: string;
   time_created: string;
   time_updated: string;
-  queue: number;
-  time_resolved: string;
-  property_id: string;
+  queue: number | null;
+  time_resolved: string | null;
+  property_id: number;
+  property_title: string;
 }
 
 export const fetchTickets = async () => {
@@ -47,8 +50,10 @@ export const fetchTickets = async () => {
         const formattedTickets = jsonData.data.map((ticket: any) => ({
           id: ticket.ticket_id,
           description: ticket.description,
-          unit_id: ticket.unit_id,
+          unit: ticket.unit,
           user_id: ticket.user_id,
+          created_by: ticket.created_by,
+          tenant_name: ticket.tenant_name,
           length: ticket.length,
           issue_area: ticket.issue_area,
           photo_url: ticket.photo_url,
@@ -59,7 +64,8 @@ export const fetchTickets = async () => {
           time_updated: ticket.time_updated,
           queue: ticket.queue,
           time_resolved: ticket.time_resolved,
-          property_id: ticket.property_id || `0000`,
+          property_id: ticket.property_id,
+          property_title: ticket.property_title,
         }));
         localStorage.setItem("tickets", JSON.stringify(formattedTickets));
         const activeTickets = formattedTickets.filter(
@@ -151,7 +157,18 @@ function Tickets() {
         <h2 className="text-xl font-semibold mb-4">Open Tickets</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {activeTickets.map((ticket) => (
-            <TicketCard key={ticket.id} {...ticket} />
+            <TicketCard
+              key={ticket.id}
+              id={ticket.id}
+              description={ticket.description}
+              unit={ticket.unit}
+              status={ticket.status}
+              time_created={ticket.time_created}
+              special_instructions={ticket.special_instructions}
+              issue_area={ticket.issue_area}
+              property_title={ticket.property_title}
+              tenant_name={ticket.tenant_name}
+            />
           ))}
         </div>
       </div>
@@ -159,7 +176,18 @@ function Tickets() {
         <h2 className="text-xl font-semibold mb-4">Closed Tickets</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {closedTickets.map((ticket) => (
-            <TicketCard key={ticket.id} {...ticket} />
+            <TicketCard
+              key={ticket.id}
+              id={ticket.id}
+              description={ticket.description}
+              unit={ticket.unit}
+              status={ticket.status}
+              time_created={ticket.time_created}
+              special_instructions={ticket.special_instructions}
+              issue_area={ticket.issue_area}
+              property_title={ticket.property_title}
+              tenant_name={ticket.tenant_name}
+            />
           ))}
         </div>
       </div>
