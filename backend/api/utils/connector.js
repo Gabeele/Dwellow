@@ -623,22 +623,38 @@ async function getTickets(id) {
     return result.recordset;
 }
 
-async function getOneTicket(id) { // gets tickets where it matches the user id
+async function getOneTicket(ticket_id) {
     try {
         await sql.connect(config);
-        const query = `SELECT * FROM tickets WHERE ticket_id = '${id}'`;
+        const query = `
+        SELECT DISTINCT t.ticket_id, t.unit_id, u.unit, t.user_id, created_by_user.full_name AS created_by, tenant_user.full_name AS tenant_name, 
+                        t.description, t.length, t.priority, t.issue_area, t.photo_url, t.special_instructions, 
+                        t.status, t.time_created, t.time_updated, t.queue, t.time_resolved, 
+                        p.id AS property_id, p.title AS property_title
+        FROM [Dwellow].[dbo].[tickets] t
+        JOIN [Dwellow].[dbo].[units] u ON t.unit_id = u.id
+        JOIN [Dwellow].[dbo].[properties] p ON u.property_id = p.id
+        JOIN [Dwellow].[dbo].[users] created_by_user ON t.user_id = created_by_user.user_id
+        JOIN [Dwellow].[dbo].[users] tenant_user ON u.tenant_id = tenant_user.user_id
+        WHERE t.ticket_id = '${ticket_id}'
+        ORDER BY t.time_created DESC, t.queue ASC;
+    `;
+
+
         const result = await sql.query(query);
         if (result.recordset.length === 0) {
             return null;
         }
         return result;
     } catch (error) {
-        logger.error(`Error fetching ticket  ${id}: ${error}`);
+        logger.error("Error fetching ticket  ${ id }: ${ error }");
         throw error;
     } finally {
         await sql.close();
     }
 }
+
+
 async function getTicketsForTeam(team_id) {
     try {
         await sql.connect(config);
@@ -652,7 +668,8 @@ async function getTicketsForTeam(team_id) {
             JOIN [Dwellow].[dbo].[properties] p ON u.property_id = p.id
             JOIN [Dwellow].[dbo].[users] created_by_user ON t.user_id = created_by_user.user_id
             JOIN [Dwellow].[dbo].[users] tenant_user ON u.tenant_id = tenant_user.user_id
-            WHERE p.team_id = ${team_id};
+            WHERE p.team_id = ${team_id}    
+            ORDER BY t.time_created DESC, t.queue ASC;
         `;
 
         const result = await sql.query(query);
@@ -862,45 +879,67 @@ async function getTicketsStatus(status) { // gets tickets where it matches the s
     }
 }
 
-async function updateQueue(ticket_id, new_queue, user_id) {
+async function updateQueue(ticket_id, new_queue) {
     try {
         await sql.connect(config);
-        const request = new sql.Request();
-        request.input('ticket_id', sql.Int, ticket_id);
-        request.input('new_queue', sql.Int, new_queue);
-        request.input('user_id', sql.Int, user_id);
 
-        const result = await request.execute('UpdateTicketQueue');
-        if (result.rowsAffected[0] > 0) {
-            logger.info(`Queue updated successfully for ticket_id ${ticket_id}:`, result);
-            return true;
+        let query;
+        if (new_queue === 0) {
+            // If new_queue is 0, set queue to null and status to closed
+            query = `UPDATE tickets SET queue = NULL, status = 'closed' WHERE ticket_id = '${ticket_id}'`;
         } else {
-            logger.warn(`No ticket found with ticket_id ${ticket_id} to update.`);
-            return false;
+            // Otherwise, update the queue with the new value
+            query = `UPDATE tickets SET queue = '${new_queue}' WHERE ticket_id = '${ticket_id}'`;
         }
+
+        await sql.query(query);
+        return true;
     } catch (error) {
-        logger.error(`Error updating queue for ticket_id ${ticket_id}: ${error}`);
+        console.error(`Error updating queue for ticket ${ticket_id}: ${error}`);
         throw error;
     } finally {
         await sql.close();
     }
 }
 
+async function updateTicketStatus(ticket_id, status) {
+    try {
+        await sql.connect(config); // Connect to the database
+        const query = `UPDATE tickets SET status = '${status}' WHERE ticket_id = '${ticket_id}'`;
+        await sql.query(query);
+        return true;
+    } catch (error) {
+        console.error(`Error updating status for ticket ${ticket_id}: ${error}`);
+        throw error;
+    } finally {
+        await sql.close(); // Close the database connection
+    }
+}
+
 async function getMaxQueue(user_id) {
     const query = `
-        SELECT MAX(queue) as maxQueue
-        FROM [Dwellow].[dbo].[tickets]
-        WHERE queue IS NOT NULL AND unit_id IN (
+        SELECT MAX(tk.queue) as maxQueue
+        FROM tickets tk
+        WHERE tk.status = 'active'
+          AND tk.queue IS NOT NULL
+          AND tk.unit_id IN (
             SELECT u.id
-            FROM [Dwellow].[dbo].[teams] t
-            JOIN [Dwellow].[dbo].[units] u ON t.property_id = u.property_id
-            WHERE t.user_id = @user_id
-        )`;
+            FROM units u
+            WHERE u.property_id IN (
+                SELECT p.id
+                FROM properties p
+                WHERE p.team_id IN (
+                    SELECT t.team_id
+                    FROM teams t
+                    WHERE t.user_id = @user_id
+                )
+            )
+        )
+    `;
     const params = [{ name: 'user_id', type: sql.Int, value: user_id }];
     const result = await executeQuery(query, params);
     return result.recordset[0].maxQueue || 0;
 }
-
 
 async function getPropertyScore(address) {
     try {
@@ -966,5 +1005,6 @@ module.exports = {
     getAnnouncementByPropertyAdmin,
     getPropertyScore,
     getPropertyForGuest,
-    getMaxQueue
+    getMaxQueue,
+    updateTicketStatus
 };

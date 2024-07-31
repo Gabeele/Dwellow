@@ -1,6 +1,6 @@
 const express = require('express');
 const logger = require('../utils/logger');
-const { getMaxQueue, getUser, getTickets, getOneTicket, updateTicket, createTicket, deleteTicket, getTicketsForTeam, getOneComment, createComment, getComments, getTicketsStatus, updateQueue } = require('../utils/connector.js');
+const { updateTicketStatus, getMaxQueue, getUser, getTickets, getOneTicket, updateTicket, createTicket, deleteTicket, getTicketsForTeam, getOneComment, createComment, getComments, getTicketsStatus, updateQueue } = require('../utils/connector.js');
 const router = express.Router();
 
 // Middleware to verify that the rest of the routes are only accessible to admins
@@ -54,6 +54,8 @@ router.get('/', async (req, res) => {
         }
         else {
             const ticket = await getTickets(id);
+
+            console.log(ticket)
 
             if (!ticket) {
                 logger.warn(`Get Ticket: No ticket found with id ${id}`);
@@ -239,22 +241,110 @@ router.post('/:ticket_id/comments', async (req, res) => {
 
 router.post('/:ticket_id/queue', async (req, res) => {
     try {
-        const { new_queue } = req.body;
-        const ticket_id = req.params.ticket_id;
+        const user = await getUser(req.user_id);
+        const team_id = user.recordset[0].team_id;
+        const tickets = await getTicketsForTeam(team_id);
 
-        // Update the ticket queue with the retrieved team_id
-        const update = await updateQueue(ticket_id, new_queue, req.user_id);
-        if (update) {
-            res.status(201).json({ message: 'Queue updated successfully' });
-        } else {
-            res.status(400).send('Failed to update ticket queue');
+        const { new_queue } = req.body;
+        const ticket_id = parseInt(req.params.ticket_id); // Ensure ticket_id is an integer
+        const user_id = req.user_id;
+
+        console.log(ticket_id, new_queue);
+
+        // Find the ticket to update
+        let ticketToUpdate = tickets.find(ticket => ticket.ticket_id === ticket_id);
+
+        if (!ticketToUpdate) {
+            res.status(404).send('Ticket not found');
+            return;
         }
+
+        const old_queue = ticketToUpdate.queue;
+        const old_status = ticketToUpdate.status;
+
+        if (old_queue === undefined) {
+            logger.error(`Ticket ${ticket_id} does not have a queue property`);
+            res.status(400).send('Ticket does not have a queue property');
+            return;
+        }
+
+        // Filter only active tickets for rebalancing
+        let activeTickets = tickets.filter(ticket => ticket.status === 'active');
+
+        if (new_queue === 0) {
+            // If new_queue is 0, close the ticket and remove it from the active tickets list
+            await updateQueue(ticket_id, new_queue); // This sets queue to NULL and status to 'closed'
+            ticketToUpdate.status = 'closed';
+            // Remove the closed ticket from the active tickets list
+            const index = activeTickets.indexOf(ticketToUpdate);
+            if (index > -1) {
+                activeTickets.splice(index, 1);
+            }
+
+            // Rebalance the remaining tickets
+            activeTickets.forEach((ticket, index) => {
+                ticket.queue = index + 1;
+            });
+
+            // Update the queue for each ticket in the database
+            for (let ticket of activeTickets) {
+                await updateQueue(ticket.ticket_id, ticket.queue);
+            }
+        } else {
+            // If the ticket is not active, make it active
+            if (old_status !== 'active') {
+                await updateTicketStatus(ticket_id, 'active');
+                ticketToUpdate.status = 'active';
+            }
+
+            // Add the ticket to activeTickets if it was not already there
+            if (!activeTickets.includes(ticketToUpdate)) {
+                activeTickets.push(ticketToUpdate);
+            }
+
+            // Determine the direction of the queue update
+            if (new_queue > old_queue) {
+                // Move down the queue, shift others up
+                activeTickets.forEach(ticket => {
+                    if (ticket.ticket_id !== ticket_id && ticket.queue > old_queue && ticket.queue <= new_queue) {
+                        ticket.queue -= 1;
+                    }
+                });
+            } else if (new_queue < old_queue) {
+                // Move up the queue, shift others down
+                activeTickets.forEach(ticket => {
+                    if (ticket.ticket_id !== ticket_id && ticket.queue >= new_queue && ticket.queue < old_queue) {
+                        ticket.queue += 1;
+                    }
+                });
+            } else if (old_queue === null) {
+                // New ticket being added to the queue
+                new_queue = activeTickets.length + 1;
+            }
+
+            // Update the queue of the ticket to be moved
+            ticketToUpdate.queue = new_queue;
+
+            // Sort tickets by their queue
+            activeTickets.sort((a, b) => (a.queue !== null ? a.queue : Infinity) - (b.queue !== null ? b.queue : Infinity));
+
+            // Rebalance the queue (ensure no gaps)
+            activeTickets.forEach((ticket, index) => {
+                ticket.queue = index + 1;
+            });
+
+            // Update the queue for each ticket in the database
+            for (let ticket of activeTickets) {
+                await updateQueue(ticket.ticket_id, ticket.queue);
+            }
+        }
+
+        res.status(201).json({ message: 'Queue updated successfully' });
     } catch (error) {
         logger.error(`Error: ${error}`);
         res.status(500).send('Error updating queue');
     }
 });
-
 
 
 router.get('/:ticket_id/comments/:comment_id', async (req, res) => { // can change to delete
