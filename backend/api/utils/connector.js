@@ -2,7 +2,6 @@ const sql = require('mssql');
 require('dotenv').config();
 const logger = require('./logger');
 
-
 const config = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
@@ -10,27 +9,33 @@ const config = {
     database: process.env.DB_NAME,
     options: {
         encrypt: true,
-        trustServerCertificate: true,
-        database: 'Dwellow',
-        connectionRole: 'db_datawriter'
+        trustServerCertificate: true
     }
 };
 
-// Test function to check the database functionality
-async function executeQuery(query) {
+// Create a pool instance and connect
+const pool = new sql.ConnectionPool(config);
+const poolConnect = pool.connect();
+
+pool.on('error', err => {
+    logger.error('Database connection pool error', err);
+});
+
+async function executeQuery(query, params = []) {
+    await poolConnect; // Ensures that the pool has been created
     try {
-        await sql.connect(config);
-        const result = await sql.query(query);
+        const request = pool.request();
+        params.forEach(param => {
+            request.input(param.name, param.type, param.value);
+        });
+        const result = await request.query(query);
         logger.info(`Query executed successfully: ${query}`);
         return result;
     } catch (error) {
         logger.error(`Error executing query: ${query}, Error: ${error}`);
         throw error;
-    } finally {
-        await sql.close();
     }
 }
-
 
 async function createUser(email, userType, fullName, phoneNumber, fb_uuid) {
     try {
@@ -72,22 +77,14 @@ async function checkEmail(email) {
 
 
 async function getRole(userId) {
-
-    try {
-        await sql.connect(config);
-        const query = `SELECT user_type FROM users WHERE user_id = '${userId}'`;
-        const result = await sql.query(query);
-        if (result.recordsetlength === 0) {
-            return null;
-        }
-        return result.recordset[0].user_type;
-    } catch (error) {
-        logger.error(`Error fetching user with token ${userId}: ${error}`);
-        throw error;
-    } finally {
-        await sql.close();
+    const query = 'SELECT user_type FROM users WHERE user_id = @userId';
+    const params = [{ name: 'userId', type: sql.Int, value: userId }];
+    const result = await executeQuery(query, params);
+    if (result.recordset.length === 0) {
+        return null;
     }
-};
+    return result.recordset[0].user_type;
+}
 
 // gets any user from the database with a specific token, but since they are unique it will always be 1 user
 async function getUser(id) {
@@ -127,22 +124,14 @@ async function getUsersByTeam(id) {
 }
 
 
-async function getUserId(token) { // TODO: Gavin's attempt at making a user ID thing
-
-    try {
-        await sql.connect(config);
-        const query = `SELECT * FROM users WHERE token = '${token}'`;
-        const result = await sql.query(query);
-        if (result.recordset.length === 0) {
-            return null;
-        }
-        return result.recordset[0].user_id;
-    } catch (error) {
-        logger.error(`Error fetching user with token ${token}: ${error}`);
-        throw error;
-    } finally {
-        await sql.close();
+async function getUserId(token) {
+    const query = 'SELECT user_id FROM users WHERE token = @token';
+    const params = [{ name: 'token', type: sql.VarChar, value: token }];
+    const result = await executeQuery(query, params);
+    if (result.recordset.length === 0) {
+        return null;
     }
+    return result.recordset[0].user_id;
 }
 
 
@@ -311,27 +300,20 @@ async function getAnnouncementByPropertyAdmin(propertyId) {
 }
 
 async function getProperties(team_id) {
-    try {
-        await sql.connect(config);
-        const query = `
+    const query = `
         SELECT
             p.*,
             (SELECT COUNT(*) FROM units u WHERE u.property_id = p.id) AS unit_count
         FROM
             properties p
         WHERE
-            p.team_id = '${team_id}'`;
-        const result = await sql.query(query);
-        if (result.recordset.length === 0) {
-            return null;
-        }
-        return result.recordset;
-    } catch (error) {
-        logger.error(`Error fetching properties with team_id ${team_id}: ${error}`);
-        throw error;
-    } finally {
-        await sql.close();
+            p.team_id = @team_id`;
+    const params = [{ name: 'team_id', type: sql.Int, value: team_id }];
+    const result = await executeQuery(query, params);
+    if (result.recordset.length === 0) {
+        return null;
     }
+    return result.recordset;
 }
 
 async function getPropertyByAddress(address) {
@@ -631,21 +613,14 @@ async function removeTicket(ticketId) {
     }
 }
 
-async function getTickets(id) { // gets tickets where it matches the user id
-    try {
-        await sql.connect(config);
-        const query = `SELECT * FROM tickets WHERE user_id = '${id}'`;
-        const result = await sql.query(query);
-        if (result.recordset.length === 0) {
-            return null;
-        }
-        return result;
-    } catch (error) {
-        logger.error(`Error fetching ticket associated with user ${id}: ${error}`);
-        throw error;
-    } finally {
-        await sql.close();
+async function getTickets(id) {
+    const query = 'SELECT * FROM tickets WHERE user_id = @user_id';
+    const params = [{ name: 'user_id', type: sql.Int, value: id }];
+    const result = await executeQuery(query, params);
+    if (result.recordset.length === 0) {
+        return null;
     }
+    return result.recordset;
 }
 
 async function getOneTicket(id) { // gets tickets where it matches the user id
@@ -912,31 +887,19 @@ async function updateQueue(ticket_id, new_queue, user_id) {
 }
 
 async function getMaxQueue(user_id) {
-    try {
-        await sql.connect(config);
-        const request = new sql.Request();
-        request.input('user_id', sql.Int, user_id);
-
-        const result = await request.query(`
-            SELECT MAX(queue) as maxQueue
-            FROM [Dwellow].[dbo].[tickets]
-            WHERE queue IS NOT NULL AND unit_id IN (
-                SELECT u.id
-                FROM [Dwellow].[dbo].[teams] t
-                JOIN [Dwellow].[dbo].[units] u ON t.property_id = u.property_id
-                WHERE t.user_id = @user_id
-            )
-        `);
-
-        return result.recordset[0].maxQueue || 0;
-    } catch (error) {
-        console.error(`Error fetching max queue: ${error.message}`);
-        throw error;
-    } finally {
-        await sql.close();
-    }
-};
-
+    const query = `
+        SELECT MAX(queue) as maxQueue
+        FROM [Dwellow].[dbo].[tickets]
+        WHERE queue IS NOT NULL AND unit_id IN (
+            SELECT u.id
+            FROM [Dwellow].[dbo].[teams] t
+            JOIN [Dwellow].[dbo].[units] u ON t.property_id = u.property_id
+            WHERE t.user_id = @user_id
+        )`;
+    const params = [{ name: 'user_id', type: sql.Int, value: user_id }];
+    const result = await executeQuery(query, params);
+    return result.recordset[0].maxQueue || 0;
+}
 
 
 async function getPropertyScore(address) {

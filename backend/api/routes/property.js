@@ -16,9 +16,9 @@ const { getProperties,
     deleteUnit,
     associateUnitWithUser,
     createCode,
-    deleteInviteCode, 
+    deleteInviteCode,
     getUser,
-    getPropertyByAddress }= require('../utils/connector');
+    getPropertyByAddress } = require('../utils/connector');
 
 /**
  * @swagger
@@ -250,7 +250,7 @@ router.get('/:propertyId/units/:unitId', isAdmin, async (req, res) => {
 router.post('/', isAdmin, async (req, res) => {
     try {
         const user = await getUser(req.user_id);
-        const {title, address, description, photo_url, team_id } = req.body;
+        const { title, address, description, photo_url, team_id } = req.body;
         console.log(req.body);
 
         const newProperty = await createProperty(title, address, description, photo_url, user.recordset[0].team_id);
@@ -303,7 +303,7 @@ router.put('/:propertyId', isAdmin, async (req, res) => {
     try {
         const user = await getUser(req.user_id);
         const property_id = req.params.propertyId;
-        const {title, address, description, photo_url, team_id=user.recordset[0].team_id } = req.body;
+        const { title, address, description, photo_url, team_id = user.recordset[0].team_id } = req.body;
         console.log(req.body);
         console.log(property_id);
 
@@ -665,7 +665,7 @@ router.post('/associate/', async (req, res) => {
  *       500:
  *         description: Server error
  */
- 
+
 router.delete('/:propertyId/units/:unitId/invite/:code', isAdmin, async (req, res) => {
     try {
         const { propertyId, unitId, code } = req.params;
@@ -696,7 +696,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, 
+    limits: { fileSize: 10 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         const filetypes = /pdf/;
         const mimetype = filetypes.test(file.mimetype);
@@ -707,7 +707,7 @@ const upload = multer({
             cb('Error: Only PDFs are allowed!');
         }
     }
-}).single("contract"); 
+}).single("contract");
 
 router.post('/contract', function (req, res) {
     upload(req, res, function (err) {

@@ -3,7 +3,6 @@ const { getRole, getUserId } = require('./connector');
 const logger = require('./logger');
 const admin = require('firebase-admin');
 
-
 admin.initializeApp({
     credential: admin.credential.cert({
         projectId: process.env.FB_PROJECT_ID,
@@ -13,11 +12,9 @@ admin.initializeApp({
 });
 
 const authenticate = async (req, res, next) => {
-    // Correctly extract the token from the Authorization header
     try {
-
         let token = req.headers['authorization'];
-        if (token.includes('bearer') || token.includes('Bearer')) {
+        if (token && (token.toLowerCase().startsWith('bearer '))) {
             token = token.split(' ')[1];
         }
 
@@ -25,17 +22,14 @@ const authenticate = async (req, res, next) => {
             logger.info('No token provided.');
             return res.status(401).send({ error: 'No token provided. Provide a token in the header.' });
         }
+
         const decodedToken = await decodeToken(token);
-
-        //console.log(req);
-
         req.token = decodedToken;
-        req.user_id = await getUserId(req.token.user_id);  // assigned the dwellow user id to the request object
-        req.role = await getRole(req.user_id);   // Adds a role to the request object
 
-        // console.log(req);
+        req.user_id = await getUserId(req.token.user_id);
+        req.role = await getRole(req.user_id);
 
-        logger.info(`User ${req.user_id} ${req.role} authenticated.`);
+        logger.info(`User ${req.user_id} with role ${req.role} authenticated.`);
         next();
     } catch (error) {
         logger.error(`Error authenticating user: ${error.message}`);
@@ -44,9 +38,13 @@ const authenticate = async (req, res, next) => {
 };
 
 const decodeToken = async (token) => {
-    return admin.auth().verifyIdToken(token);
+    try {
+        return await admin.auth().verifyIdToken(token);
+    } catch (error) {
+        logger.error(`Error decoding token: ${error.message}`);
+        throw new Error('Token verification failed');
+    }
 }
-
 
 module.exports = {
     authenticate,
