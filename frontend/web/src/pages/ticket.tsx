@@ -5,12 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDateTime } from "@/utils/FormatDateTime";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft } from "lucide-react";
 import Loading from "@/components/Loading";
@@ -53,13 +47,11 @@ export default function Component() {
   const [comments, setComments] = useState<Comment[] | null>([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(true);
-  const [maxQueue, setMaxQueue] = useState<number>(1);
 
   useEffect(() => {
     setLoading(true);
     fetchTicket(id);
     fetchComments(id);
-    fetchMaxQueue();
     setLoading(false);
   }, [id]);
 
@@ -82,23 +74,6 @@ export default function Component() {
     }
   };
 
-  const fetchMaxQueue = async () => {
-    try {
-      const response = await API.get("/ticket/max-queue");
-      if (response.status === 200) {
-        const jsonData = await response.data;
-        setMaxQueue(jsonData.Max || 1);
-      } else {
-        console.error(
-          "Failed to fetch max queue, status code:",
-          response.status
-        );
-      }
-    } catch (error: any) {
-      console.error("Failed to fetch max queue:", error.message);
-    }
-  };
-
   const handleComment = async () => {
     if (newComment.trim() !== "") {
       try {
@@ -112,43 +87,6 @@ export default function Component() {
       }
     } else {
       alert("Comment cannot be empty!");
-    }
-  };
-
-  const handleStatusChange = async (newStatus: string) => {
-    if (ticket) {
-      try {
-        let response;
-        if (newStatus === "active" && ticket.status === "pending") {
-          response = await API.put(`/ticket/status/${id}`, {
-            status: newStatus,
-          });
-          if (response.status === 200) {
-            await updateTicketQueue(maxQueue + 1);
-          }
-        } else if (newStatus === "closed") {
-          response = await API.put(`/ticket/status/${id}`, {
-            status: newStatus,
-            time_resolved: new Date().toISOString(),
-          });
-          if (response.status === 200) {
-            await updateTicketQueue(0);
-          }
-        } else {
-          response = await API.put(`/ticket/status/${id}`, {
-            status: newStatus,
-            queue: null,
-          });
-        }
-
-        if (response.status === 200) {
-          fetchTicket(id);
-        } else {
-          console.error("Failed to update ticket status:", response.status);
-        }
-      } catch (error) {
-        console.error("Error updating ticket status:", error);
-      }
     }
   };
 
@@ -167,16 +105,8 @@ export default function Component() {
     }
   };
 
-  const handleMoveUp = () => {
-    if (ticket?.queue && ticket.queue > 1) {
-      updateTicketQueue(ticket.queue - 1);
-    }
-  };
-
-  const handleMoveDown = () => {
-    if (ticket?.queue && ticket.queue < maxQueue) {
-      updateTicketQueue(ticket.queue + 1);
-    }
+  const handleClose = async () => {
+    updateTicketQueue(0);
   };
 
   const badgeClass = useMemo(() => {
@@ -213,60 +143,14 @@ export default function Component() {
           <Badge className="px-2 py-1 text-md font-medium">
             {ticket?.priority}
           </Badge>
-          {ticket?.status === "active" && (
-            <Badge variant="outline" className="px-2 py-1 text-md font-medium">
-              Queue #{ticket?.queue}
-            </Badge>
-          )}
         </div>
         <div className="ml-auto flex items-center space-x-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">{ticket?.status}</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => handleStatusChange("pending")}>
-                Pending
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusChange("active")}>
-                Active
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusChange("closed")}>
-                Closed
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          {ticket?.status === "pending" && (
-            <Button
-              variant="outline"
-              onClick={() => handleStatusChange("active")}
-            >
-              Add to Queue
-            </Button>
-          )}
-          {ticket?.status === "active" && (
-            <>
-              <Button
-                variant="outline"
-                onClick={handleMoveUp}
-                disabled={ticket.queue === 1}
-              >
-                Move Up
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handleMoveDown}
-                disabled={ticket.queue === maxQueue}
-              >
-                Move Down
-              </Button>
-            </>
-          )}
           <Button
             variant="outline"
-            onClick={() => handleStatusChange("closed")}
+            onClick={handleClose}
+            disabled={ticket?.status === "closed"}
           >
-            Close
+            Close Ticket
           </Button>
         </div>
       </div>

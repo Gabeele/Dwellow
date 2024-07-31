@@ -45,28 +45,36 @@ class _HomePageState extends State<HomePage> {
           },
         );
 
+        print('Response: ${response}');
+        print('Response status: ${response.statusCode}');
+        print('Response body: ${response.body}');
+
         if (response.statusCode == 200) {
-          List<dynamic> data = jsonDecode(response.body);
-          setState(() {
-            tickets.clear();
-            for (var ticket in data) {
-              tickets.add(MaintenanceTicket.fromJson(ticket));
-            }
-            // Sort tickets with queued tickets at the top and closed items at the bottom
-            tickets.sort((a, b) {
-              if ((a.queue ?? 0) != 0 && (b.queue ?? 0) == 0) {
-                return -1;
-              } else if ((a.queue ?? 0) == 0 && (b.queue ?? 0) != 0) {
-                return 1;
-              } else if (a.status == 'closed' && b.status != 'closed') {
-                return 1;
-              } else if (a.status != 'closed' && b.status == 'closed') {
-                return -1;
-              } else {
-                return a.date.compareTo(b.date);
+          try {
+            List<dynamic> data = jsonDecode(response.body);
+            setState(() {
+              tickets.clear();
+              for (var ticket in data) {
+                tickets.add(MaintenanceTicket.fromJson(ticket));
               }
+              // Sort tickets with queued tickets at the top and closed items at the bottom
+              tickets.sort((a, b) {
+                if ((a.queue ?? 0) != 0 && (b.queue ?? 0) == 0) {
+                  return -1;
+                } else if ((a.queue ?? 0) == 0 && (b.queue ?? 0) != 0) {
+                  return 1;
+                } else if (a.status == 'closed' && b.status != 'closed') {
+                  return 1;
+                } else if (a.status != 'closed' && b.status == 'closed') {
+                  return -1;
+                } else {
+                  return a.date.compareTo(b.date);
+                }
+              });
             });
-          });
+          } catch (e) {
+            print('Error decoding response: $e');
+          }
         } else if (response.statusCode == 404) {
           setState(() {
             tickets.clear();

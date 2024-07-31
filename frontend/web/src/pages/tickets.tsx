@@ -71,6 +71,11 @@ export const fetchTickets = async () => {
             ticket.status === "active" && ticket.queue !== null
         );
 
+        // Sort queuedTickets by queue number
+        queuedTickets.sort((a: Ticket, b: Ticket) => {
+          return (a.queue ?? 0) - (b.queue ?? 0);
+        });
+
         return {
           allTickets: formattedTickets,
           pendingTickets,
