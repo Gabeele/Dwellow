@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210.23 225.5">
+  <defs>
+    <style>
+      .cls-1 {
+        letter-spacing: -.03em;
+      }
+
+      .cls-2 {
+        letter-spacing: -.03em;
+      }
+
+      .cls-3 {
+        font-family: Inter-ExtraBold, Inter;
+        font-size: 40px;
+        font-weight: 700;
+      }
+
+      .cls-3,
+      .cls-4 {
+        fill: #ffffff;
+      }
+
+      .cls-4 {
+        stroke-width: 0px;
+      }
+    </style>
+  </defs>
+  <g id="Layer_2-2" data-name="Layer 2">
+    <circle class="cls-4" cx="120.12" cy="99.32" r="5.5" />
+    <path class="cls-4"
+      d="M20.62,66.82v112h157s-9,0-19-14c-5.36-7.5-11.51-19.09-15-22-6-5-8-4-13.5-4-15.42,0-26.74-5.94-32.5-18-.81-1.7-8.06.11-19,4-16.38,5.82-34,18-34,17,0-.74,11.94-15.2,25-25,12-9,22.91-15.33,23-16,2.31-16.77,18.38-30,37.5-30,14.72,0,26.98,10.48,33.5,17,1,1,7.74-.78,13-1,7.02-.3,13,1,13,1v-21L105.18,0,20.62,66.82Z" />
+    <text class="cls-3" transform="translate(0 211.93)">
+      <tspan class="cls-2" x="0" y="0">D</tspan>
+      <tspan x="27.52" y="0">WEL</tspan>
+      <tspan class="cls-1" x="116.88" y="0">L</tspan>
+      <tspan class="cls-2" x="138.36" y="0">O</tspan>
+      <tspan x="167.89" y="0">W</tspan>
+    </text>
+  </g>
+</svg>

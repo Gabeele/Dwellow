@@ -1,9 +1,5 @@
 "use client";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
@@ -27,7 +23,7 @@ function Navigation() {
   const clearCache = () => {
     localStorage.clear();
   };
-  
+
   return (
     <div className="flex flex-col h-full w-64 bg-dwellow-dark-200">
       <div className="flex flex-col items-center flex-grow">
@@ -41,45 +37,51 @@ function Navigation() {
             </h3>
           </div>
           <div className="flex flex-col space-y-7">
-            <Link to="/dashboard" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
+            <Link
+              to="/dashboard"
+              className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline"
+            >
               Dashboard
             </Link>
-            <Link to="/properties" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
+            <Link
+              to="/properties"
+              className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline"
+            >
               Properties
             </Link>
-            <Link to="/tickets" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
+            <Link
+              to="/tickets"
+              className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline"
+            >
               Tickets
             </Link>
-            <Link to="/contracts" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
+            <Link
+              to="/contracts"
+              className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline"
+            >
               Contracts
             </Link>
-            <Link to="/manage" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
-              Manage team
-            </Link>
-            <Link to="/invitations" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
-              Invitations
-            </Link>
-            <Link to="/network" className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline">
+
+            <Link
+              to="/network"
+              className="text-lg font-normal justify-start text-dwellow-white-200 hover:underline"
+            >
               Network
             </Link>
           </div>
         </div>
-        <Button onClick={clearCache}>
-          Clear Cache
-        </Button>
       </div>
       <div className="flex items-center mb-6 ml-12 -mt-6">
-        <Avatar className="">
-          <AvatarImage src="https://github.com/shadcn.png"/>
+        <Avatar className="text-white">
+          <AvatarImage src="/logo-no-text.svg" className="text-white" />
           <AvatarFallback>?</AvatarFallback>
         </Avatar>
-        <Link to="" className="text-lg font-normal justify-start text-dwellow-white-200 ml-4">
-          Account
-        </Link>
+
         <Button
           variant="link"
           onClick={handleLogout}
-          className="text-dwellow-white-200 inline-flex">
+          className="text-dwellow-white-200 inline-flex"
+        >
           Logout
         </Button>
       </div>
