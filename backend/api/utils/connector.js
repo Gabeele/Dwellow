@@ -916,6 +916,40 @@ async function updateTicketStatus(ticket_id, status) {
     }
 }
 
+async function getContracts() {
+    try {
+        await sql.connect(config);
+        const query = `
+            SELECT 
+                c.contract_id,
+                c.contract_url,
+                c.contract_date,
+                c.user_id AS tenant_id,
+                u.full_name AS tenant_name,
+                un.id AS unit_id,
+                un.description AS unit_description,
+                p.id AS property_id,
+                p.title AS property_title
+            FROM contracts c
+            JOIN users u ON c.user_id = u.user_id
+            JOIN units un ON u.user_id = un.tenant_id
+            JOIN properties p ON un.property_id = p.id
+            WHERE u.user_type = 'tenant';
+        `;
+        const result = await sql.query(query);
+        if (result.recordset.length === 0) {
+            return null;
+        }
+        return result.recordset;
+    } catch (error) {
+        console.error('Error fetching contracts:', error);
+        throw error;
+    } finally {
+        await sql.close();
+    }
+}
+
+
 async function getMaxQueue(user_id) {
     const query = `
         SELECT MAX(tk.queue) as maxQueue
@@ -1006,5 +1040,6 @@ module.exports = {
     getPropertyScore,
     getPropertyForGuest,
     getMaxQueue,
-    updateTicketStatus
+    updateTicketStatus,
+    getContracts
 };

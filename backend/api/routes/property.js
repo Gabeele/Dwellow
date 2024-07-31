@@ -18,7 +18,7 @@ const { getProperties,
     createCode,
     deleteInviteCode,
     getUser,
-    getPropertyByAddress } = require('../utils/connector');
+    getPropertyByAddress, getContracts } = require('../utils/connector');
 
 /**
  * @swagger
@@ -739,6 +739,19 @@ router.post('/contract', function (req, res) {
     });
 });
 
+
+router.get('/contracts', async (req, res) => {
+    try {
+        const contracts = await getContracts();
+        if (!contracts) {
+            return res.status(404).json({ message: 'No contracts found' });
+        }
+        res.json(contracts);
+    } catch (error) {
+        console.error('Error fetching contracts:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
 
 
 module.exports = router;
