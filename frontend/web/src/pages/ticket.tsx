@@ -1,21 +1,28 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
 import API from "../utils/Api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PlusIcon, Pencil1Icon, GearIcon, ArrowLeftIcon } from "@radix-ui/react-icons";
-import { Input } from "@/components/ui/input";
-import Loading from "@/components/Loading";
 import { Textarea } from "@/components/ui/textarea";
 import { formatDateTime } from "@/utils/FormatDateTime";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft } from "lucide-react";
+import Loading from "@/components/Loading";
 
 interface Ticket {
   ticket_id: number;
   description: string;
   unit_id: number;
+  unit: string;
   user_id: number;
+  created_by: string;
+  tenant_name: string;
   length: string;
   issue_area: string;
   photo_url: string;
@@ -24,9 +31,10 @@ interface Ticket {
   status: string;
   time_created: string;
   time_updated: string;
-  queue: number;
-  time_resolved: string;
+  queue: number | null;
+  time_resolved: string | null;
   property_id: number;
+  property_title: string;
 }
 
 interface Comment {
@@ -38,75 +46,65 @@ interface Comment {
   full_name: string;
 }
 
-function Ticket() {
+export default function Component() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [ticket, setTickets] = useState<Ticket[]>([]);
+  const [ticket, setTicket] = useState<Ticket | null>(null);
   const [comments, setComments] = useState<Comment[] | null>([]);
   const [newComment, setNewComment] = useState("");
-  const [ticketLoading, setTicketLoading] = useState(true);
-  const [commentsLoading, setCommentsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [maxQueue, setMaxQueue] = useState<number>(1);
 
   useEffect(() => {
-    const cachedTicket = localStorage.getItem(`ticket-${id}`);
-    const cachedComments = localStorage.getItem(`comments-${id}`)
-
-    if (cachedTicket && cachedComments) {
-      setTickets(JSON.parse(cachedTicket));
-      setComments(JSON.parse(cachedComments));
-      setTicketLoading(false);
-      setCommentsLoading(false);
-    } else {
-      fetchTickets(id);
-      fetchComments(id);
-    }
+    setLoading(true);
+    fetchTicket(id);
+    fetchComments(id);
+    fetchMaxQueue();
+    setLoading(false);
   }, [id]);
-  
 
-  const fetchTickets = async (id: any) => {
+  const fetchTicket = async (id: any) => {
     try {
       const response = await API.get(`/ticket/${id}`);
-      if (response.data) {
-        const jsonData = await response.data;
-        setTickets(jsonData);
-        
-        // store things in cache
-        localStorage.setItem(`ticket-${id}`, JSON.stringify(jsonData));
-      } else {
-        console.error("No data found");
-      }
+      const ticketData = await response.data;
+      setTicket(ticketData.length > 0 ? ticketData[0] : null);
     } catch (error) {
       console.error("Failed to fetch ticket data:", error);
     }
-    setTicketLoading(false);
   };
 
   const fetchComments = async (id: any) => {
     try {
       const response = await API.get(`/ticket/${id}/comments`);
-      if (response.data) {
-        const jsonData = await response.data;
-        setComments(jsonData);
-
-        localStorage.setItem(`comments-${id}`, JSON.stringify(jsonData));
-      } else {
-        console.error("No data found");
-      }
+      setComments(await response.data);
     } catch (error) {
       console.error("Error fetching comments: ", error);
     }
-    setCommentsLoading(false);
+  };
+
+  const fetchMaxQueue = async () => {
+    try {
+      const response = await API.get("/ticket/max-queue");
+      if (response.status === 200) {
+        const jsonData = await response.data;
+        setMaxQueue(jsonData.Max || 1);
+      } else {
+        console.error(
+          "Failed to fetch max queue, status code:",
+          response.status
+        );
+      }
+    } catch (error: any) {
+      console.error("Failed to fetch max queue:", error.message);
+    }
   };
 
   const handleComment = async () => {
     if (newComment.trim() !== "") {
       try {
-        const response = await API.post(
-          `/ticket/${id}/comments`,
-          {
-            description: newComment,
-          }
-        );
+        await API.post(`/ticket/${id}/comments`, {
+          description: newComment,
+        });
         fetchComments(id);
         setNewComment("");
       } catch (error) {
@@ -117,111 +115,233 @@ function Ticket() {
     }
   };
 
-  const handleStatusChange = async (s: any, t: Ticket[]) => {
-    try {
-      const res = await API.put(`/ticket/${id}`, {
-        ticket_id: id,
-        unit_id: t[0].unit_id,
-        user_id: t[0].user_id, 
-        description: t[0].description,
-        length: t[0].length,
-        priority: t[0].priority,
-        issue_area: t[0].issue_area,
-        photo_url: t[0].photo_url,
-        special_instructions: t[0].special_instructions,
-        status: s,
-      });
-      t[0].status = s;
-      console.log(t[0])
-      setTicketLoading(true);
-      await fetchTickets(id);
-      localStorage.setItem(`ticket-${id}`, JSON.stringify(t));
-      setTicketLoading(false);
-    } catch (error) {
-      console.error("Failed to change ticket status:", error);
-      fetchTickets(id);
+  const handleStatusChange = async (newStatus: string) => {
+    if (ticket) {
+      try {
+        let response;
+        if (newStatus === "active" && ticket.status === "pending") {
+          response = await API.put(`/ticket/status/${id}`, {
+            status: newStatus,
+          });
+          if (response.status === 200) {
+            await updateTicketQueue(maxQueue + 1);
+          }
+        } else if (newStatus === "closed") {
+          response = await API.put(`/ticket/status/${id}`, {
+            status: newStatus,
+            time_resolved: new Date().toISOString(),
+          });
+          if (response.status === 200) {
+            await updateTicketQueue(0);
+          }
+        } else {
+          response = await API.put(`/ticket/status/${id}`, {
+            status: newStatus,
+            queue: null,
+          });
+        }
+
+        if (response.status === 200) {
+          fetchTicket(id);
+        } else {
+          console.error("Failed to update ticket status:", response.status);
+        }
+      } catch (error) {
+        console.error("Error updating ticket status:", error);
+      }
     }
-  }
+  };
 
-  const isLoading = ticketLoading || commentsLoading
+  const updateTicketQueue = async (newQueue: number) => {
+    try {
+      const response = await API.post(`/ticket/${id}/queue`, {
+        new_queue: newQueue,
+      });
+      if (response.status === 201) {
+        fetchTicket(id);
+      } else {
+        console.error("Failed to update ticket queue:", response.status);
+      }
+    } catch (error) {
+      console.error("Error updating ticket queue:", error);
+    }
+  };
 
-  if (isLoading) {
+  const handleMoveUp = () => {
+    if (ticket?.queue && ticket.queue > 1) {
+      updateTicketQueue(ticket.queue - 1);
+    }
+  };
+
+  const handleMoveDown = () => {
+    if (ticket?.queue && ticket.queue < maxQueue) {
+      updateTicketQueue(ticket.queue + 1);
+    }
+  };
+
+  const badgeClass = useMemo(() => {
+    switch (ticket?.status) {
+      case "pending":
+        return "bg-yellow-300";
+      case "closed":
+        return "bg-red-300";
+      case "active":
+        return "bg-green-300";
+      default:
+        return "bg-gray-300";
+    }
+  }, [ticket?.status]);
+
+  if (loading) {
     return <Loading />;
   }
 
-  const badgeVariant = (status: string) => {
-    return status === "active" ? "active" : "closed";
-  };
-
   return (
-    <>
-    <Button className="absolute top-12" onClick={() => navigate(`/tickets`)}>
-      <ArrowLeftIcon/>
-    </Button>
-    <div className="container mx-auto px-4 py-8">
-      {ticket.map(({ ticket_id, description, unit_id, user_id, length, issue_area, photo_url, special_instructions, priority, 
-      status, time_created, time_updated, queue, time_resolved, property_id }) => (
-        <div key={ticket_id}>
+    <div className="p-6">
+      <div className="flex items-center mb-4">
+        <Button
+          variant="ghost"
+          className="mr-4"
+          onClick={() => navigate(`/tickets`)}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <div className="flex items-center space-x-2">
+          <Badge className={`px-2 py-1 text-md font-medium ${badgeClass}`}>
+            {ticket?.status}
+          </Badge>
+          <Badge className="px-2 py-1 text-md font-medium">
+            {ticket?.priority}
+          </Badge>
+          {ticket?.status === "active" && (
+            <Badge variant="outline" className="px-2 py-1 text-md font-medium">
+              Queue #{ticket?.queue}
+            </Badge>
+          )}
+        </div>
+        <div className="ml-auto flex items-center space-x-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="link" className="hover:no-underline">
-                <Badge className="mb-3" variant={badgeVariant(status)}>{status}</Badge>
-              </Button>
+              <Button variant="outline">{ticket?.status}</Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="space-y-4">
-              <DropdownMenuItem className="bg-dwellow-white-100" onClick={() => handleStatusChange("active", ticket)}>
-                <Badge variant="active">active</Badge>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={() => handleStatusChange("pending")}>
+                Pending
               </DropdownMenuItem>
-              <DropdownMenuItem  onClick={() => handleStatusChange("closed", ticket)}>
-                <Badge variant="closed">closed</Badge>
+              <DropdownMenuItem onClick={() => handleStatusChange("active")}>
+                Active
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleStatusChange("closed")}>
+                Closed
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <div className="flex">
-            <h1 className="font-bold text-2xl">{description}</h1>
-            <p className="text-dwellow-dark-100 text-xs">Ticket {ticket_id}</p>
-          </div>
-          <p className="text-sm text-dwellow-dark-100">Created: {formatDateTime(new Date(time_created))}</p>
-          <p className="text-sm text-dwellow-dark-100">Last Updated: {formatDateTime(new Date(time_updated))}</p>
-          <p className="mt-3 p-2 w-full h-24 rounded-md border bg-dwellow-white-100 border-dwellow-dark-100">{special_instructions}</p>
-          <div>
-            <h1 className="mt-4 font-bold text-xl">Attachments</h1>
-            <p className="mt-3 p-2">Add attachments here somehow</p>
-          </div>
-        </div>
-      ))}
-      <div>
-        <h1 className="mt-4 font-bold text-xl">Comments</h1>
-        <div className="mt-3 p-2 w-full rounded-md border border-dwellow-dark-100 ">
-          <div className="inline-flex w-full items-center">
-            <Textarea
-              placeholder="Type your comment..."
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              maxLength={250}
-              rows={2}
+          {ticket?.status === "pending" && (
+            <Button
+              variant="outline"
+              onClick={() => handleStatusChange("active")}
+            >
+              Add to Queue
+            </Button>
+          )}
+          {ticket?.status === "active" && (
+            <>
+              <Button
+                variant="outline"
+                onClick={handleMoveUp}
+                disabled={ticket.queue === 1}
               >
-            </Textarea>
-            <Button className="ml-4 mr-2" onClick={handleComment}>Comment</Button>
-          </div>
-          <div>
-            {comments?.sort((a, b) => {
-              const dateA = new Date(a.posted_date).getTime();
-              const dateB = new Date(b.posted_date).getTime();
-              return dateB - dateA;
-              }).map(({ full_name, comment_id, ticket_id, user_id, description, posted_date }) => (
-              <div key={comment_id} className="bg-dwellow-white-100 my-3 p-3 shadow-sm">
+                Move Up
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleMoveDown}
+                disabled={ticket.queue === maxQueue}
+              >
+                Move Down
+              </Button>
+            </>
+          )}
+          <Button
+            variant="outline"
+            onClick={() => handleStatusChange("closed")}
+          >
+            Close
+          </Button>
+        </div>
+      </div>
+      <div className="space-y-4">
+        <h1 className="text-2xl font-bold">
+          {ticket?.description}{" "}
+          <span className="text-md text-muted-foreground">
+            #{ticket?.ticket_id}
+          </span>
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Created: {formatDateTime(new Date(ticket?.time_created || ""))}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Last Updated: {formatDateTime(new Date(ticket?.time_updated || ""))}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Property: {ticket?.property_title}
+        </p>
+        <p className="text-sm text-muted-foreground">Unit: {ticket?.unit}</p>
+        <p className="text-sm text-muted-foreground">
+          Tenant: {ticket?.tenant_name}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Created by: {ticket?.created_by}
+        </p>
+        {ticket?.time_resolved && (
+          <p className="text-sm text-muted-foreground">
+            Resolved: {formatDateTime(new Date(ticket?.time_resolved))}
+          </p>
+        )}
+        <div className="space-y-2">
+          <Label htmlFor="description">Description</Label>
+          <p className="text-muted-foreground">{ticket?.description}</p>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="instructions">Special Instructions</Label>
+          <p className="text-muted-foreground">
+            {ticket?.special_instructions}
+          </p>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="length">Length of Incident</Label>
+          <p className="text-muted-foreground">{ticket?.length}</p>
+        </div>
+      </div>
+      <div className="mt-6">
+        <h2 className="text-lg font-bold">Comments</h2>
+        <div className="flex items-center mt-2">
+          <Textarea
+            placeholder="Type your comment..."
+            className="flex-1 mr-2"
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+          />
+          <Button onClick={handleComment}>Comment</Button>
+        </div>
+        <div className="mt-4 space-y-2">
+          {comments
+            ?.sort(
+              (a, b) =>
+                new Date(b.posted_date).getTime() -
+                new Date(a.posted_date).getTime()
+            )
+            .map(({ comment_id, full_name, posted_date, description }) => (
+              <div key={comment_id} className="bg-gray-100 p-4 rounded-md">
                 <p className="font-semibold">{full_name}</p>
-                <p className="text-sm text-dwellow-dark-100">{formatDateTime(new Date(posted_date))}</p>
+                <p className="text-sm text-muted-foreground">
+                  {formatDateTime(new Date(posted_date))}
+                </p>
                 <p>{description}</p>
               </div>
             ))}
-          </div>
         </div>
       </div>
     </div>
-    </>
   );
 }
-
-export default Ticket;
