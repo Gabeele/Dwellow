@@ -46,9 +46,7 @@ function Home() {
   const [name, setName] = useState("");
   const [properties, setProperties] = useState<Property[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loadingUser, setLoadingUser] = useState(true);
-  const [loadingProperties, setLoadingProperties] = useState(true);
-  const [loadingTickets, setLoadingTickets] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   const getUser = async () => {
     try {
@@ -62,11 +60,15 @@ function Home() {
             phoneNumber: user.phone_number,
           }));
           setUser(retrievedUser);
-          localStorage.setItem("user", JSON.stringify(retrievedUser));
+          setLoading(false);
+        } else {
+          console.error("Failed to fetch user data, invalid structure");
         }
-        setLoadingUser(false);
       } else {
-        console.error("Failed to fetch user data, status code:", response.status);
+        console.error(
+          "Failed to fetch user data, status code:",
+          response.status
+        );
         if (response.status === 401) {
           setTimeout(getUser, 2000);
         }
@@ -76,68 +78,36 @@ function Home() {
     }
   };
 
-  useEffect(() => {
-    const cachedUser = localStorage.getItem("user");
-    if (cachedUser) {
-      setUser(JSON.parse(cachedUser));
-      setLoadingUser(false);
-    } else {
-      getUser();
+  const fetchAllData = async () => {
+    setLoading(true);
+    try {
+      const propertiesData = await fetchProperties();
+      setProperties(propertiesData);
+
+      const { allTickets } = await fetchTickets();
+      const activeTickets = allTickets.filter(
+        (ticket: Ticket) => ticket.status === "active"
+      );
+      setTickets(activeTickets);
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    getUser();
   }, []);
 
   useEffect(() => {
-    const fetchAllData = async () => {
-      const cachedProperties = localStorage.getItem("properties");
-      const cachedTickets = localStorage.getItem("tickets");
-      const cachedActiveTickets = localStorage.getItem("active-tickets");
-
-      // Fetch properties
-      if (cachedProperties) {
-        setProperties(JSON.parse(cachedProperties));
-        setLoadingProperties(false);
-      } else {
-        try {
-          const propertiesData = await fetchProperties();
-          setProperties(propertiesData);
-          localStorage.setItem("properties", JSON.stringify(propertiesData));
-          setLoadingProperties(false);
-        } catch (error) {
-          console.error("Failed to fetch properties:", error);
-        }
-      }
-
-      // Fetch tickets
-      if (cachedActiveTickets) {
-        setTickets(JSON.parse(cachedActiveTickets));
-        setLoadingTickets(false);
-      } else if (cachedTickets) {
-        const allTickets = JSON.parse(cachedTickets);
-        const filteredTickets = allTickets.filter((ticket: Ticket) => ticket.status === "active");
-        setTickets(filteredTickets);
-        setLoadingTickets(false);
-      } else {
-        try {
-          const { allTickets, activeTickets } = await fetchTickets();
-          localStorage.setItem("tickets", JSON.stringify(allTickets)); // store all tickets
-          localStorage.setItem("active-tickets", JSON.stringify(activeTickets)); // store active tickets
-          setTickets(activeTickets);
-          setLoadingTickets(false);
-        } catch (error) {
-          console.error("Failed to fetch tickets:", error);
-        }
-      }
-    };
-
     if (user.length > 0) {
       fetchAllData();
       setName(user[0].fullName);
     }
   }, [user]);
 
-  const isLoading = loadingUser || loadingProperties || loadingTickets;
-
-  if (isLoading) {
+  if (loading) {
     return <Loading />;
   }
 
@@ -150,7 +120,11 @@ function Home() {
         <div className="flex flex-col bg-dwellow-white-0 mt-4 p-4 rounded-lg">
           <div className="grid grid-cols-5 gap-4 justify-center items-center">
             {properties.slice(0, 5).map((property) => (
-              <Link key={property.id} to={`/property/${property.id}`} className="max-w-xs">
+              <Link
+                key={property.id}
+                to={`/property/${property.id}`}
+                className="max-w-xs"
+              >
                 <DefaultCard
                   id={property.id}
                   title={property.title}
@@ -163,16 +137,27 @@ function Home() {
             ))}
           </div>
           <div className="pt-4 ml-auto mr-0">
-            <Link to="/properties" className="text-dwellow-dark-100 hover:underline">See All Properties</Link>
+            <Link
+              to="/properties"
+              className="text-dwellow-dark-100 hover:underline"
+            >
+              See All Properties
+            </Link>
           </div>
         </div>
       </div>
       <div className="mt-9">
-        <h1 className="text-xl font-bold text-dwellow-dark-200">Open Tickets</h1>
+        <h1 className="text-xl font-bold text-dwellow-dark-200">
+          Open Tickets
+        </h1>
         <div className="flex flex-col bg-dwellow-white-0 mt-4 p-4 rounded-lg">
           <div className="grid grid-cols-2 gap-4 justify-center items-center">
             {tickets.slice(0, 6).map((ticket) => (
-              <Link key={ticket.id} to={`/ticket/${ticket.id}`} className="w-full">
+              <Link
+                key={ticket.id}
+                to={`/ticket/${ticket.id}`}
+                className="w-full"
+              >
                 <DefaultTicket
                   id={ticket.id}
                   description={ticket.description}
@@ -184,7 +169,12 @@ function Home() {
             ))}
           </div>
           <div className="pt-4 ml-auto mr-0">
-            <Link to="/tickets" className="text-dwellow-dark-100 hover:underline">See All Tickets</Link>
+            <Link
+              to="/tickets"
+              className="text-dwellow-dark-100 hover:underline"
+            >
+              See All Tickets
+            </Link>
           </div>
         </div>
       </div>
