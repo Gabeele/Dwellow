@@ -45,7 +45,7 @@ class _HomePageState extends State<HomePage> {
           },
         );
 
-        print('Response: ${response}');
+        print('Response: ${response.toString()}');
         print('Response status: ${response.statusCode}');
         print('Response body: ${response.body}');
 
@@ -165,6 +165,7 @@ class _HomePageState extends State<HomePage> {
         onRefresh: _refreshData,
         child: ListView(
           controller: _scrollController,
+          physics: const AlwaysScrollableScrollPhysics(),
           children: [
             Container(
               width: double.infinity,
