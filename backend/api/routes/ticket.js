@@ -53,17 +53,17 @@ router.get('/', async (req, res) => {
             });
         }
         else {
-            const ticket = await getTickets(id);
+            const tickets = await getTickets(id);
 
-            console.log(ticket)
+            console.log(tickets)
 
-            if (!ticket) {
+            if (!tickets) {
                 logger.warn(`Get Ticket: No ticket found with id ${id}`);
-                return res.status(400).json({ message: `No ticket found with id ${id}` });
+                return res.status(200).json({ message: `No tickets found.` });
             }
 
-            logger.info(`Get Ticket: ticket ${id} information accessed.`); // TODO: We should return the ticket infromation here as json or somehting. IDK what is returned back. (Also update the comments)
-            res.status(200).json(ticket.recordset);
+            logger.info(`Get Tickets: information accessed.`);
+            res.status(200).json(tickets);
         }
     } catch (error) {
         logger.error(`Error getting Ticket information for ticket ${id}: ${error.message}`);
