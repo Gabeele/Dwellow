@@ -64,7 +64,7 @@ class Facilitator:
                 else:
                     ticket_data = self.maintenance_agent.finalize_ticket()
                     await self.create_ticket_in_db(ticket_data)
-                    await self.send_message("Sending your maintenance request now. Is there anything else I can help you with?")
+                    await self.send_message("Your maintenance request has been made and is sent to your admins. Is there anything else I can help you with?")
                     done = True
             except Exception as e:
                 self.logger.error(f"An error occurred during the maintenance request process: {e}")
