@@ -27,6 +27,21 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     fetchTickets();
     fetchAnnouncements();
+
+    _scrollController.addListener(() {
+      // Check if the list is scrollable
+      if (_scrollController.position.maxScrollExtent > 0) {
+        setState(() {
+          isFabVisible = _scrollController.position.atEdge &&
+              _scrollController.position.pixels == 0;
+        });
+      } else {
+        // Show the button if there are less than 3 tickets
+        setState(() {
+          isFabVisible = true;
+        });
+      }
+    });
   }
 
   Future<void> fetchTickets() async {
@@ -147,9 +162,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _handleVisibilityChanged(VisibilityInfo info) {
-    setState(() {
-      isFabVisible = info.visibleFraction == 0;
-    });
+    // If there are fewer than 3 tickets, always show the button
+    if (tickets.length < 3) {
+      setState(() {
+        isFabVisible = true;
+      });
+    } else {
+      setState(() {
+        isFabVisible = info.visibleFraction == 0;
+      });
+    }
   }
 
   @override
