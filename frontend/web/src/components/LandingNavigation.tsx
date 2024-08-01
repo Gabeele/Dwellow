@@ -1,110 +1,152 @@
-"use client";
-
-import * as React from "react";
+/**
+ * v0 by Vercel.
+ * @see https://v0.dev/t/Btw4Mz43Tv0
+ * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
+ */
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Link as RouterLink } from "react-router-dom";
 import { Link } from "react-scroll";
-import { cn } from "@/lib/utils";
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-} from "@/components/ui/navigation-menu";
-import { Button } from "./ui/button";
 
-function LandingNavigation() {
+export default function Component() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleDrawer = () => {
+    setIsOpen(!isOpen);
+  };
+
   return (
-    <div className="sticky top-0 z-10 flex items-center justify-between p-3 bg-dwellow-dark-200">
-      <RouterLink
-        to="/"
-        className="absolute left-4 text-2xl font-bold text-dwellow-white-200"
-      >
-        Dwellow
-      </RouterLink>
-      <div className="flex-1 flex justify-center">
-        <NavigationMenu>
-          <NavigationMenuList className="flex space-x-14">
-            <NavigationMenuItem>
-              <Link to="PageTop" smooth={true} duration={500} className="cursor-pointer">
-                <NavigationMenuLink className="text-dwellow-white-200 font-medium">
-                  Home
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link to="About" smooth={true} duration={500} className="cursor-pointer">
-                <NavigationMenuLink className="text-dwellow-white-200 font-medium">
-                  About
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link to="Features" smooth={true} duration={500} className="cursor-pointer">
-                <NavigationMenuLink className="text-dwellow-white-200 font-medium">
-                  Features
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-              <Link to="Contact" smooth={true} duration={500} className="cursor-pointer">
-                <NavigationMenuLink className="text-dwellow-white-200 font-medium">
-                  Contact
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-          </NavigationMenuList>
-        </NavigationMenu>
-      </div>
-      <div className="absolute right-0 flex space-x-4 mr-4">
-        <RouterLink
-          to="/login"
-          className="mr-2 mt-1 text-dwellow-white-200 font-medium"
-        >
-          Log in
+    <nav className="sticky top-0 z-10 bg-[#1a1a1a] bg-opacity-80 backdrop-blur-md backdrop-opacity-80 text-white p-4 flex items-center">
+      <div className="container mx-auto flex justify-between">
+        <RouterLink to="/" className="text-2xl font-bold">
+          Dwellow
         </RouterLink>
-        <RouterLink
-          to="/reviews"
-          className="mr-2 mt-1 text-dwellow-white-200 font-medium"
-        >
-          Apartment Reviews
-        </RouterLink>
-        <RouterLink to="/register/admin">
+        <div className="hidden md:flex space-x-6 items-center">
+          <Link
+            to="PageTop"
+            smooth={true}
+            duration={500}
+            className="cursor-pointer hover:text-gray-400"
+          >
+            Home
+          </Link>
+          <Link
+            to="About"
+            smooth={true}
+            duration={500}
+            className="cursor-pointer hover:text-gray-400"
+          >
+            About
+          </Link>
+          <Link
+            to="Features"
+            smooth={true}
+            duration={500}
+            className="cursor-pointer hover:text-gray-400"
+          >
+            Features
+          </Link>
+          <Link
+            to="Contact"
+            smooth={true}
+            duration={500}
+            className="cursor-pointer hover:text-gray-400"
+          >
+            Contact
+          </Link>{" "}
+          <RouterLink to="/reviews">Reviews</RouterLink>
+          <RouterLink
+            to="/login"
+            className="px-4 py-2 rounded-md bg-gray-600 text-white hover:bg-gray-500"
+          >
+            Log in
+          </RouterLink>
+          <RouterLink to="/register/admin">
+            <Button
+              variant="outline"
+              className="border-white text-black hover:bg-white hover:text-black"
+            >
+              Get Started
+            </Button>
+          </RouterLink>
+        </div>
+        <div className="md:hidden flex items-center">
           <Button
             variant="outline"
-            className="text-dwellow-white-200 bg-dwellow-dark-200 hover:bg-dwellow-dark-100 hover:text-dwellow-white-200 font-medium"
+            className="border-white text-black"
+            onClick={toggleDrawer}
           >
-            Get Started
+            Menu
           </Button>
-        </RouterLink>
+        </div>
       </div>
-    </div>
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-20 bg-black bg-opacity-50"
+          onClick={toggleDrawer}
+        >
+          <div className="w-full h-full bg-black backdrop-blur-md text-white p-2 z-30 rounded-lg">
+            <button className="text-white text-xl mb-4" onClick={toggleDrawer}>
+              ×
+            </button>
+            <nav className="flex flex-col space-y-4 bg-black backdrop-blur-md  p-4 bg-opacity-97 rounded-lg ">
+              <Link
+                to="PageTop"
+                smooth={true}
+                duration={500}
+                className="cursor-pointer hover:text-gray-400"
+                onClick={toggleDrawer}
+              >
+                Home
+              </Link>
+              <Link
+                to="About"
+                smooth={true}
+                duration={500}
+                className="cursor-pointer hover:text-gray-400"
+                onClick={toggleDrawer}
+              >
+                About
+              </Link>
+              <Link
+                to="Features"
+                smooth={true}
+                duration={500}
+                className="cursor-pointer hover:text-gray-400"
+                onClick={toggleDrawer}
+              >
+                Features
+              </Link>
+              <Link
+                to="Contact"
+                smooth={true}
+                duration={500}
+                className="cursor-pointer hover:text-gray-400"
+                onClick={toggleDrawer}
+              >
+                Contact
+              </Link>
+              <RouterLink to="/reviews">Reviews</RouterLink>
+
+              <RouterLink
+                to="/login"
+                className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-500"
+                onClick={toggleDrawer}
+              >
+                Log in
+              </RouterLink>
+              <RouterLink to="/register/admin" onClick={toggleDrawer}>
+                <Button
+                  variant="outline"
+                  className="border-white text-black hover:bg-white hover:text-black"
+                >
+                  Get Started
+                </Button>
+              </RouterLink>
+            </nav>
+          </div>
+        </div>
+      )}
+    </nav>
   );
 }
-
-const ListItem = React.forwardRef<
-  React.ElementRef<"a">,
-  React.ComponentPropsWithoutRef<"a">
->(({ className, title, children, ...props }, ref) => {
-  return (
-    <li>
-      <NavigationMenuLink asChild>
-        <a
-          ref={ref}
-          className={cn(
-            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-            className
-          )}
-          {...props}
-        >
-          <div className="text-sm font-medium leading-none">{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-            {children}
-          </p>
-        </a>
-      </NavigationMenuLink>
-    </li>
-  );
-});
-ListItem.displayName = "ListItem";
-
-export default LandingNavigation;

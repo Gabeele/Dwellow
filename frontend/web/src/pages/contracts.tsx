@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Edit, Trash, Upload, Download, Plus } from "lucide-react";
 import API from "../utils/Api";
+import Loading from "@/components/Loading";
 
 interface Tenant {
   contract_id: number;
@@ -87,7 +88,7 @@ const Contracts: React.FC = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <Loading />;
   }
 
   return (
