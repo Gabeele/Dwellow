@@ -386,8 +386,14 @@ class _HomePageState extends State<HomePage> {
                                                             'active'
                                                         ? Colors.blue
                                                             .withOpacity(0.1)
-                                                        : Colors.grey
-                                                            .withOpacity(0.1),
+                                                        : ticket.status ==
+                                                                'pending'
+                                                            ? Colors.yellow
+                                                                .withOpacity(
+                                                                    0.1)
+                                                            : Colors.grey
+                                                                .withOpacity(
+                                                                    0.1),
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             4),
@@ -401,10 +407,14 @@ class _HomePageState extends State<HomePage> {
                                                           fontSize: 14.0,
                                                           fontWeight:
                                                               FontWeight.normal,
-                                                          color:
-                                                              ticket.status ==
-                                                                      'active'
-                                                                  ? Colors.blue
+                                                          color: ticket
+                                                                      .status ==
+                                                                  'active'
+                                                              ? Colors.blue
+                                                              : ticket.status ==
+                                                                      'pending'
+                                                                  ? Colors
+                                                                      .yellow
                                                                   : Colors.grey,
                                                         ),
                                                   ),

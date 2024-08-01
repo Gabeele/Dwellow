@@ -131,6 +131,20 @@ function Tickets() {
         setLoading(false);
       }
     );
+
+    const interval = setInterval(() => {
+      fetchTickets().then(
+        ({ allTickets, pendingTickets, closedTickets, queuedTickets }) => {
+          setTickets(allTickets);
+          setPendingTickets(pendingTickets);
+          setClosedTickets(closedTickets);
+          setQueuedTickets(queuedTickets);
+        }
+      );
+      fetchMaxQueue();
+    }, 3000); // Polling every 3 seconds
+
+    return () => clearInterval(interval);
   }, []);
 
   const fetchMaxQueue = async () => {
