@@ -48,6 +48,7 @@ import { Textarea } from "@/components/ui/textarea";
 import CharacterCount from "@/components/CharacterCount";
 import { fetchProperties } from "./properties";
 import { formatDateTime } from "@/utils/FormatDateTime";
+import { ArrowLeft } from "lucide-react";
 
 interface Property {
   id: number;
@@ -414,8 +415,8 @@ function Property() {
 
   return (
     <>
-    <Button className="absolute top-12" onClick={() => navigate(`/properties`)}>
-      <ArrowLeftIcon/>
+    <Button variant="ghost" className="absolute top-12" onClick={() => navigate(`/properties`)}>
+      <ArrowLeft className="h-5 w-5" />
     </Button>
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between">

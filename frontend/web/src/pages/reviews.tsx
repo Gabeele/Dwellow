@@ -103,7 +103,7 @@ export default function Component() {
   return (
     <>
       <LandingNavigation />
-      <div className="flex flex-col items-center justify-center w-full min-h-screen bg-background">
+      <div className="flex flex-col items-center justify-center w-full min-h-screen bg-dwellow-white-200">
         <div className="w-1/3 p-6">
           <div className="mb-6 w-full">
             <h1

@@ -143,6 +143,11 @@ const TicketCard: React.FC<TicketCardProps> = ({
           <Card className="p-4">
             <div className="flex justify-between items-center mb-2">
               <Badge className={badgeClass}>{status}</Badge>
+              {queue !== null && (
+              <div className="flex justify-between items-center text-sm text-muted-foreground mt-2">
+                <span>Queue Position: {queue}</span>
+              </div>
+            )}
             </div>
             <h3 className="text-lg font-semibold mb-1">
               {truncateText(description, 25)}
@@ -151,17 +156,12 @@ const TicketCard: React.FC<TicketCardProps> = ({
               {formatDateTime(new Date(time_created))}
             </p>
             <div className="flex justify-between items-center text-sm text-muted-foreground">
+              <span>Tenant: {tenant_name}</span>
+            </div>
+            <div className="flex justify-between items-center text-sm text-muted-foreground">
               <span>{property_title}</span>
               <span>Unit {unit}</span>
             </div>
-            <div className="flex justify-between items-center text-sm text-muted-foreground">
-              <span>Tenant: {tenant_name}</span>
-            </div>
-            {queue !== null && (
-              <div className="flex justify-between items-center text-sm text-muted-foreground mt-2">
-                <span>Queue Position: {queue}</span>
-              </div>
-            )}
           </Card>
         </Link>
       </ContextMenuTrigger>

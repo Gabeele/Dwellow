@@ -49,10 +49,7 @@ export default function Component() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
-    fetchTicket(id);
-    fetchComments(id);
-    setLoading(false);
+    fetchAllData(id);
   }, [id]);
 
   const fetchTicket = async (id: any) => {
@@ -74,6 +71,18 @@ export default function Component() {
     }
   };
 
+  const fetchAllData = async (id: any) => {
+    setLoading(true);
+    try {
+      await fetchTicket(id);
+      await fetchComments(id);
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleComment = async () => {
     if (newComment.trim() !== "") {
       try {
@@ -91,6 +100,7 @@ export default function Component() {
   };
 
   const updateTicketQueue = async (newQueue: number) => {
+    setLoading(true);
     try {
       const response = await API.post(`/ticket/${id}/queue`, {
         new_queue: newQueue,
@@ -103,6 +113,7 @@ export default function Component() {
     } catch (error) {
       console.error("Error updating ticket queue:", error);
     }
+    setLoading(false);
   };
 
   const handleClose = async () => {

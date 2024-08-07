@@ -9,6 +9,7 @@ import MobileScreenshots from "../components/landing/MobileScreenshots";
 import AdminScreenshots from "../components/landing/AdminScreenshots";
 import DemoVideo from "../components/landing/DemoVideo";
 import ContactUs from "../components/landing/ContactUs";
+import { Link } from "react-scroll";
 
 const Landing: React.FC = () => {
   return (
@@ -34,16 +35,20 @@ const Landing: React.FC = () => {
                 Get Started
               </Button>
             </a>
-            <a href="#About">
+            <Link
+            to="About"
+            smooth={true}
+            duration={500}
+            className="cursor-pointer hover:text-gray-400">
               <Button className="bg-dwellow-white-200 hover:bg-gray-300 text-black">
                 Learn More
               </Button>
-            </a>
+            </Link>
           </div>
         </div>
       </header>
 
-      <FakeBusinessScroll />
+      <FakeBusinessScroll  />
       <AboutUs />
       <DemoVideo />
       <Features />
